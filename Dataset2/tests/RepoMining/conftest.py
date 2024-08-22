@@ -11,23 +11,8 @@ from urllib.parse import urlparse
 
 from requests.exceptions import InvalidURL, MissingSchema
 
-NAME_DIR = 'RepoMining'
-TEST_DIR = 'tests'
-
 @pytest.fixture
-def setup_dir():
-    cwd = os.getcwd()
-    if NAME_DIR not in cwd:
-        test_path = os.path.join(os.getcwd(), "Dataset2", TEST_DIR, NAME_DIR)
-        os.chdir(test_path)
-
-    yield
-
-    os.chdir(cwd)
-    print(f"Changed directory to '{cwd}'.")
-
-@pytest.fixture
-def create_temp_dataset(setup_dir):
+def create_temp_dataset():
     cwd = os.getcwd()
     directory = 'Divided_Dataset'
     filename = "1.csv"
@@ -56,7 +41,7 @@ def create_temp_dataset(setup_dir):
 
 
 @pytest.fixture
-def process_data(request, setup_dir):
+def process_data(request):
 
     is_data_empty = request.param
 
@@ -121,22 +106,18 @@ def mock_op_fail(request):
 
 @pytest.fixture
 def mock_files(request):
-    # Retrieve parameter which is a dictionary of file mocks
     file_mocks = request.param
-
-    # Create a dictionary to store mock_open instances for each file
     mocks = {file: mock_open(read_data=data) for file, data in file_mocks.items()}
 
     def mock_open_side_effect(file, mode='r'):
-        # Return the mock_open instance for the requested file
         if file in mocks:
-            return mocks[file]()
-        # Return a default mock if the file is not in the dictionary
-        return mock_open(read_data='Default data')()
+            mock_instance = mocks[file]
+            return mock_instance(file, mode)
+        default_mock = mock_open(read_data='Default data')
+        return default_mock()
 
-    # Patch 'builtins.open' with our mock side effect
     with patch('builtins.open', mock_open_side_effect) as _mock_open:
-        yield mocks  # Yield the dictionary of mocks to the test
+        yield mocks
 
 @pytest.fixture
 def mock_op_permission_err(request):
@@ -258,8 +239,6 @@ def mock_listdir(directory, cve_id, cve_id_exists, commit_id, commit_exists):
         return []  # Commit directories are empty initially
     return []
 
-
-
 # Define the parameterized fixture
 @pytest.fixture
 def mock_os_listdir(request):
@@ -324,7 +303,6 @@ def custom_chdir_side_effect(directory, path_exist):
         if not is_admissible_directory_name(directory):
             raise OSError("Invalid directory format")
         # If valid and path exists, simulate normal behavior
-        print(f"Changed directory to: {directory}")
     else:
         # Raise TypeError if the directory is not a string
         raise TypeError("Directory must be a string")
