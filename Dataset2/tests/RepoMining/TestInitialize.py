@@ -6,95 +6,97 @@ import pytest
 from unittest.mock import patch, mock_open
 from Dataset2.RepoMining.repo_Mining import initialize
 
-@patch('os.getcwd')
-@patch('os.chdir')
-@patch('builtins.open', new_callable=mock_open)
-def test_case_1(mock_chdir, mock_getcwd, mock_open, setup_dir):
+class TestInitialize:
 
-    # Setup mocks
-    mock_getcwd.return_value = '/fake/path'
+    @patch('os.getcwd')
+    @patch('os.chdir')
+    @patch('builtins.open', new_callable=mock_open)
+    def test_case_1(self, mock_chdir, mock_getcwd, mock_open):
 
-    mock_open.side_effect = FileNotFoundError
+        # Setup mocks
+        mock_getcwd.return_value = '/fake/path'
 
-    with pytest.raises(FileNotFoundError):
-        # Call the function
-        initialize('TestDataset.csv')
+        mock_open.side_effect = FileNotFoundError
 
-@patch('os.getcwd')
-@patch('os.chdir')
-@patch('builtins.open', new_callable=mock_open)
-def test_case_2(mock_chdir, mock_getcwd, mock_open, create_temp_dataset):
+        with pytest.raises(FileNotFoundError):
+            # Call the function
+            initialize('TestDataset.csv')
 
-    # Setup mocks
-    mock_getcwd.return_value = '/fake/path'
-    mock_open.side_effect = FileNotFoundError
+    @patch('os.getcwd')
+    @patch('os.chdir')
+    @patch('builtins.open', new_callable=mock_open)
+    def test_case_2(self, mock_chdir, mock_getcwd, mock_open, create_temp_dataset):
 
-    with pytest.raises(FileNotFoundError):
-        # Call the function
-        initialize(45)
+        # Setup mocks
+        mock_getcwd.return_value = '/fake/path'
+        mock_open.side_effect = FileNotFoundError
 
-@patch('os.getcwd')
-@patch('os.chdir')
-@patch('builtins.open', new_callable=mock_open)
-def test_case_3(mock_chdir, mock_getcwd, mock_open, create_temp_dataset):
+        with pytest.raises(FileNotFoundError):
+            # Call the function
+            initialize(45)
 
-    # Setup mocks
-    mock_getcwd.return_value = '/fake/path'
-    mock_open.side_effect = FileNotFoundError
+    @patch('os.getcwd')
+    @patch('os.chdir')
+    @patch('builtins.open', new_callable=mock_open)
+    def test_case_3(self, mock_chdir, mock_getcwd, mock_open, create_temp_dataset):
 
-    with pytest.raises(FileNotFoundError):
-        # Call the function
-        initialize(2)
+        # Setup mocks
+        mock_getcwd.return_value = '/fake/path'
+        mock_open.side_effect = FileNotFoundError
 
-@pytest.mark.xfail
-@patch('Dataset2.RepoMining.repo_Mining.startMiningRepo')
-@patch('builtins.open', new_callable=mock_open)
-@patch('os.getcwd')
-@patch('os.chdir')
-@patch('os.mkdir')
-def test_case_4(mock_chdir, mock_getcwd, mock_open, mock_start_mining, setup_dir):
+        with pytest.raises(FileNotFoundError):
+            # Call the function
+            initialize(2)
 
-    invalid_csv_content = ''';repo_url;commit_id;cls
-    0,https://github.com/spring-projects/spring-webflow,57f2ccb66946943fbf3b3f2165eac1c8eb6b1523,pos
-    1,https://github.com/pingidentity/ldapsdk,8471904a02438c03965d21367890276bc25fa5a6,pos,,extra_field
-    2,https://github.com/apache/camel,57d01e2fc8923263df896e9810329ee5b7f9b69,pos
-    3,https://github.com/jenkinsci/jenkins,d7ea3f40efedd50541a57b943d5f7bbed046d091
-    4,https://github.com/apache/tomcat,2835bb4e030c1c741ed0847bb3b9c3822e4fbc8a,pos
-    '''
+    @pytest.mark.xfail
+    @patch('Dataset2.RepoMining.repo_Mining.startMiningRepo')
+    @patch('builtins.open', new_callable=mock_open)
+    @patch('os.getcwd')
+    @patch('os.chdir')
+    @patch('os.mkdir')
+    def test_case_4(self, mock_chdir, mock_getcwd, mock_open, mock_start_mining):
 
-    # Setup mocks
-    mock_getcwd.return_value = '/fake/path'
-    mock_open.read_data = invalid_csv_content
+        invalid_csv_content = ''';repo_url;commit_id;cls
+        0,https://github.com/spring-projects/spring-webflow,57f2ccb66946943fbf3b3f2165eac1c8eb6b1523,pos
+        1,https://github.com/pingidentity/ldapsdk,8471904a02438c03965d21367890276bc25fa5a6,pos,,extra_field
+        2,https://github.com/apache/camel,57d01e2fc8923263df896e9810329ee5b7f9b69,pos
+        3,https://github.com/jenkinsci/jenkins,d7ea3f40efedd50541a57b943d5f7bbed046d091
+        4,https://github.com/apache/tomcat,2835bb4e030c1c741ed0847bb3b9c3822e4fbc8a,pos
+        '''
 
-    # Call the function under test
-    with pytest.raises(ValueError):
-        initialize(2)
+        # Setup mocks
+        mock_getcwd.return_value = '/fake/path'
+        mock_open.read_data = invalid_csv_content
 
-@pytest.mark.parametrize('process_data', [False], indirect=True)
-@pytest.mark.parametrize('mock_setup_repo_exist', [True], indirect=True)
-def test_case_5(mock_setup_repo_exist, process_data):
-    mock_listdir, mock_cwd, mock_mkdir, mock_op, mock_chdir, mock_start, extracted_data = mock_setup_repo_exist
+        # Call the function under test
+        with pytest.raises(ValueError):
+            initialize(2)
 
-    # Call the function to test
-    initialize('2')
+    @pytest.mark.parametrize('process_data', [False], indirect=True)
+    @pytest.mark.parametrize('mock_setup_repo_exist', [True], indirect=True)
+    def test_case_5(self, mock_setup_repo_exist, process_data):
+        mock_listdir, mock_cwd, mock_mkdir, mock_op, mock_chdir, mock_start, extracted_data = mock_setup_repo_exist
 
-    # Check if the necessary directories were created
-    mock_mkdir.assert_not_called()
+        # Call the function to test
+        initialize('2')
 
-    # Verify that startMiningRepo was called with the correct parameters
-    mock_start.assert_called_with(extracted_data, mock_cwd.return_value, 'RepositoryMining2')
+        # Check if the necessary directories were created
+        mock_mkdir.assert_not_called()
 
-@pytest.mark.parametrize('process_data', [True], indirect=True)
-@pytest.mark.parametrize('mock_setup_repo_exist', [False], indirect=True)
-def test_case_6(mock_setup_repo_exist, process_data):
-    mock_listdir, mock_cwd, mock_mkdir, mock_op, mock_chdir, mock_start, extracted_data = mock_setup_repo_exist
+        # Verify that startMiningRepo was called with the correct parameters
+        mock_start.assert_called_with(extracted_data, mock_cwd.return_value, 'RepositoryMining2')
 
-    # Call the function to test
-    initialize('2')
+    @pytest.mark.parametrize('process_data', [True], indirect=True)
+    @pytest.mark.parametrize('mock_setup_repo_exist', [False], indirect=True)
+    def test_case_6(self, mock_setup_repo_exist, process_data):
+        mock_listdir, mock_cwd, mock_mkdir, mock_op, mock_chdir, mock_start, extracted_data = mock_setup_repo_exist
 
-    # Check if the necessary directories were created
-    mock_mkdir.assert_called_with('RepositoryMining2')
+        # Call the function to test
+        initialize('2')
 
-    # Verify that startMiningRepo was called with the correct parameters
-    mock_start.assert_called_with(extracted_data, mock_cwd.return_value, 'RepositoryMining2')
+        # Check if the necessary directories were created
+        mock_mkdir.assert_called_with('RepositoryMining2')
+
+        # Verify that startMiningRepo was called with the correct parameters
+        mock_start.assert_called_with(extracted_data, mock_cwd.return_value, 'RepositoryMining2')
 
