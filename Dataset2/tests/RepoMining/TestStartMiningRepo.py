@@ -20,7 +20,7 @@ class TestStartMiningRepo:
     def test_case_1(self, os_chdir, mock_op_fail):
 
         content = {
-            'cve_id': 1,
+            'cve_id': '1',
             'repo_url': 'https://github.com/spring-projects/spring-webflow',
             'commit_id': '57f2ccb66946943fbf3b3f2165eac1c8eb6b1523',
             'cls': 'pos'
@@ -34,7 +34,6 @@ class TestStartMiningRepo:
         with pytest.raises(FileNotFoundError) as exc_info:
             startMiningRepo(data, cwd, repoName)  # Function that triggers the file operation
 
-        # Check that the exception message matches the expected file
         assert str(exc_info.value) == f"No such file or directory: '{self.CHECK_FILE_NAME}'"
 
     @patch('os.chdir')  # Mock os.chdir if needed
@@ -42,7 +41,7 @@ class TestStartMiningRepo:
     def test_case_2(self, os_chdir, mock_op_fail):
 
         content = {
-            'cve_id': 1,
+            'cve_id': '1',
             'repo_url': 'https://github.com/spring-projects/spring-webflow',
             'commit_id': '57f2ccb66946943fbf3b3f2165eac1c8eb6b1523',
             'cls': 'pos'
@@ -56,7 +55,6 @@ class TestStartMiningRepo:
         with pytest.raises(FileNotFoundError) as exc_info:
             startMiningRepo(data, cwd, repoName)  # Function that triggers the file operation
 
-        # Check that the exception message matches the expected file
         assert str(exc_info.value) == f"No such file or directory: '{self.ERR_FILE_NAME}'"
 
 
@@ -95,9 +93,8 @@ class TestStartMiningRepo:
 
         invalid_url = 'not_url'
 
-        #content missing cve_id key
         content = {
-            'cve_id': 1,
+            'cve_id': '1',
             'repo_url': invalid_url,
             'commit_id': '57f2ccb66946943fbf3b3f2165eac1c8eb6b1523',
             'cls': 'pos'
@@ -125,7 +122,6 @@ class TestStartMiningRepo:
 
         url_link_not_exist = 'https://github'
 
-        # content missing cve_id key
         content = {
             'cve_id': 1,
             'repo_url': url_link_not_exist,
@@ -139,7 +135,6 @@ class TestStartMiningRepo:
         repoName = "TestRepo"
         cwd = "/test/path"
 
-        # Trigger the code under test
         with pytest.raises(ConnectionError) as exc_info:
             startMiningRepo(data, cwd, repoName)
 
@@ -175,13 +170,11 @@ class TestStartMiningRepo:
         statusNR = "REPO NOT AVAILABLE\n"
         str_check = f"indice: 1 link repo: {content['repo_url']} status: {statusNR}"
 
-        # Ensure the mock_requests_get was called with the correct URL
         mock_requests_get.assert_called_once_with(url_repo_not_exist + ".git")
 
         check_file_mock = mock_files[self.CHECK_FILE_NAME]()
         error_file_mock = mock_files[self.ERR_FILE_NAME]()
 
-        # Alternatively, you can check if mock_file was called
         check_file_mock.write.assert_called_once_with(str_check)
         error_file_mock.write.assert_not_called()
 
@@ -219,7 +212,6 @@ class TestStartMiningRepo:
         check_file_mock = mock_files[self.CHECK_FILE_NAME]()
         error_file_mock = mock_files[self.ERR_FILE_NAME]()
 
-        # Alternatively, you can check if mock_file was called
         check_file_mock.write.assert_called_once_with(str_check)
         error_file_mock.write.assert_not_called()
 
@@ -262,7 +254,6 @@ class TestStartMiningRepo:
         check_file_mock = mock_files[self.CHECK_FILE_NAME]()
         error_file_mock = mock_files[self.ERR_FILE_NAME]()
 
-        # Alternatively, you can check if mock_file was called
         check_file_mock.write.assert_called_once_with(str_check)
         error_file_mock.write.assert_called_once_with(str_err)
 
@@ -309,7 +300,6 @@ class TestStartMiningRepo:
         check_file_mock = mock_files[self.CHECK_FILE_NAME]()
         error_file_mock = mock_files[self.ERR_FILE_NAME]()
 
-        # Alternatively, you can check if mock_file was called
         check_file_mock.write.assert_called_once_with(str_check)
         error_file_mock.write.assert_not_called()
 
@@ -355,7 +345,6 @@ class TestStartMiningRepo:
         check_file_mock = mock_files[self.CHECK_FILE_NAME]()
         error_file_mock = mock_files[self.ERR_FILE_NAME]()
 
-        # Alternatively, you can check if mock_file was called
         check_file_mock.write.assert_called_once_with(str_check)
         error_file_mock.write.assert_not_called()
 
