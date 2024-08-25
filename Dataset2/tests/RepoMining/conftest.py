@@ -120,21 +120,26 @@ def mock_files(request):
         yield mocks
 
 @pytest.fixture
-def mock_op_permission_err(request):
-    file_to_fail = request.param
+def mock_op_permission_err(request, mock_files):
+    # This will reuse the mock_files fixture
+    file_to_fail = request.param  # File that should raise FileNotFoundError
 
-    # Define a mock_open instance without conflicting variable names
-    mock = mock_open(read_data='Test data')
+    # Override the specific file to raise FileNotFoundError
+    failing_mock = mock_open()  # Create a mock instance
+    failing_mock.side_effect = PermissionError()
+
+    # Update the mock_files dictionary to use the failing mock for the specific file
+    mock_files[file_to_fail] = failing_mock
 
     def mock_open_side_effect(file, mode='r'):
-        if file == file_to_fail:
-            raise PermissionError
-        # Return the mock object for other files
-        return mock()
+        if file in mock_files:
+            return mock_files[file](file, mode)
+        # Fallback if not in mocks
+        default_mock = mock_open(read_data='Default data')
+        return default_mock()
 
-    # Patch 'builtins.open' with our mock side effect
-    with patch('builtins.open', mock_open_side_effect) as _mock_open:
-        yield mock  # Yield the file name to the test
+    with patch('builtins.open', mock_open_side_effect):
+        yield mock_files
 
 
 def create_mock_response(status_code, text=''):
@@ -316,3 +321,50 @@ def mock_os_chdir(request):
 
     with patch('os.chdir', side_effect=lambda directory: custom_chdir_side_effect(directory, path_exist)) as mock_chdir:
         yield mock_chdir
+
+
+def generate_csv_string(num_rows):
+    # Fixed data for predictable results
+    repo_urls = [
+        "r_url1",
+        "r_url2",
+        "r_url3"
+    ]
+    cls_values = ["pos", "neg"]
+
+    # Prepare predictable commit IDs
+    base_commit_id = "0a"  # Simplified commit ID base
+
+    # Use StringIO to capture CSV output as a string
+    output = io.StringIO()
+    writer = csv.writer(output, lineterminator='\r\n')  # Explicitly set line terminator
+    writer.writerow(['cve_id', 'repo_url', 'commit_id', 'cls'])  # Header
+
+    for i in range(num_rows):
+        cve_id = i
+        repo_url = repo_urls[i % len(repo_urls)]  # Cycle through repo URLs
+        commit_id = base_commit_id * (i % 4 + 1)  # Generate predictable commit IDs
+        cls = cls_values[i % len(cls_values)]  # Cycle through cls values
+
+        writer.writerow([cve_id, repo_url, commit_id, cls])
+
+    # Get the CSV string from the StringIO object
+    csv_string = output.getvalue()
+    output.close()
+
+    return csv_string
+
+@pytest.fixture
+def mock_dataset_files(request):
+    file_mocks = request.param
+    mocks = {file: mock_open(read_data=data) for file, data in file_mocks.items()}
+
+    def mock_open_side_effect(file, mode='r'):
+        if file in mocks:
+            mock_instance = mocks[file]
+            return mock_instance(file, mode)
+        default_mock = mock_open(read_data='Default data')
+        return default_mock()
+
+    with patch('builtins.open', mock_open_side_effect) as _mock_open:
+        yield mocks  # Yield the mocks and the patch object
