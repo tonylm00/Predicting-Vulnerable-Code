@@ -554,9 +554,11 @@ class TestStartMiningRepo:
         with pytest.raises(FileNotFoundError):
             startMiningRepo(data, cwd, repoName)
 
-
+    @pytest.mark.parametrize('mock_files', [
+        {'Default': None}
+    ], indirect=True)
     @pytest.mark.parametrize('mock_op_permission_err', [CHECK_FILE_NAME], indirect=True)
-    def test_case_16(self, mock_op_permission_err):
+    def test_case_16(self, mock_op_permission_err, mock_files):
 
         content = {
             'cve_id': '1',
@@ -573,8 +575,11 @@ class TestStartMiningRepo:
         with pytest.raises(PermissionError):
             startMiningRepo(data, cwd, repoName)
 
+    @pytest.mark.parametrize('mock_files', [
+        {'Default': None}
+    ], indirect=True)
     @pytest.mark.parametrize('mock_op_permission_err', [ERR_FILE_NAME], indirect=True)
-    def test_case_17(self, mock_op_permission_err):
+    def test_case_17(self, mock_op_permission_err, mock_files):
 
         content = {
             'cve_id': '1',
