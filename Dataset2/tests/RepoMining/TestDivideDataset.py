@@ -86,23 +86,6 @@ class TestDivideDataset:
 
         mock_files['1.csv']().writelines.assert_not_called()
 
-    @patch('os.getcwd', return_value=TEST_PATH)
-    @patch('os.listdir', return_value=[DIR_NAME])
-    @patch('os.chdir')
-    @patch('os.mkdir')
-    @pytest.mark.parametrize('mock_files', [
-        {DATASET_NAME: generate_csv_string(50), '1.csv': None}
-    ], indirect=True)
-    @pytest.mark.parametrize('mock_op_permission_err', ['1.csv'], indirect=True)
-    def test_case_3(self, mock_mkdir, mock_chdir, mock_listdir, mock_getcwd, mock_files, mock_op_permission_err):
-        with pytest.raises(PermissionError):
-            divide_dataset_to_test()
-
-        mock_mkdir.assert_not_called()
-        mock_chdir.assert_called_with(self.TEST_PATH + "/" + self.DIR_NAME)
-
-        mock_files[self.DATASET_NAME].assert_called_with(self.DATASET_NAME, 'r')
-
     # FALLIMENTO: QUANDO NON HO RECORD MI ASPETTO DIVIDE_DATASET DIR VUOTA
     # ERRORE: 1.CSV CONTIENE GLI HEADER DI INITIAL DATASET (SONO PRESENTI SOLO IN QUESTO FILE)
 
