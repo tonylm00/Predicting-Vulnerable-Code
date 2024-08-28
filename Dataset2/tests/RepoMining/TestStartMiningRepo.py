@@ -14,10 +14,13 @@ class TestStartMiningRepo:
     CHECK_FILE_NAME = 'CHECK.txt'
     ERR_FILE_NAME = 'ERRORS.txt'
 
+    CWD = '/test/path'
 
-    @patch('os.chdir')  # Mock os.chdir if needed
+
+    @patch('os.mkdir')
+    @patch('os.chdir')
     @pytest.mark.parametrize('mock_op_fail', [CHECK_FILE_NAME], indirect=True)
-    def test_case_1(self, os_chdir, mock_op_fail):
+    def test_case_1(self, mock_chdir, mock_mkdir, mock_op_fail):
 
         content = {
             'cve_id': '1',
@@ -29,16 +32,20 @@ class TestStartMiningRepo:
         data[0] = content
 
         repoName = "TestRepo"
-        cwd = "/test/path"
 
         with pytest.raises(FileNotFoundError) as exc_info:
-            startMiningRepo(data, cwd, repoName)  # Function that triggers the file operation
+            startMiningRepo(data, self.CWD, repoName)  # Function that triggers the file operation
 
         assert str(exc_info.value) == f"No such file or directory: '{self.CHECK_FILE_NAME}'"
 
+        mock_chdir.assert_not_called()
+
+        mock_mkdir.assert_not_called()
+
+    @patch('os.mkdir')  # Mock os.chdir if needed
     @patch('os.chdir')  # Mock os.chdir if needed
     @pytest.mark.parametrize('mock_op_fail', [ERR_FILE_NAME], indirect=True)
-    def test_case_2(self, os_chdir, mock_op_fail):
+    def test_case_2(self, mock_chdir, mock_mkdir, mock_op_fail):
 
         content = {
             'cve_id': '1',
@@ -50,19 +57,23 @@ class TestStartMiningRepo:
         data[0] = content
 
         repoName = "TestRepo"
-        cwd = "/test/path"
 
         with pytest.raises(FileNotFoundError) as exc_info:
-            startMiningRepo(data, cwd, repoName)  # Function that triggers the file operation
+            startMiningRepo(data, self.CWD, repoName)  # Function that triggers the file operation
 
         assert str(exc_info.value) == f"No such file or directory: '{self.ERR_FILE_NAME}'"
 
+        mock_chdir.assert_not_called()
 
+        mock_mkdir.assert_not_called()
+
+
+    @patch('os.mkdir')  # Mock os.chdir if needed
     @patch('os.chdir')  # Mock os.chdir if needed
     @pytest.mark.parametrize('mock_files', [
         {CHECK_FILE_NAME: 'File1 content', ERR_FILE_NAME: 'File2 content'}
     ], indirect=True)
-    def test_case_3(self, os_chdir, mock_files):
+    def test_case_3(self, mock_chdir, mock_mkdir, mock_files):
 
         #content missing cve_id key
         content = {
@@ -75,21 +86,25 @@ class TestStartMiningRepo:
         data[0] = content
 
         repoName = "TestRepo"
-        cwd = "/test/path"
 
         with pytest.raises(KeyError) as exc_info:
-            startMiningRepo(data, cwd, repoName)  # Function that triggers the file operation
+            startMiningRepo(data, self.CWD, repoName)  # Function that triggers the file operation
 
         assert 'cve_id' in str(exc_info.value)
 
+        mock_chdir.assert_not_called()
+
+        mock_mkdir.assert_not_called()
+
 
     # WHEN THE LINK IS NOT VALID, I GOT MISSINGSCHEMA
+    @patch('os.mkdir')
     @patch('os.chdir')
     @pytest.mark.parametrize('mock_files', [
         {CHECK_FILE_NAME: 'File1 content', ERR_FILE_NAME: 'File2 content'}
     ], indirect=True)
     @pytest.mark.parametrize('mock_requests_get', [(False, False, False, False)], indirect=True)
-    def test_case_4(self, os_chdir, mock_files, mock_requests_get):
+    def test_case_4(self, mock_chdir, mock_mkdir, mock_files, mock_requests_get):
 
         invalid_url = 'not_url'
 
@@ -104,21 +119,25 @@ class TestStartMiningRepo:
         data[0] = content
 
         repoName = "TestRepo"
-        cwd = "/test/path"
 
         with pytest.raises(MissingSchema) as exc_info:
-            startMiningRepo(data, cwd, repoName)
+            startMiningRepo(data, self.CWD, repoName)
 
         assert 'Invalid URL' in str(exc_info.value) and invalid_url + '.git' in str(exc_info.value)
 
+        mock_chdir.assert_not_called()
+
+        mock_mkdir.assert_not_called()
+
 
     # WHEN THE LINK IS VALID BUT IT DOES NOT REFER TO AN EXISTING HOST, I GOT CONNECTIONERROR
+    @patch('os.mkdir')
     @patch('os.chdir')
     @pytest.mark.parametrize('mock_files', [
         {CHECK_FILE_NAME: 'File1 content', ERR_FILE_NAME: 'File2 content'}
     ], indirect=True)
     @pytest.mark.parametrize('mock_requests_get', [(True, False, False, False)], indirect=True)
-    def test_case_5(self, os_chdir, mock_files, mock_requests_get):
+    def test_case_5(self, mock_chdir, mock_mkdir, mock_files, mock_requests_get):
 
         url_link_not_exist = 'https://github'
 
@@ -133,23 +152,27 @@ class TestStartMiningRepo:
         data[0] = content
 
         repoName = "TestRepo"
-        cwd = "/test/path"
 
         with pytest.raises(ConnectionError) as exc_info:
-            startMiningRepo(data, cwd, repoName)
+            startMiningRepo(data, self.CWD, repoName)
 
         parsed_url = urlparse(url_link_not_exist)
         host_with_port = parsed_url.netloc
         host = host_with_port.split(':')[0]
 
+        mock_chdir.assert_not_called()
+
+        mock_mkdir.assert_not_called()
 
         assert 'ConnectionError' in str(exc_info) and host in str(exc_info.value)
 
+    @patch('os.mkdir')
+    @patch('os.chdir')
     @pytest.mark.parametrize('mock_files', [
         {CHECK_FILE_NAME: 'File1 content', ERR_FILE_NAME: 'File2 content'}
     ], indirect=True)
     @pytest.mark.parametrize('mock_requests_get', [(True, True, False, False)], indirect=True)
-    def test_case_6(self, mock_files, mock_requests_get):
+    def test_case_6(self, mock_chdir, mock_mkdir, mock_files, mock_requests_get):
 
         url_repo_not_exist = 'https://github.com/repo_not_found'
 
@@ -163,14 +186,17 @@ class TestStartMiningRepo:
         data = {0: content}
 
         repoName = "TestRepo"
-        cwd = "/test/path"
 
-        startMiningRepo(data, cwd, repoName)
+        startMiningRepo(data, self.CWD, repoName)
 
         statusNR = "REPO NOT AVAILABLE\n"
         str_check = f"indice: 1 link repo: {content['repo_url']} status: {statusNR}"
 
         mock_requests_get.assert_called_once_with(url_repo_not_exist + ".git")
+
+        mock_chdir.assert_not_called()
+
+        mock_mkdir.assert_not_called()
 
         check_file_mock = mock_files[self.CHECK_FILE_NAME]()
         error_file_mock = mock_files[self.ERR_FILE_NAME]()
@@ -178,11 +204,15 @@ class TestStartMiningRepo:
         check_file_mock.write.assert_called_once_with(str_check)
         error_file_mock.write.assert_not_called()
 
+
+
+    @patch('os.mkdir')
+    @patch('os.chdir')
     @pytest.mark.parametrize('mock_files', [
         {CHECK_FILE_NAME: 'File1 content', ERR_FILE_NAME: 'File2 content'}
     ], indirect=True)
     @pytest.mark.parametrize('mock_requests_get', [(True, True, True, False)], indirect=True)
-    def test_case_7(self, mock_files, mock_requests_get):
+    def test_case_7(self, mock_chdir, mock_mkdir, mock_files, mock_requests_get):
 
         url_repo_exist = 'https://github.com/spring-projects/spring-webflow'
         commit_not_exist = '1200fh3'
@@ -197,9 +227,8 @@ class TestStartMiningRepo:
         data = {0: content}
 
         repoName = "TestRepo"
-        cwd = "/test/path"
 
-        startMiningRepo(data, cwd, repoName)
+        startMiningRepo(data, self.CWD, repoName)
 
         statusNE = "NOT EXIST COMMIT\n"
         str_check = f"indice: 1 link repo: {content['repo_url']} status: {statusNE}"
@@ -209,18 +238,24 @@ class TestStartMiningRepo:
             call(url_repo_exist +"/commit/"+commit_not_exist )
         ])
 
+        mock_chdir.assert_not_called()
+
+        mock_mkdir.assert_not_called()
+
         check_file_mock = mock_files[self.CHECK_FILE_NAME]()
         error_file_mock = mock_files[self.ERR_FILE_NAME]()
 
         check_file_mock.write.assert_called_once_with(str_check)
         error_file_mock.write.assert_not_called()
 
+    @patch('os.mkdir')
+    @patch('os.chdir')
     @pytest.mark.parametrize('mock_files', [
         {CHECK_FILE_NAME: 'File1 content', ERR_FILE_NAME: 'File2 content'}
     ], indirect=True)
     @pytest.mark.parametrize('mock_requests_get', [(True, True, True, True)], indirect=True)
     @pytest.mark.parametrize('mock_repo_mining', [(False, False, False, False)], indirect=True)
-    def test_case_8(self, mock_files, mock_requests_get, mock_repo_mining):
+    def test_case_8(self, mock_chdir, mock_mkdir, mock_files, mock_requests_get, mock_repo_mining):
 
         url_repo_exist = 'https://github.com/apache/poi'
         commit_exist = 'd72bd78c19dfb7b57395a66ae8d9269d59a87bd2'
@@ -235,9 +270,8 @@ class TestStartMiningRepo:
         data = {0: content}
 
         repoName = "TestRepo"
-        cwd = "/test/path"
 
-        startMiningRepo(data, cwd, repoName)
+        startMiningRepo(data, self.CWD, repoName)
 
         statusVE = "VALUE ERROR! COMMIT HASH NOT EXISTS\n"
         str_check = f"indice: 1 link repo: {content['repo_url']} status: " + statusVE
@@ -250,6 +284,10 @@ class TestStartMiningRepo:
         ])
 
         mock_repo_mining.assert_called_once_with(url_repo_exist + '.git', commit_exist)
+
+        mock_chdir.assert_not_called()
+
+        mock_mkdir.assert_not_called()
 
         check_file_mock = mock_files[self.CHECK_FILE_NAME]()
         error_file_mock = mock_files[self.ERR_FILE_NAME]()
@@ -280,9 +318,8 @@ class TestStartMiningRepo:
         data = {0: content}
 
         repoName = "TestRepo"
-        cwd = "/test/path"
 
-        startMiningRepo(data, cwd, repoName)
+        startMiningRepo(data, self.CWD, repoName)
 
         statusOK = "OK!\n"
         str_check = f"indice: 1 link repo: {content['repo_url']} status: " + statusOK
@@ -296,6 +333,8 @@ class TestStartMiningRepo:
         mock_repo_mining.assert_called_once_with(url_repo_exist + '.git', commit_exist)
 
         mock_mkdir.assert_not_called()
+
+        mock_chdir.assert_not_called()
 
         check_file_mock = mock_files[self.CHECK_FILE_NAME]()
         error_file_mock = mock_files[self.ERR_FILE_NAME]()
@@ -325,9 +364,8 @@ class TestStartMiningRepo:
         data = {0: content}
 
         repoName = "TestRepo"
-        cwd = "/test/path"
 
-        startMiningRepo(data, cwd, repoName)
+        startMiningRepo(data, self.CWD, repoName)
 
         statusOK = "OK!\n"
         str_check = f"indice: 1 link repo: {content['repo_url']} status: " + statusOK
@@ -341,6 +379,8 @@ class TestStartMiningRepo:
         mock_repo_mining.assert_called_once_with(url_repo_exist + '.git', commit_exist)
 
         mock_mkdir.assert_not_called()
+
+        mock_chdir.assert_not_called()
 
         check_file_mock = mock_files[self.CHECK_FILE_NAME]()
         error_file_mock = mock_files[self.ERR_FILE_NAME]()
@@ -374,9 +414,9 @@ class TestStartMiningRepo:
         data = {0: content}
 
         repoName = "TestRepo"
-        cwd = "/test/path"
 
-        startMiningRepo(data, cwd, repoName)
+
+        startMiningRepo(data, self.CWD, repoName)
 
         statusOK = "OK!\n"
         str_check = f"indice: 1 link repo: {content['repo_url']} status: " + statusOK
@@ -393,6 +433,13 @@ class TestStartMiningRepo:
             call(cve_id),
             call(commit_id)
         ])
+
+        expected_chdir_calls = [
+            call(cve_id),
+            call(commit_id),
+            call(self.CWD + "/" + repoName)
+        ]
+        mock_chdir.assert_has_calls(expected_chdir_calls, any_order=False)
 
         mock_files['file1.java'].assert_not_called()
 
@@ -429,9 +476,8 @@ class TestStartMiningRepo:
         data = {0: content}
 
         repoName = "TestRepo"
-        cwd = "test/path"
 
-        startMiningRepo(data, cwd, repoName)
+        startMiningRepo(data, self.CWD, repoName)
 
         statusOK = "OK!\n"
         str_check = f"indice: 1 link repo: {content['repo_url']} status: " + statusOK
@@ -444,9 +490,14 @@ class TestStartMiningRepo:
 
         mock_repo_mining.assert_called_once_with(url_repo_exist + '.git', commit_id)
 
-        # Access the modifications from traverse_commits
-        modifications = mock_repo_mining.traverse_commits()[0].modifications
-        first_mod = modifications[0]
+        mock_mkdir.assert_not_called()
+
+        expected_chdir_calls = [
+            call(cve_id),
+            call(commit_id),
+            call(self.CWD + "/" + repoName)
+        ]
+        mock_chdir.assert_has_calls(expected_chdir_calls, any_order=False)
 
         file_java_mock = mock_files['file1.java']()
 
@@ -455,7 +506,6 @@ class TestStartMiningRepo:
         check_file_mock = mock_files[self.CHECK_FILE_NAME]()
         error_file_mock = mock_files[self.ERR_FILE_NAME]()
 
-        # Alternatively, you can check if mock_file was called
         check_file_mock.write.assert_called_once_with(str_check)
         error_file_mock.write.assert_not_called()
 
@@ -469,7 +519,7 @@ class TestStartMiningRepo:
         {"cve_id": '1', "cve_id_exists": True, "commit_id": 'd72bd78c19dfb7b57395a66ae8d9269d59a87bd2' , "commit_exists": True}
     ]
         , indirect=True)
-    @pytest.mark.parametrize('mock_os_chdir', [{'check_path_exist': True}], indirect=True)
+    @pytest.mark.parametrize('mock_os_chdir', [{'error_path': None}], indirect=True)
     def test_case_13(self, mock_mkdir, mock_files, mock_requests_get, mock_repo_mining, mock_os_listdir, mock_os_chdir):
         mock_list, cve_id, commit_id = mock_os_listdir
 
@@ -485,10 +535,19 @@ class TestStartMiningRepo:
         data = {0: content}
 
         repoName = 1
-        cwd = 22
+        wrong_cwd = 22
 
         with pytest.raises(TypeError):
-            startMiningRepo(data, cwd, repoName)
+            startMiningRepo(data, wrong_cwd, repoName)
+
+        mock_mkdir.assert_not_called()
+
+        expected_chdir_calls = [
+            call(cve_id),
+            call(commit_id)
+        ]
+
+        mock_os_chdir.assert_has_calls(expected_chdir_calls, any_order=False)
 
     @patch('os.mkdir')
     @pytest.mark.parametrize('mock_files', [
@@ -500,7 +559,7 @@ class TestStartMiningRepo:
         {"cve_id": '1', "cve_id_exists": True, "commit_id": 'd72bd78c19dfb7b57395a66ae8d9269d59a87bd2' , "commit_exists": True}
     ]
         , indirect=True)
-    @pytest.mark.parametrize('mock_os_chdir', [{'check_path_exist': True}], indirect=True)
+    @pytest.mark.parametrize('mock_os_chdir', [{'error_path': None}], indirect=True)
     def test_case_14(self, mock_mkdir, mock_files, mock_requests_get, mock_repo_mining, mock_os_listdir, mock_os_chdir):
         mock_list, cve_id, commit_id = mock_os_listdir
 
@@ -516,12 +575,22 @@ class TestStartMiningRepo:
         data = {0: content}
 
         repoName = ':>'
-        cwd = "3>/path"
+        wrong_cwd = "3>/path"
 
         with pytest.raises(OSError) as exc_info:
-            startMiningRepo(data, cwd, repoName)
+            startMiningRepo(data, wrong_cwd, repoName)
 
         assert 'Invalid directory format' in str(exc_info.value)
+
+        mock_mkdir.assert_not_called()
+
+        expected_chdir_calls = [
+            call(cve_id),
+            call(commit_id),
+            call(wrong_cwd + "/" + repoName)
+        ]
+
+        mock_os_chdir.assert_has_calls(expected_chdir_calls, any_order=False)
 
     @patch('os.mkdir')
     @pytest.mark.parametrize('mock_files', [
@@ -533,7 +602,7 @@ class TestStartMiningRepo:
         {"cve_id": '1', "cve_id_exists": True, "commit_id": 'd72bd78c19dfb7b57395a66ae8d9269d59a87bd2' , "commit_exists": True}
     ]
         , indirect=True)
-    @pytest.mark.parametrize('mock_os_chdir', [{'check_path_exist': False}], indirect=True)
+    @pytest.mark.parametrize('mock_os_chdir', [{'check_path_exist': False, 'error_path': CWD + "/" + 'test'}], indirect=True)
     def test_case_15(self, mock_mkdir, mock_files, mock_requests_get, mock_repo_mining, mock_os_listdir, mock_os_chdir):
         mock_list, cve_id, commit_id = mock_os_listdir
 
@@ -549,16 +618,27 @@ class TestStartMiningRepo:
         data = {0: content}
 
         repoName = 'test'
-        cwd = "path/to"
 
         with pytest.raises(FileNotFoundError):
-            startMiningRepo(data, cwd, repoName)
+            startMiningRepo(data, self.CWD, repoName)
 
+        mock_mkdir.assert_not_called()
+
+        expected_chdir_calls = [
+            call(cve_id),
+            call(commit_id),
+            call(self.CWD + "/" + repoName)
+        ]
+
+        mock_os_chdir.assert_has_calls(expected_chdir_calls, any_order=False)
+
+    @patch('os.mkdir')
+    @patch('os.chdir')
     @pytest.mark.parametrize('mock_files', [
         {'Default': None}
     ], indirect=True)
     @pytest.mark.parametrize('mock_op_permission_err', [CHECK_FILE_NAME], indirect=True)
-    def test_case_16(self, mock_op_permission_err, mock_files):
+    def test_case_16(self, mock_chdir, mock_mkdir, mock_op_permission_err, mock_files):
 
         content = {
             'cve_id': '1',
@@ -570,16 +650,22 @@ class TestStartMiningRepo:
         data = {0: content}
 
         repoName = 'test'
-        cwd = "path/to"
+
 
         with pytest.raises(PermissionError):
-            startMiningRepo(data, cwd, repoName)
+            startMiningRepo(data, self.CWD, repoName)
 
+        mock_mkdir.assert_not_called()
+
+        mock_chdir.assert_not_called()
+
+    @patch('os.mkdir')
+    @patch('os.chdir')
     @pytest.mark.parametrize('mock_files', [
         {'Default': None}
     ], indirect=True)
     @pytest.mark.parametrize('mock_op_permission_err', [ERR_FILE_NAME], indirect=True)
-    def test_case_17(self, mock_op_permission_err, mock_files):
+    def test_case_17(self, mock_chdir, mock_mkdir, mock_op_permission_err, mock_files):
 
         content = {
             'cve_id': '1',
@@ -591,8 +677,12 @@ class TestStartMiningRepo:
         data = {0: content}
 
         repoName = 'test'
-        cwd = "path/to"
+
 
         with pytest.raises(PermissionError):
-            startMiningRepo(data, cwd, repoName)
+            startMiningRepo(data, self.CWD, repoName)
+
+        mock_mkdir.assert_not_called()
+
+        mock_chdir.assert_not_called()
 

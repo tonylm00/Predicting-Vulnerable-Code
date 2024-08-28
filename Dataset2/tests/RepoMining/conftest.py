@@ -300,11 +300,13 @@ def is_admissible_directory_name(name):
     return True
 
 
-def custom_chdir_side_effect(directory, path_exist):
-    if not path_exist:
-        raise FileNotFoundError("Directory does not exist")
+def custom_chdir_side_effect(directory, error_path=None):
 
     if isinstance(directory, str):
+        if directory == error_path:
+            print("DIR TO FAIL:" + directory)
+            raise FileNotFoundError(f"No such file or directory: '{directory}'")
+
         if not is_admissible_directory_name(directory):
             raise OSError("Invalid directory format")
         # If valid and path exists, simulate normal behavior
@@ -317,9 +319,11 @@ def custom_chdir_side_effect(directory, path_exist):
 @pytest.fixture
 def mock_os_chdir(request):
     params = request.param
-    path_exist = params.get("check_path_exist", True)
+    error_path = params.get("error_path", None)
 
-    with patch('os.chdir', side_effect=lambda directory: custom_chdir_side_effect(directory, path_exist)) as mock_chdir:
+    # Update the lambda function to include error_path
+    with patch('os.chdir',
+               side_effect=lambda directory: custom_chdir_side_effect(directory, error_path)) as mock_chdir:
         yield mock_chdir
 
 
