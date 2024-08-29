@@ -158,12 +158,8 @@ class TestSplitCamelCase:
         with pytest.raises(TypeError):
             splitCamelCase(input_dict)
 
-    def test_case_8(self):
-        input_dict = ['ad', 1]
-        with pytest.raises(TypeError):
-            splitCamelCase(input_dict)
 
-    def test_case_9(self):
+    def test_case_8(self):
         input_dict = {
              1: 2,
             'AnotherCaseTest': 3,
@@ -171,6 +167,13 @@ class TestSplitCamelCase:
         }
         with pytest.raises(TypeError):
             splitCamelCase(input_dict)
+
+    def test_case_9(self):
+        input_dict = ['ad', 1]
+        with pytest.raises(TypeError):
+            splitCamelCase(input_dict)
+
+
 
 class TestWriteToFile:
     @pytest.mark.parametrize('mock_open_file', [{'file_to_fail': 'FilteredTextMining.txt', 'error_type': 'PermissionError'}], indirect=True)
@@ -209,12 +212,12 @@ class TestWriteToFile:
     @pytest.mark.parametrize('mock_open_file', [{}], indirect=True)
     def test_case_6(self, mock_open_file):
         writeToFile({
-            'lowercase': None,
+            1: None,
             'uppercase': 2,
             '2': 'ciao'
         })
         mock_open_file.assert_called_once_with('FilteredTextMining.txt', 'w+')
-        mock_open_file().write.assert_called_once_with("{'lowercase': None, 'uppercase': 2, '2': 'ciao'}")
+        mock_open_file().write.assert_called_once_with("{1: None, 'uppercase': 2, '2': 'ciao'}")
 
     @pytest.mark.parametrize('mock_open_file',
                              [{'file_to_fail': 'FilteredTextMining.txt', 'error_on_write': PermissionError}],
@@ -222,9 +225,24 @@ class TestWriteToFile:
     def test_case_7(self, mock_open_file):
         with pytest.raises(PermissionError):
             writeToFile({
-            'lowercase': None,
+            1: None,
             'uppercase': 2,
             '2': 'ciao'
         })
+
+        mock_open_file.assert_called_once_with('FilteredTextMining.txt', 'w+')
+
+    @pytest.mark.parametrize('mock_open_file', [{}], indirect=True)
+    def test_case_8(self, mock_open_file):
+        writeToFile(['prova', 'tipologia', 'diversa'])
+        mock_open_file.assert_called_once_with('FilteredTextMining.txt', 'w+')
+        mock_open_file().write.assert_called_once_with("['prova', 'tipologia', 'diversa']")
+
+    @pytest.mark.parametrize('mock_open_file',
+                             [{'file_to_fail': 'FilteredTextMining.txt', 'error_on_write': PermissionError}],
+                             indirect=True)
+    def test_case_9(self, mock_open_file):
+        with pytest.raises(PermissionError):
+            writeToFile(['prova', 'tipologia', 'diversa'])
 
         mock_open_file.assert_called_once_with('FilteredTextMining.txt', 'w+')
