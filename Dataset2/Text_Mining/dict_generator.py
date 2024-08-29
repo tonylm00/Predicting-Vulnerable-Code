@@ -40,6 +40,7 @@ def main():
 	dict_file=open(dict_file_name,"w+")
 	dict_file.write(str(tm_dict))
 	dict_file.close()
+	print(str(tm_dict))
 	print("BUILD SUCCESS !")
 	count = 0
 	for key in tm_dict:

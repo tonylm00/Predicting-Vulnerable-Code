@@ -47,6 +47,7 @@ def takeJavaClass(java_file_name):
 		text=removeComments(java_file)
 		for line in text.splitlines():
 			current = stringTokenizer(line)
+			print(current)
 			final+=current
 			for eachElem in current:
 				if eachElem in dic:

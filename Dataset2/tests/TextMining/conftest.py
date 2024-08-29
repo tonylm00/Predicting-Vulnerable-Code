@@ -85,12 +85,13 @@ def mock_chdir(request):
     def mock_chdir_side_effect(path):
         if path.endswith(path_to_fail):
             if error_type == 'FileNotFoundError':
-                raise FileNotFoundError(f"No such file or directory: '{path}'")
+                raise FileNotFoundError(f"No such directory: '{path}'")
 
         return None
 
     with patch('os.chdir', side_effect=mock_chdir_side_effect):
         yield
+
 
 @pytest.fixture
 def mock_listdir(request):
@@ -135,7 +136,7 @@ def mock_file_system(request):
     fs['/Predicting-Vulnerable-Code/Dataset2/Text_Mining'] = []
     fs['/Predicting-Vulnerable-Code/Dataset2'] = ['mining_results']
 
-    for i in range(2, 36):
+    for i in range(1, 36):
         repo = f'RepositoryMining{i}'
         fs['/Predicting-Vulnerable-Code/Dataset2/mining_results'].append(repo)
 
@@ -239,6 +240,6 @@ def mock_os_functions(mock_file_system, request):
     with patch('os.getcwd', mock_getcwd), \
             patch('os.chdir', mock_chdir), \
             patch('os.listdir', mock_listdir), \
-            patch('builtins.open', mocked_open):
-        yield
+            patch('builtins.open', mocked_open) as mocked_open_func:
+        yield mocked_open_func
 

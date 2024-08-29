@@ -1,8 +1,5 @@
 import pytest
-from unittest.mock import patch, mock_open, Mock, call
-from urllib.parse import urlparse
-from requests.exceptions import MissingSchema
-from requests.exceptions import ConnectionError
+from unittest.mock import patch, mock_open
 from Dataset2.Text_Mining.less_element_text_mining import initialize, splitCamelCase, writeToFile
 
 class TestInitialize:
