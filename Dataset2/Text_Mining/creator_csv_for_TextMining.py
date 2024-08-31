@@ -1,7 +1,7 @@
 import ast
 import os
 import random
-import less_element_text_mining #CamelCase splitting module
+from . import less_element_text_mining #CamelCase splitting module
 '''
 This script takes the "FilteredTextMining" dictionary and every single text mining file to perform a new dataset 
 that contains the frequency analysis for each java class that contains that word.

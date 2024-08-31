@@ -3,7 +3,6 @@ from unittest.mock import patch, mock_open
 from Dataset2.Text_Mining.less_element_text_mining import initialize, splitCamelCase, writeToFile
 
 class TestInitialize:
-
     @pytest.mark.parametrize('mock_chdir', [{'path_to_fail': 'mining_results', 'error_type': 'FileNotFoundError'}], indirect=True)
     @pytest.mark.parametrize('mock_getcwd', [{'path_to_return': '/Predicting-Vulnerable-Code/Dataset2/Text_Mining'}], indirect=True)
     def test_case_1(self, mock_chdir, mock_getcwd):

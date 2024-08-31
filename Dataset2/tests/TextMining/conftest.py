@@ -43,14 +43,12 @@ def mock_open_file(request):
             elif error_type == 'IsADirectoryError':
                 raise IsADirectoryError
         file_mock = mock(file, mode)
-        if 'w' in mode and error_on_write:
-            # Simula un errore durante la scrittura
-            file_mock.write.side_effect = error_on_write
-        """
+
         if 'w' in mode:
             # Simula un errore durante la scrittura se richiesto
             if error_on_write:
                 file_mock.write.side_effect = error_on_write
+
             # Verifica il tipo del parametro passato a write
             original_write = file_mock.write
 
@@ -59,8 +57,9 @@ def mock_open_file(request):
                     raise TypeError("Il parametro deve essere una stringa")
                 return original_write(content)
 
-            file_mock.write = write_with_type_check
-        """
+            # Sovrascrivi il metodo write con una versione mockata del controllo del tipo
+            file_mock.write = MagicMock(side_effect=write_with_type_check)
+
         return file_mock
 
     with patch('builtins.open', mock_open_side_effect):
@@ -156,7 +155,6 @@ def mock_file_system(request):
             fs[f'/Predicting-Vulnerable-Code/Dataset2/mining_results/{repo}/{cvd_id}/{folder}'] = [file]
     return fs
 
-
 @pytest.fixture
 def mock_os_functions(mock_file_system, request):
     """
@@ -164,14 +162,17 @@ def mock_os_functions(mock_file_system, request):
     basandosi sulla struttura del file system mockata.
     """
     type_error = request.param.get('type_error', '')
-    file_content = request.param.get('file_content', '')
+    file_contents = request.param.get('file_contents', {})
+    file_to_fail = request.param.get('file_to_fail', None)
     current_dir = ['/Predicting-Vulnerable-Code/Dataset2/Text_Mining']
 
     def mock_getcwd():
         return current_dir[0]
 
+    chdir_mock = MagicMock()
     def mock_chdir(path):
         nonlocal current_dir
+        chdir_mock(path)
         # Supportiamo solo percorsi assoluti per semplicità
         if path.startswith('/'):
             new_path = path
@@ -201,45 +202,44 @@ def mock_os_functions(mock_file_system, request):
             raise FileNotFoundError(f"No such directory: '{path}'")
         return mock_file_system[path][:]
 
-    def mocked_open(file, mode='r', *args, **kwargs):
-        # Simuliamo l'apertura dei file basandoci sul percorso corrente
-        if type_error == "access_error":
-            raise PermissionError
-        if type_error == "directory_error":
-            raise IsADirectoryError
+    mock = mock_open()
 
+    def mocked_open(file, mode='r'):
         path = f"{current_dir[0].rstrip('/')}"
-        #file_path = f"{path}/{file}"
-
+        # Simuliamo l'apertura dei file basandoci sul percorso corrente
         if 'r' in mode:
+            if file == file_to_fail:
+                if type_error == "access_error":
+                    raise PermissionError
+                if type_error == "directory_error":
+                    raise IsADirectoryError
             if file not in mock_file_system[path]:
                 raise FileNotFoundError(f"No such file: '{file}'")
-            file_data = file_content
-            m = mock_open(read_data=file_data).return_value
-            m.read.return_value = file_data
-            return m
-        elif 'w' in mode or 'a' in mode:
-            m = mock_open().return_value
 
-            def write(data):
+        file_mock = mock(file, mode)
+        file_mock.read = MagicMock(return_value=file_contents.get(file, ''))
+
+        if 'w' in mode or 'a' in mode:
+            if file == file_to_fail:
                 if type_error == "perm_error":
                     raise PermissionError
                 elif type_error == "value_error":
                     raise TypeError
+
+            original_write = file_mock.write
+            def write(data):
                 if path in mock_file_system:
                     mock_file_system[path].append(file)
                 else:
                     mock_file_system[path] = [file]
-                m.write.called_with = data  # per verificare successivamente
+                return original_write(data)
 
-            m.write.side_effect = write
-            return m
-        else:
-            return mock_open()(file, mode, *args, **kwargs)
+            file_mock.write = MagicMock(side_effect=write)
+
+        return file_mock
 
     with patch('os.getcwd', mock_getcwd), \
             patch('os.chdir', mock_chdir), \
             patch('os.listdir', mock_listdir), \
-            patch('builtins.open', mocked_open) as mocked_open_func:
-        yield mocked_open_func
-
+            patch('builtins.open', new=mocked_open):
+        yield chdir_mock, mock
