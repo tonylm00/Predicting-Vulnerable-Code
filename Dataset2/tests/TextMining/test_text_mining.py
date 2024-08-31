@@ -210,9 +210,12 @@ class TestMain:
         indirect=True
     )
     def test_case_3(self, mock_file_system, mock_os_functions):
-
-        # Eseguiamo main. In questo caso, main dovrebbe attraversare la directory senza errori, ma non fare nulla.
+        mock_chdir, mock_open = mock_os_functions
         main()
+
+        text_mining_absent = all("text_mining.txt" not in call[0][0] for call in mock_open.call_args_list)
+        assert text_mining_absent, "La sottostringa 'text_mining.txt' è presente nelle chiamate a open."
+        assert mock_chdir.call_count == 70
         assert mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2'] == [], f"è stato creato il file di test_mining"
 
     @pytest.mark.parametrize(
@@ -223,8 +226,10 @@ class TestMain:
         indirect=True
     )
     def test_case_4(self, mock_file_system, mock_os_functions):
+        mock_chdir, mock_open = mock_os_functions
         with pytest.raises(NotADirectoryError,match=r"Not a directory: 'file.txt'"):
             main()
+        assert mock_chdir.call_count == 4
 
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
@@ -234,10 +239,12 @@ class TestMain:
         indirect=True
     )
     def test_case_5(self, mock_file_system, mock_os_functions):
+        mock_chdir, mock_open = mock_os_functions
         main()
         for files in mock_file_system.values():
             for file in files:
                 assert not file.endswith("text_mining.txt"), f"File ending with 'text_mining.txt' found: {file}"
+        assert mock_chdir.call_count == 70
 
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
@@ -247,7 +254,11 @@ class TestMain:
         indirect=True
     )
     def test_case_6(self, mock_file_system, mock_os_functions):
+        mock_chdir, mock_open = mock_os_functions
         main()
+        text_mining_absent = all("text_mining.txt" not in call[0][0] for call in mock_open.call_args_list)
+        assert text_mining_absent, "La sottostringa 'text_mining.txt' è presente nelle chiamate a open."
+        assert mock_chdir.call_count == 138
         assert mock_file_system[
                    '/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id1'] == [], f"è stato creato il file di test_mining"
 
@@ -259,8 +270,10 @@ class TestMain:
         indirect=True
     )
     def test_case_7(self, mock_file_system, mock_os_functions):
+        mock_chdir, _ = mock_os_functions
         with pytest.raises(NotADirectoryError, match=r"Not a directory: 'file.txt'"):
             main()
+        assert mock_chdir.call_count == 5
 
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
@@ -270,10 +283,12 @@ class TestMain:
         indirect=True
     )
     def test_case_8(self, mock_file_system, mock_os_functions):
+        mock_chdir, mock_open = mock_os_functions
         main()
         for files in mock_file_system.values():
             for file in files:
                 assert not file.endswith("text_mining.txt"), f"File ending with 'text_mining.txt' found: {file}"
+        assert mock_chdir.call_count == 138
 
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
@@ -283,7 +298,13 @@ class TestMain:
         indirect=True
     )
     def test_case_9(self, mock_file_system, mock_os_functions):
+        mock_chdir, mock_open = mock_os_functions
         main()
+
+        text_mining_absent = all("text_mining.txt" not in call[0][0] for call in mock_open.call_args_list)
+        assert text_mining_absent, "La sottostringa 'text_mining.txt' è presente nelle chiamate a open."
+
+        assert mock_chdir.call_count == 206
         assert mock_file_system[
                    '/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id1/folder1'] == [], f"è stato creato il file di test_mining"
 
@@ -291,7 +312,7 @@ class TestMain:
         'mock_file_system, mock_os_functions',
         [
             ({'repo_empty': 2, 'cvd_id_empty': 2, 'folder_empty': 2, 'cvd_id': "cvd_id1", 'folder': "folder1", 'file':'Example.java'},
-             {'file_content': '''
+             {'file_contents': {'Example.java': '''
             public class Test { 
                 /* This is a comment */ 
                 public static void main(String[] args) { 
@@ -299,25 +320,27 @@ class TestMain:
                     System.out.println("Hello World"); /* Inline comment */
                 } 
             }
-            '''}
+            '''}}
             )
         ],
         indirect=True
     )
     def test_case_10(self, mock_file_system, mock_os_functions):
+        mock_chdir, _ = mock_os_functions
         main()
 
         # Verifichiamo che il file di text mining sia stato creato
         expected_file = 'Example.java_text_mining.txt'
         assert expected_file in mock_file_system[
             '/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id1/folder1'], f"Il file {expected_file} avrebbe dovuto essere creato."
+        assert mock_chdir.call_count == 206
 
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
         [
             ({'repo_empty': 2, 'cvd_id_empty': 2, 'folder_empty': 2, 'cvd_id': "cvd_id1", 'folder': "folder1",
               'file': 'Example.java'},
-             {'file_content': '''
+             {'file_contents': {'Example.java': '''
                 public class Test { 
                     /* This is a comment */ 
                     public static void main(String[] args) { 
@@ -325,21 +348,25 @@ class TestMain:
                         System.out.println("Hello World"); /* Inline comment */
                     } 
                 }
-                ''', 'type_error': 'perm_error'}
+                '''}, 'file_to_fail': 'Example.java_text_mining.txt', 'type_error': 'perm_error'}
              )
         ],
         indirect=True
     )
     def test_case_11(self, mock_file_system, mock_os_functions):
+        mock_chdir, _ = mock_os_functions
         with pytest.raises(PermissionError):
             main()
+        assert "Example.java_text_mining.txt" not in mock_file_system[
+            '/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id1/folder1'], f"Il file Example.java_text_mining.txt non avrebbe dovuto essere creato."
+        assert mock_chdir.call_count == 5
 
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
         [
             ({'repo_empty': 2, 'cvd_id_empty': 2, 'folder_empty': 2, 'cvd_id': "cvd_id1", 'folder': "folder1",
               'file': 'Example.java'},
-             {'file_content': '''
+             {'file_contents': {'Example.java':'''
                     public class Test { 
                         /* This is a comment */ 
                         public static void main(String[] args) { 
@@ -347,21 +374,25 @@ class TestMain:
                             System.out.println("Hello World"); /* Inline comment */
                         } 
                     }
-                    ''', 'type_error': 'value_error'}
+                    '''}, 'file_to_fail': 'Example.java_text_mining.txt', 'type_error': 'value_error'}
              )
         ],
         indirect=True
     )
     def test_case_12(self, mock_file_system, mock_os_functions):
+        mock_chdir, _ = mock_os_functions
         with pytest.raises(TypeError):
             main()
+        assert "Example.java_text_mining.txt" not in mock_file_system[
+            '/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id1/folder1'], f"Il file Example.java_text_mining.txt non avrebbe dovuto essere creato."
+        assert mock_chdir.call_count == 5
 
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
         [
             ({'repo_empty': 2, 'cvd_id_empty': 2, 'folder_empty': 2, 'cvd_id': "cvd_id1", 'folder': "folder1",
               'file': 'Example.java'},
-             {'file_content': '''
+             {'file_contents': {'Example.java':'''
                         public class Test { 
                             /* This is a comment */ 
                             public static void main(String[] args) { 
@@ -369,29 +400,24 @@ class TestMain:
                                 System.out.println("Hello World"); /* Inline comment */
                             } 
                         }
-                        ''', 'type_error': 'access_error'}
+                        '''}, 'file_to_fail': 'Example.java', 'type_error': 'access_error'}
             )
         ],
         indirect=True
     )
     def test_case_13(self, mock_file_system, mock_os_functions):
+        mock_chdir, _ = mock_os_functions
         with pytest.raises(PermissionError):
             main()
+        assert "Example.java_text_mining.txt" not in mock_file_system[
+            '/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id1/folder1'], f"Il file Example.java_text_mining.txt non avrebbe dovuto essere creato."
+        assert mock_chdir.call_count == 5
 
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
         [
             ({'repo_empty': 2, 'cvd_id_empty': 2, 'folder_empty': 2, 'cvd_id': "cvd_id1", 'folder': "folder1",
-              'file': '.DS_Store'},
-             {'file_content': '''
-                            public class Test { 
-                                /* This is a comment */ 
-                                public static void main(String[] args) { 
-                                    // Single line comment
-                                    System.out.println("Hello World"); /* Inline comment */
-                                } 
-                            }
-                            ''', 'type_error': 'access_error'}
+              'file': '.DS_Store'}, {}
              )
         ],
         indirect=True
@@ -407,7 +433,7 @@ class TestMain:
         [
             ({'repo_empty': 2, 'cvd_id_empty': 2, 'folder_empty': 2, 'cvd_id': "cvd_id1", 'folder': "folder1",
               'file': 'another_folder'},
-             {'type_error': 'directory_error'}
+             {'file_to_fail': 'another_folder', 'type_error': 'directory_error'}
              )
         ],
         indirect=True
