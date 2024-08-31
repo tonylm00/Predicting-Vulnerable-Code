@@ -203,7 +203,6 @@ def mock_os_functions(mock_file_system, request):
         return mock_file_system[path][:]
 
     mock = mock_open()
-
     def mocked_open(file, mode='r'):
         path = f"{current_dir[0].rstrip('/')}"
         # Simuliamo l'apertura dei file basandoci sul percorso corrente

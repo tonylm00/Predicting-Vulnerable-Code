@@ -173,7 +173,6 @@ class TestSplitCamelCase:
             splitCamelCase(input_dict)
 
 
-
 class TestWriteToFile:
     @pytest.mark.parametrize('mock_open_file', [{'file_to_fail': 'FilteredTextMining.txt', 'error_type': 'PermissionError'}], indirect=True)
     def test_case_1(self, mock_open_file):
