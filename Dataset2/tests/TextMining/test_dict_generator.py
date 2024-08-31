@@ -1,5 +1,4 @@
 from unittest.mock import patch, mock_open
-
 import pytest
 from Dataset2.Text_Mining.dict_generator import main
 
@@ -212,7 +211,7 @@ class TestMain:
         'mock_file_system, mock_os_functions',
         [
             ({'repo_empty': 2, 'cvd_id_empty': 2, 'folder_empty': 2, 'cvd_id': "cvd_id1", 'folder': "folder1",
-              'file': 'Example.java_text_mining.txt'}, {'file_content': ''})
+              'file': 'Example.java_text_mining.txt'}, {'file_contents': {'Example.java_text_mining.txt': ''}})
         ],
         indirect=True
     )
@@ -225,7 +224,7 @@ class TestMain:
         'mock_file_system, mock_os_functions',
         [
             ({'repo_empty': 2, 'cvd_id_empty': 2, 'folder_empty': 2, 'cvd_id': "cvd_id1", 'folder': "folder1",
-              'file': 'Example.java_text_mining.txt'}, {'file_content': '''{ [13]: 2, 'net': None, None: 1, 'javamelody', 'import': 6, 'java': 4, 'io': 3}'''})
+              'file': 'Example.java_text_mining.txt'}, {'file_contents': {'Example.java_text_mining.txt': '''{ [13]: 2, 'net': None, None: 1, 'javamelody', 'import': 6, 'java': 4, 'io': 3}'''}})
         ],
         indirect=True
     )
@@ -238,7 +237,7 @@ class TestMain:
         'mock_file_system, mock_os_functions',
         [
             ({'repo_empty': 2, 'cvd_id_empty': 2, 'folder_empty': 2, 'cvd_id': "cvd_id1", 'folder': "folder1",
-              'file': 'Example.java_text_mining.txt'}, {'file_content': '''{'package': 1, 'net': 1, 'bull': 1, 'javamelody': 1, 'import': 6, 'java': 4, 'io': 3}'''})
+              'file': 'Example.java_text_mining.txt'}, {'file_contents': {'Example.java_text_mining.txt': '''{'package': 1, 'net': 1, 'bull': 1, 'javamelody': 1, 'import': 6, 'java': 4, 'io': 3}'''}})
         ],
         indirect=True
     )
@@ -257,7 +256,7 @@ class TestMain:
         [
             ({'repo_empty': 2, 'cvd_id_empty': 2, 'folder_empty': 2, 'cvd_id': "cvd_id1", 'folder': "folder1",
               'file': 'Example.java_text_mining.txt'}, {
-                 'file_content': '''{'package': 1, 'net': 1, 'bull': 1, 'javamelody': 1, 'import': 6, 'java': 4, 'io': 3}''', 'type_error': 'perm_error'})
+                 'file_contents': {'Example.java_text_mining.txt': '''{'package': 1, 'net': 1, 'bull': 1, 'javamelody': 1, 'import': 6, 'java': 4, 'io': 3}'''}, 'file_to_fail': 'text_mining_dict.txt', 'type_error': 'perm_error'})
         ],
         indirect=True
     )
@@ -269,7 +268,7 @@ class TestMain:
         'mock_file_system, mock_os_functions',
         [
             ({'repo_empty': 2, 'cvd_id_empty': 2, 'folder_empty': 2, 'cvd_id': "cvd_id1", 'folder': "folder1",
-              'file': 'Example.java_text_mining.txt'}, {'file_content': 'non si tratta di un dizionario'})
+              'file': 'Example.java_text_mining.txt'}, {'file_contents': {'Example.java_text_mining.txt': 'non si tratta di un dizionario'}})
         ],
         indirect=True
     )
@@ -281,11 +280,11 @@ class TestMain:
         'mock_file_system, mock_os_functions',
         [
             ({'repo_empty': 2, 'cvd_id_empty': 2, 'folder_empty': 2, 'cvd_id': "cvd_id1", 'folder': "folder1",
-              'file': 'Example.java_text_mining.txt'}, {'file_content': '', 'type_error': 'access_error'})
+              'file': 'Example.java_text_mining.txt'}, {'file_contents': {'Example.java_text_mining.txt':'''{'package': 1, 'net': 1, 'bull': 1, 'javamelody': 1, 'import': 6, 'java': 4, 'io': 3}'''}, 'file_to_fail': 'Example.java_text_mining.txt', 'type_error': 'access_error'})
         ],
         indirect=True
     )
     def test_case_17(self, mock_file_system, mock_os_functions):
-        with pytest.raises(PermissionError):  # dovuto ad ast
+        with pytest.raises(PermissionError):
             main()
 
