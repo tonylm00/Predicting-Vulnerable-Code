@@ -3,8 +3,16 @@ from unittest.mock import mock_open, patch, Mock, MagicMock
 
 import pandas as pd
 import pytest
-
+import os
+import shutil
 import io
+
+BACK_UP_DIR = 'temp_files'
+NAME_DIR = 'ASA'
+TEST_DIR = 'tests'
+
+RES_NEG_NAME = 'RepositoryMining_ASAResults_neg.csv'
+RES_POS_NAME = 'RepositoryMining_ASAResults_pos.csv'
 
 @pytest.fixture
 def invalidate_format(request, mock_files):
@@ -97,5 +105,108 @@ def mock_op_fail(request, mock_files):
 
     with patch('builtins.open', mock_open_side_effect):
         yield mock_files
+
+#INTEGRATION FIXTURE
+
+@pytest.fixture
+def setup_dir():
+    cwd = os.getcwd()
+    print("CWD:", cwd)
+    if NAME_DIR not in cwd:
+        test_path = os.path.join(os.getcwd(), "Dataset2", TEST_DIR, NAME_DIR)
+        print("TEST_PATH:", test_path)
+        os.chdir(test_path)
+
+    yield
+
+    os.chdir(cwd)
+    print(f"Changed directory to '{cwd}'.")
+
+@pytest.fixture
+def remove_result_file(request, setup_dir):
+
+    yield
+
+    result_file_names = request.param
+
+    for result_file_name in result_file_names:
+
+        # Construct the full file path if needed, e.g., if you have the file in a subdirectory
+        file_path = os.path.join(os.getcwd(), result_file_name)
+
+        # Check if the file exists
+        if os.path.exists(file_path):
+            # Remove the file
+            os.remove(file_path)
+            print(f"File '{result_file_name}' has been removed.")
+        else:
+            print(f"File '{result_file_name}' does not exist.")
+
+@pytest.fixture
+def prepare_content_data(request):
+    feature_neg_dict, feature_pos_dict = request.param
+
+    HEADER = '''severity\tupdateDate\tcomments\tline\tauthor\trule\tproject\teffort\tmessage\tcreationDate\ttype\ttags\tcomponent\tflows\torganization\ttextRange\tdebt\tkey\thash\tstatus'''
+
+    DATA = '''\nMINOR\t2020-07-03T17:57:05+0200\t\t71.0\t\trule_to_change\tProva_Mining_Second_Part\t15min\t"Make this member ""protected""."\t2020-07-03T17:57:05+0200\tVULNERABILITY\t\tProva_Mining_Second_Part:src/RepositoryMining19/866/component_to_change\tdefault-organization\t{startLine=71.0, endLine=71.0, startOffset=33.0, endOffset=59.0}\t15min\tAXMVa5NrkLspzIj1dA_E\tcef48bca33fc27fd295ef071f478584d\tOPEN'''
+
+    INVALID_DATA = HEADER + '''\nMINOR\t2020-07-03T17:57:05+0200\t\t71.0\t\tjava:S2386\tProva_Mining_Second_Part\t15min'''
+
+    content = []
+
+    i=0
+    for dict in [feature_neg_dict, feature_pos_dict]:
+        if 'is_invalid' in dict.keys() and dict['is_invalid']:
+            content.append(INVALID_DATA)
+        else:
+            number_of_records = dict['number_of_records']
+            content.append(HEADER)
+            if number_of_records >0:
+                content[i]+= DATA
+                if number_of_records > 1:
+                    if not dict['is_rule_repeated']:
+                        content[i] = content[i].replace('rule_to_change', 'java:S2386')
+                    content[i] += DATA
+                content[i] = content[i].replace('rule_to_change', 'java:S2385')
+                content[i] = content[i].replace('component_to_change', dict['component'])
+
+                if 'no_vuln' in dict.keys() and dict['no_vuln']:
+                    content[i] = content[i].replace('VULNERABILITY', "BUG")
+        i+=1
+
+
+    yield {RES_NEG_NAME: content[0], RES_POS_NAME:content[1]}
+
+
+@pytest.fixture
+def manage_temp_input_files(request, prepare_content_data, setup_dir):
+    content_dict = prepare_content_data
+    file_names = request.param
+
+    for file_name in file_names:
+        if file_name in content_dict.keys():
+            with open(file_name, "w") as file:
+                file.write(content_dict[file_name])
+
+    yield
+
+    for file_name in file_names:
+        # Construct the full file path if needed, e.g., if you have the file in a subdirectory
+        file_path = os.path.join(os.getcwd(), file_name)
+
+        if os.path.exists(file_path):
+            # Remove the file
+            os.remove(file_path)
+            print(f"File '{file_name}' has been removed.")
+        else:
+            print(f"File '{file_name}' does not exist.")
+
+
+
+
+
+
+
+
 
 
