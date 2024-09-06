@@ -15,17 +15,6 @@ def read_dict_from_file(file_path):
         dictionary = ast.literal_eval(content)
     return dictionary
 
-def check_words_in_dict(string, dictionary, values_for_keys=None, default_value=1):
-    if values_for_keys is None:
-        values_for_keys = {}  # Dizionario vuoto se non vengono passati valori specifici
-
-    words = string.split()
-    for word in words:
-        expected_value = values_for_keys.get(word, default_value)  # Valore specifico o predefinito
-        if dictionary.get(word) != expected_value:
-            return False
-    return True
-
 def check_csv(index, file_path, target_columns, expected_row_count):
     with open(file_path, newline='', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
