@@ -15,8 +15,8 @@ def main():
 	cwd = os.getcwd()
 	repo_name = "RepositoryMining"
 	os.chdir(cwd+"/mining_results")
-	final_csv = open(final_csv_name, "w+")
-	big_dict_file = open(dict_file_name, "r+")
+	final_csv = open(final_csv_name, "w+", encoding="utf-8")
+	big_dict_file = open(dict_file_name, "r+", encoding="utf-8")
 	big_dict = ast.literal_eval(big_dict_file.read())
 	csv_sorted = sorted(big_dict.keys())
 	final_csv.write("NameClass")
@@ -25,7 +25,7 @@ def main():
 	final_csv.write(" ,class")
 	final_csv.write("\n\n")
 	for count in range(1,36,1):
-		if count !=18:
+		if count != 18:
 			repo = repo_name + str(count)
 			if repo != ".DS_Store":
 				os.chdir(repo)
@@ -41,7 +41,7 @@ def main():
 								for file in os.listdir():
 									if file != ".DS_Store":
 										if "text_mining.txt" in file:
-											current_file = open(file, "r")
+											current_file = open(file, "r", encoding="utf-8")
 											#convert the single text mining file in a dictionary.
 											current_dict = ast.literal_eval(current_file.read())
 											current_dict = less_element_text_mining.splitCamelCase(current_dict) #splitting the current dict of the java class in more words by CamelCase

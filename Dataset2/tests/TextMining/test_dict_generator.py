@@ -52,7 +52,7 @@ class TestMain:
             # Retrieve the mock file handle
             handle = mocked_open()
 
-            mocked_open.assert_any_call('text_mining_dict.txt', 'w+')
+            mocked_open.assert_any_call('text_mining_dict.txt', 'w+', 'utf-8') # aggiunto 'utf-8'
             handle.write.assert_called_once_with('{}')
 
             mock_print.assert_any_call("Ci sono :0 chiavi(che) !")
@@ -85,7 +85,7 @@ class TestMain:
             # Retrieve the mock file handle
             handle = mocked_open()
 
-            mocked_open.assert_any_call('text_mining_dict.txt', 'w+')
+            mocked_open.assert_any_call('text_mining_dict.txt', 'w+', 'utf-8') # aggiunto 'utf-8'
             handle.write.assert_called_once_with('{}')
 
             mock_print.assert_any_call("Ci sono :0 chiavi(che) !")
@@ -106,7 +106,7 @@ class TestMain:
             # Retrieve the mock file handle
             handle = mocked_open()
 
-            mocked_open.assert_any_call('text_mining_dict.txt', 'w+')
+            mocked_open.assert_any_call('text_mining_dict.txt', 'w+', 'utf-8') # aggiunto 'utf-8'
             handle.write.assert_called_once_with('{}')
 
             mock_print.assert_any_call("Ci sono :0 chiavi(che) !")
@@ -138,7 +138,7 @@ class TestMain:
             # Retrieve the mock file handle
             handle = mocked_open()
 
-            mocked_open.assert_any_call('text_mining_dict.txt', 'w+')
+            mocked_open.assert_any_call('text_mining_dict.txt', 'w+', 'utf-8') # aggiunto 'utf-8'
             handle.write.assert_called_once_with('{}')
 
             mock_print.assert_any_call("Ci sono :0 chiavi(che) !")
@@ -159,7 +159,7 @@ class TestMain:
             # Retrieve the mock file handle
             handle = mocked_open()
 
-            mocked_open.assert_any_call('text_mining_dict.txt', 'w+')
+            mocked_open.assert_any_call('text_mining_dict.txt', 'w+', 'utf-8') # aggiunto 'utf-8'
             handle.write.assert_called_once_with('{}')
 
             mock_print.assert_any_call("Ci sono :0 chiavi(che) !")
@@ -180,7 +180,7 @@ class TestMain:
             # Retrieve the mock file handle
             handle = mocked_open()
 
-            mocked_open.assert_any_call('text_mining_dict.txt', 'w+')
+            mocked_open.assert_any_call('text_mining_dict.txt', 'w+', 'utf-8') # aggiunto 'utf-8'
             handle.write.assert_called_once_with('{}')
 
             mock_print.assert_any_call("Ci sono :0 chiavi(che) !")
@@ -202,7 +202,7 @@ class TestMain:
             # Retrieve the mock file handle
             handle = mocked_open()
 
-            mocked_open.assert_any_call('text_mining_dict.txt', 'w+')
+            mocked_open.assert_any_call('text_mining_dict.txt', 'w+', 'utf-8') # aggiunto 'utf-8'
             handle.write.assert_called_once_with('{}')
 
             mock_print.assert_any_call("Ci sono :0 chiavi(che) !")
@@ -232,6 +232,7 @@ class TestMain:
         with pytest.raises(SyntaxError, match=r"invalid syntax"):  # dovuto ad ast
             main()
 
+    # Abbiamo compreso che dict_generator non crea un dizionario di tutte le parole con la frequenza delle parole in tutti i file ma solo dell'ultimo file in cui era presente la parola
     @patch('builtins.print')
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
@@ -246,6 +247,9 @@ class TestMain:
         expected_file = 'text_mining_dict.txt'
         assert expected_file in mock_file_system[
             '/Predicting-Vulnerable-Code/Dataset2/mining_results'], f"Il file {expected_file} avrebbe dovuto essere creato."
+        _, mock_open = mock_os_functions
+
+        mock_open().write.assert_called_once_with("{'package': 1, 'net': 1, 'bull': 1, 'javamelody': 1, 'import': 6, 'java': 4, 'io': 3}")
 
         # Verifica la chiamata alla funzione print
         mock_print.assert_any_call("Ci sono :7 chiavi(che) !")

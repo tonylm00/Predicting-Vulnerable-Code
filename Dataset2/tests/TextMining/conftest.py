@@ -1,6 +1,9 @@
+import os
 from unittest.mock import mock_open, patch, Mock, MagicMock
 import pytest
 from collections import defaultdict
+import shutil
+
 @pytest.fixture
 def mock_file_read_permission_error():
     # Crea un oggetto MagicMock per il file
@@ -34,7 +37,7 @@ def mock_open_file(request):
     # Mock di 'open'
     mock = mock_open(read_data=file_content)
 
-    def mock_open_side_effect(file, mode='r'):
+    def mock_open_side_effect(file, mode='r', encoding=None):
         if file == file_to_fail:
             if error_type == 'FileNotFoundError':
                 raise FileNotFoundError
@@ -203,7 +206,7 @@ def mock_os_functions(mock_file_system, request):
         return mock_file_system[path][:]
 
     mock = mock_open()
-    def mocked_open(file, mode='r'):
+    def mocked_open(file, mode='r', encoding=None):
         path = f"{current_dir[0].rstrip('/')}"
         # Simuliamo l'apertura dei file basandoci sul percorso corrente
         if 'r' in mode:
@@ -242,3 +245,89 @@ def mock_os_functions(mock_file_system, request):
             patch('os.listdir', mock_listdir), \
             patch('builtins.open', new=mocked_open):
         yield chdir_mock, mock
+
+@pytest.fixture
+def create_temp_file():
+    # Questa variabile manterrà il percorso del file creato
+    file_path = None
+    def _create_temp_file(path, content):
+        nonlocal file_path
+        file_path = path  # Salva il percorso del file per il teardown
+        with open(path, 'w', encoding='utf-8') as f:
+            f.write(content)
+        return path
+
+    yield _create_temp_file
+
+    # Teardown: elimina il file creato, se esiste
+    if file_path and os.path.exists(file_path):
+        os.remove(file_path)
+
+"""@pytest.fixture(scope="function")
+def modify_file():
+    
+    original_content = {}
+
+    def _modify_file(file_path, new_content):
+        if os.path.exists(file_path):
+            with open(file_path, "r") as f:
+                original_content[file_path] = f.read()
+
+            # Modifica del contenuto del file
+            with open(file_path, "w") as f:
+                f.write(new_content)
+
+    yield _modify_file
+
+    # Teardown: ripristina il contenuto originale del file
+    for file_path, content in original_content.items():
+        with open(file_path, "w") as f:
+            f.write(content)"""
+
+"""@pytest.fixture(scope="function")
+def delete_file():
+   
+    deleted_files = []
+
+    def _delete_file(file_path):
+        if os.path.exists(file_path):
+            deleted_files.append(file_path)
+            os.remove(file_path)
+
+    yield _delete_file
+
+    # Teardown: ricrea i file eliminati
+    for file_path in deleted_files:
+        with open(file_path, "w") as f:
+            f.write('''
+            public class SampleClass {
+                // This is a sample comment
+                String sampleString = "Sample";
+                /* Multi-line comment
+                   continues here */
+                public void sampleMethod() {
+                    // Another comment
+                    int sampleNumber = 42;
+                }
+            }
+            ''')
+
+
+@pytest.fixture(scope="function")
+def move_directory():
+    moved_directories = []
+
+    def _move_directory(src, dst):
+        if os.path.exists(src):
+            shutil.move(src, dst)
+            moved_directories.append((src, dst))
+
+    try:
+        yield _move_directory
+    finally:
+        for src, dst in reversed(moved_directories):
+            if os.path.exists(dst):
+                shutil.move(dst, src)
+
+"""
+

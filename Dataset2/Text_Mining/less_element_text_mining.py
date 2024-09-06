@@ -20,7 +20,7 @@ def initialize():
 	os.chdir(cwd + "/mining_results")
 	for file in os.listdir():
 		if dict_file_name in file:
-			read_txt = open(dict_file_name, "r")
+			read_txt = open(dict_file_name, "r", encoding="utf-8")
 			diction = ast.literal_eval(read_txt.read())
 			return splitCamelCase(diction)
 		else:
@@ -52,7 +52,7 @@ def splitCamelCase(fake_dic):
 Write the dict into the destination file.
 '''
 def writeToFile(dizionario_finale):
-	newFile = open("FilteredTextMining.txt", "w+")
+	newFile = open("FilteredTextMining.txt", "w+", encoding="utf-8")
 	newFile.write(str(dizionario_finale))
 	newFile.close()
 

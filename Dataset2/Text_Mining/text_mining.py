@@ -43,7 +43,7 @@ def takeJavaClass(java_file_name):
 	final = []
 	current = []
 	dic ={}
-	with open(java_file_name, "r",) as java_file:
+	with open(java_file_name, "r", encoding="utf-8") as java_file:
 		text=removeComments(java_file)
 		for line in text.splitlines():
 			current = stringTokenizer(line)
@@ -73,30 +73,31 @@ def main():
 	cwd = os.getcwd()
 	repo_name = "RepositoryMining"
 	os.chdir(cwd+"/mining_results")
-	for count in range(2,36,1):
-		repo = repo_name + str(count)
-		if repo != ".DS_Store":
-			os.chdir(repo)
-			for cvd_id in os.listdir():
-				if cvd_id not in [".DS_Store", "CHECK.txt", "ERRORS.txt"]:
-					print(cvd_id)
-					os.chdir(cvd_id)
-					print(os.listdir())
-					for folder in os.listdir():
-						if folder != ".DS_Store":
-							os.chdir(folder)
-							for file in os.listdir():
-								if file != ".DS_Store":
-									java_file_name = file
-									dic = takeJavaClass(java_file_name)
-									file = open(java_file_name+"_text_mining.txt","w+")
-									file.write(str(dic))
-									file.close()
-								else:
-									print(".DS_Store occured")
-							os.chdir("..")
-					os.chdir("..")
-			os.chdir("..")
+	for count in range(1,36,1):
+		if count != 18:
+			repo = repo_name + str(count)
+			if repo != ".DS_Store":
+				os.chdir(repo)
+				for cvd_id in os.listdir():
+					if cvd_id not in [".DS_Store", "CHECK.txt", "ERRORS.txt"]:
+						print(cvd_id)
+						os.chdir(cvd_id)
+						print(os.listdir())
+						for folder in os.listdir():
+							if folder != ".DS_Store":
+								os.chdir(folder)
+								for file in os.listdir():
+									if file != ".DS_Store":
+										java_file_name = file
+										dic = takeJavaClass(java_file_name)
+										file = open(java_file_name+"_text_mining.txt", "w+", encoding="utf-8")
+										file.write(str(dic))
+										file.close()
+									else:
+										print(".DS_Store occured")
+								os.chdir("..")
+						os.chdir("..")
+				os.chdir("..")
 
 if __name__ == '__main__':
 	main()
