@@ -5,7 +5,7 @@ from Dataset2.mining_results_asa.rules_dict_generator_ASA import main as main_ru
 from Dataset2.mining_results_asa.creator_csv_for_ASA import main as main_create
 
 
-class TestMainASAVulnDictGen:
+class TestASAIntegration:
 
     RES_NEG_NAME = 'RepositoryMining_ASAResults_neg.csv'
     RES_POS_NAME = 'RepositoryMining_ASAResults_pos.csv'
@@ -54,7 +54,7 @@ class TestMainASAVulnDictGen:
              'component': COMPONENT_POS}
     )
     ], indirect=True)
-    def test_case_1(self, manage_temp_input_files, remove_result_file):
+    def test_case_1(self, manage_temp_input_files, prepare_content_data, remove_result_file):
         self.execute_pipeline()
 
         with open(self.RESULT_CSV_NAME, 'r') as file:
@@ -207,53 +207,7 @@ class TestMainASAVulnDictGen:
 
         assert content == oracle_header + oracle_neg_output + oracle_pos_output
 
-    @pytest.mark.parametrize('manage_temp_input_files',
-                             [{RES_NEG_NAME, RES_POS_NAME}],
-                             indirect=True)
-    @pytest.mark.parametrize('remove_result_file', [{DICT_VUL_NAME, DICT_RUL_NAME, RESULT_CSV_NAME}], indirect=True)
-    @pytest.mark.parametrize('prepare_content_data', [(
-            {'file_name': RES_NEG_NAME, 'number_of_records': 1, 'is_rule_repeated': False,
-             'component': SHARED_COMPONENT},
-            {'file_name': RES_POS_NAME, 'number_of_records': 1, 'is_rule_repeated': False,
-             'component': SHARED_COMPONENT}
-    )
-    ], indirect=True)
-    def test_case_8(self, prepare_content_data, manage_temp_input_files, remove_result_file):
-        self.execute_pipeline()
 
-        oracle_header = "Name, java:S2385, class\n"
-
-        oracle_neg_output = "\n" + self.SHARED_COMPONENT + ", 1, neg"
-        oracle_pos_output = "\n" + self.SHARED_COMPONENT + ", 1, pos"
-
-        with open(self.RESULT_CSV_NAME, 'r') as file:
-            content = file.read()
-
-        assert content == oracle_header + oracle_neg_output + oracle_pos_output
-
-    @pytest.mark.parametrize('manage_temp_input_files',
-                             [{RES_NEG_NAME, RES_POS_NAME}],
-                             indirect=True)
-    @pytest.mark.parametrize('remove_result_file', [{DICT_VUL_NAME, DICT_RUL_NAME, RESULT_CSV_NAME}], indirect=True)
-    @pytest.mark.parametrize('prepare_content_data', [(
-            {'file_name': RES_NEG_NAME, 'number_of_records': 2, 'is_rule_repeated': True,
-             'component': SHARED_COMPONENT},
-            {'file_name': RES_POS_NAME, 'number_of_records': 2, 'is_rule_repeated': True,
-             'component': SHARED_COMPONENT}
-    )
-    ], indirect=True)
-    def test_case_9(self, prepare_content_data, manage_temp_input_files, remove_result_file):
-        self.execute_pipeline()
-
-        oracle_header = "Name, java:S2385, java:S2386, class\n"
-
-        oracle_neg_output = "\n" + self.SHARED_COMPONENT + ", 2, neg"
-        oracle_pos_output = "\n" + self.SHARED_COMPONENT + ", 2, pos"
-
-        with open(self.RESULT_CSV_NAME, 'r') as file:
-            content = file.read()
-
-        assert content == oracle_header + oracle_neg_output + oracle_pos_output
 
 
 

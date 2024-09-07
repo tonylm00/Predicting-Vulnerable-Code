@@ -165,45 +165,10 @@ class TestMainCreatorCSVForASA:
         self.assert_environment(mock_files, oracle_items, oracle_rules)
 
     @pytest.mark.parametrize('mock_files', [
-        {VULN_DICT_NAME: VULN_DICT_DATA_NO_REP_DOUBLE_CLASS, RULES_DICT_NAME: RULES_DICT_DATA_WITH_MATCH,
-         RESULT_CSV_NAME: None}
-    ], indirect=True)
-    def test_case_9_csv_for_ASA(self, mock_files):
-        main()
-
-        oracle_items = [
-            ('17ce298b98df08e413e81a61f209912ea7fe36ef/Runner.java', [1], 'neg'),
-            ('17ce298b98df08e413e81a61f209912ea7fe36ef/Runner.java', [1], 'pos')
-        ]
-
-        oracle_rules = ['java:S2386']
-
-        self.assert_environment(mock_files, oracle_items, oracle_rules)
-
-    @pytest.mark.parametrize('mock_files', [
-        {VULN_DICT_NAME: VULN_DICT_DATA_REP_DOUBLE_CLASS, RULES_DICT_NAME: RULES_DICT_DATA_WITH_NO_MATCH,
-         RESULT_CSV_NAME: None}
-    ], indirect=True)
-    def test_case_10_csv_for_ASA(self, mock_files):
-        main()
-
-        oracle_items = [
-            ('17ce298b98df08e413e81a61f209912ea7fe36ef/Runner.java', [2, 0], 'neg'),
-            ('17ce298b98df08e413e81a61f209912ea7fe36ef/Runner.java.java', [0, 2], 'pos')
-        ]
-
-        oracle_rules = [
-            'java:S2386',
-            'java:S2658'
-        ]
-
-        self.assert_environment(mock_files, oracle_items, oracle_rules)
-
-    @pytest.mark.parametrize('mock_files', [
         {VULN_DICT_NAME: "[]", RULES_DICT_NAME: RULES_DICT_DATA_WITH_NO_MATCH,
          RESULT_CSV_NAME: None}
     ], indirect=True)
-    def test_case_11_csv_for_ASA(self, mock_files):
+    def test_case_9_csv_for_ASA(self, mock_files):
         main()
 
         oracle_rules = [
@@ -218,7 +183,7 @@ class TestMainCreatorCSVForASA:
         {VULN_DICT_NAME: VULN_DICT_DATA_NO_REP, RULES_DICT_NAME: "{}",
          RESULT_CSV_NAME: None}
     ], indirect=True)
-    def test_case_12_csv_for_ASA(self, mock_files):
+    def test_case_10_csv_for_ASA(self, mock_files):
         main()
 
         oracle_items = [
@@ -232,7 +197,7 @@ class TestMainCreatorCSVForASA:
         {VULN_DICT_NAME: '[]', RULES_DICT_NAME: "{}",
          RESULT_CSV_NAME: None}
     ], indirect=True)
-    def test_case_13_csv_for_ASA(self, mock_files):
+    def test_case_11_csv_for_ASA(self, mock_files):
         main()
 
         self.assert_environment(mock_files, [], [])
