@@ -1,5 +1,5 @@
 from Dataset2.Union.Union_SM_ASA.Union_SMwithASA import initialize, getClass, another_option
-from conf_union_sm_asa import *
+import pytest
 
 
 class TestGetClass:

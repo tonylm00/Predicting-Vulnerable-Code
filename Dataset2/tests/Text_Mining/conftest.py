@@ -3,6 +3,8 @@ from unittest.mock import mock_open, patch, Mock, MagicMock
 import pytest
 from collections import defaultdict
 import shutil
+import itertools
+
 
 @pytest.fixture
 def mock_file_read_permission_error():
@@ -15,6 +17,7 @@ def mock_file_read_permission_error():
     # Restituisci il mock file
     return mock_file
 
+
 @pytest.fixture
 def mock_file_with_content(request):
     # Crea un oggetto MagicMock per il file
@@ -25,6 +28,7 @@ def mock_file_with_content(request):
 
     # Restituisci il mock file
     return mock_file
+
 
 @pytest.fixture
 def mock_open_file(request):
@@ -68,6 +72,7 @@ def mock_open_file(request):
     with patch('builtins.open', mock_open_side_effect):
         yield mock
 
+
 @pytest.fixture
 def mock_getcwd(request):
     # Parametri passati alla fixture
@@ -78,6 +83,7 @@ def mock_getcwd(request):
 
     with patch('os.getcwd', side_effect=mock_getcwd_side_effect):
         yield
+
 
 @pytest.fixture
 def mock_chdir(request):
@@ -120,11 +126,11 @@ def mock_file_system(request):
     La struttura è un dizionario dove le chiavi sono percorsi assoluti
     e i valori sono liste di contenuti presenti in quella directory.
     """
-    fs = defaultdict(list)
+    fs = defaultdict(set)
 
-    #1 cartella vuota
-    #2 cartella con file
-    #3 file
+    # 1 cartella vuota
+    # 2 cartella con file
+    # 3 file
     repo_empty = request.param.get('repo_empty', 3)
     cvd_id_empty = request.param.get('cvd_id_empty', 3)
     folder_empty = request.param.get('folder_empty', 3)
@@ -135,28 +141,31 @@ def mock_file_system(request):
 
     # Esempio di struttura di base
     # '/fake/cwd' contiene 'mining_results'
-    fs['/Predicting-Vulnerable-Code/Dataset2/Text_Mining'] = []
-    fs['/Predicting-Vulnerable-Code/Dataset2'] = ['mining_results']
+    fs['/Predicting-Vulnerable-Code/Dataset2/Text_Mining'] = set()
+    fs['/Predicting-Vulnerable-Code/Dataset2'] = {'mining_results'}
 
     for i in range(1, 36):
+        if i == 18:
+            continue  # RepositoryMining18 non esiste nel file system originale
         repo = f'RepositoryMining{i}'
-        fs['/Predicting-Vulnerable-Code/Dataset2/mining_results'].append(repo)
+        fs['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add(repo)
 
         if repo_empty == 1:
-            fs[f'/Predicting-Vulnerable-Code/Dataset2/mining_results/{repo}'] = []
+            fs[f'/Predicting-Vulnerable-Code/Dataset2/mining_results/{repo}'] = set()
         elif repo_empty == 2:
-            fs[f'/Predicting-Vulnerable-Code/Dataset2/mining_results/{repo}'] = [cvd_id]
+            fs[f'/Predicting-Vulnerable-Code/Dataset2/mining_results/{repo}'] = {cvd_id}
 
         if cvd_id_empty == 1:
-            fs[f'/Predicting-Vulnerable-Code/Dataset2/mining_results/{repo}/{cvd_id}'] = []
+            fs[f'/Predicting-Vulnerable-Code/Dataset2/mining_results/{repo}/{cvd_id}'] = set()
         elif cvd_id_empty == 2:
-            fs[f'/Predicting-Vulnerable-Code/Dataset2/mining_results/{repo}/{cvd_id}'] = [folder]
+            fs[f'/Predicting-Vulnerable-Code/Dataset2/mining_results/{repo}/{cvd_id}'] = {folder}
 
         if folder_empty == 1:
-            fs[f'/Predicting-Vulnerable-Code/Dataset2/mining_results/{repo}/{cvd_id}/{folder}'] = []
+            fs[f'/Predicting-Vulnerable-Code/Dataset2/mining_results/{repo}/{cvd_id}/{folder}'] = set()
         elif folder_empty == 2:
-            fs[f'/Predicting-Vulnerable-Code/Dataset2/mining_results/{repo}/{cvd_id}/{folder}'] = [file]
+            fs[f'/Predicting-Vulnerable-Code/Dataset2/mining_results/{repo}/{cvd_id}/{folder}'] = {file}
     return fs
+
 
 @pytest.fixture
 def mock_os_functions(mock_file_system, request):
@@ -173,6 +182,7 @@ def mock_os_functions(mock_file_system, request):
         return current_dir[0]
 
     chdir_mock = MagicMock()
+
     def mock_chdir(path):
         nonlocal current_dir
         chdir_mock(path)
@@ -203,9 +213,11 @@ def mock_os_functions(mock_file_system, request):
                 path = f"{current_dir[0].rstrip('/')}/{path}"
         if path not in mock_file_system:
             raise FileNotFoundError(f"No such directory: '{path}'")
-        return mock_file_system[path][:]
+        # Restituiamo una lista, anche se l'origine è un set, poiché os.listdir restituisce una lista
+        return list(mock_file_system[path])[:]
 
     mock = mock_open()
+
     def mocked_open(file, mode='r', encoding=None):
         path = f"{current_dir[0].rstrip('/')}"
         # Simuliamo l'apertura dei file basandoci sul percorso corrente
@@ -228,13 +240,11 @@ def mock_os_functions(mock_file_system, request):
                 elif type_error == "value_error":
                     raise TypeError
 
-            original_write = file_mock.write
             def write(data):
                 if path in mock_file_system:
-                    mock_file_system[path].append(file)
+                    mock_file_system[path].add(file)
                 else:
-                    mock_file_system[path] = [file]
-                return original_write(data)
+                    mock_file_system[path] = {file}
 
             file_mock.write = MagicMock(side_effect=write)
 
@@ -246,10 +256,64 @@ def mock_os_functions(mock_file_system, request):
             patch('builtins.open', new=mocked_open):
         yield chdir_mock, mock
 
+
+@pytest.fixture
+def setup_environment(request):
+    levels = request.param.get('levels', 1)
+    base_dir = request.param.get('base_dir', os.getcwd())
+    files = request.param.get('files', {})
+
+    mining_results_dir = os.path.join(base_dir, "mining_results")
+    old_cwd = os.getcwd()
+    if files:
+        cyclic_iterator = itertools.cycle(files.items())
+
+    try:
+        # Crea la directory principale
+        os.makedirs(mining_results_dir, mode=0o777, exist_ok=True)
+
+        # Crea la struttura di directory in base ai livelli richiesti
+        for i in range(1, 36):
+            if i == 18:
+                continue  # Salta RepositoryMining18
+
+            if levels > 1:
+                repo_name = f"RepositoryMining{i}"
+                repo_dir = os.path.join(mining_results_dir, repo_name)
+                os.makedirs(repo_dir, mode=0o777, exist_ok=True)
+
+                if levels > 2:
+                    level1_dir = os.path.join(repo_dir, str(i))
+                    os.makedirs(level1_dir, mode=0o777, exist_ok=True)
+
+                    if levels > 3:
+                        level2_dir = os.path.join(level1_dir, f"commit{i}")
+                        os.makedirs(level2_dir, mode=0o777, exist_ok=True)
+
+                        if levels > 4 and len(files) == 0:
+                            os.makedirs(os.path.join(level2_dir, "directory"), mode=0o777, exist_ok=True)
+                        elif files:
+                            file_name, content = next(cyclic_iterator)
+                            file_path = os.path.join(level2_dir, file_name)
+                            with open(file_path, 'w', encoding='utf-8') as f:
+                                f.write(content)  # Contenuto di esempio, puoi personalizzarlo
+
+        # Cambia la directory di lavoro corrente
+        os.chdir(mining_results_dir)
+
+        yield mining_results_dir
+
+    finally:
+        os.chdir(old_cwd)
+        if os.path.exists(mining_results_dir):
+            shutil.rmtree(mining_results_dir, ignore_errors=True)
+
+
 @pytest.fixture
 def create_temp_file():
     # Questa variabile manterrà il percorso del file creato
     file_path = None
+
     def _create_temp_file(path, content):
         nonlocal file_path
         file_path = path  # Salva il percorso del file per il teardown
@@ -263,9 +327,10 @@ def create_temp_file():
     if file_path and os.path.exists(file_path):
         os.remove(file_path)
 
+
 """@pytest.fixture(scope="function")
 def modify_file():
-    
+
     original_content = {}
 
     def _modify_file(file_path, new_content):
@@ -286,7 +351,7 @@ def modify_file():
 
 """@pytest.fixture(scope="function")
 def delete_file():
-   
+
     deleted_files = []
 
     def _delete_file(file_path):
@@ -330,4 +395,3 @@ def move_directory():
                 shutil.move(dst, src)
 
 """
-
