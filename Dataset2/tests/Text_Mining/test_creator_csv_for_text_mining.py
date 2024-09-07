@@ -13,7 +13,7 @@ class TestMain:
     )
     def test_case_1(self, mock_file_system, mock_os_functions):
         del mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results']
-        mock_file_system['/Predicting-Vulnerable-Code/Dataset2'] = []
+        mock_file_system['/Predicting-Vulnerable-Code/Dataset2'] = set()
 
         with pytest.raises(FileNotFoundError,
                            match=r"No such directory: '/Predicting-Vulnerable-Code/Dataset2/mining_results'"):
@@ -43,7 +43,7 @@ class TestMain:
         indirect=True
     )
     def test_case_3(self, mock_file_system, mock_os_functions):
-        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].append("FilteredTextMining.txt")
+        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
 
         with pytest.raises(SyntaxError,
                            match=r"unexpected EOF while parsing"):
@@ -60,7 +60,7 @@ class TestMain:
         indirect=True
     )
     def test_case_4(self, mock_file_system, mock_os_functions):
-        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].append("FilteredTextMining.txt")
+        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
 
         with pytest.raises(AttributeError):
             main()
@@ -76,7 +76,7 @@ class TestMain:
         indirect=True
     )
     def test_case_5(self, mock_file_system, mock_os_functions):
-        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].append("FilteredTextMining.txt")
+        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
         del mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2']
         mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].remove("RepositoryMining2")
 
@@ -95,7 +95,7 @@ class TestMain:
         indirect=True
     )
     def test_case_6(self, mock_file_system, mock_os_functions):
-        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].append("FilteredTextMining.txt")
+        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
         mock_chdir, mock_open = mock_os_functions
         main()
         text_mining_absent = all("text_mining.txt" not in call[0][0] for call in mock_open.call_args_list)
@@ -112,7 +112,7 @@ class TestMain:
         indirect=True
     )
     def test_case_7(self, mock_file_system, mock_os_functions):
-        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].append("FilteredTextMining.txt")
+        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
         with pytest.raises(NotADirectoryError, match=r"Not a directory: 'errore.txt'"):
             main()
         mock_chdir, mock_open = mock_os_functions
@@ -128,7 +128,7 @@ class TestMain:
         indirect=True
     )
     def test_case_8(self, mock_file_system, mock_os_functions):
-        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].append("FilteredTextMining.txt")
+        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
         mock_chdir, mock_open = mock_os_functions
         main()
         text_mining_absent = all("text_mining.txt" not in call[0][0] for call in mock_open.call_args_list)
@@ -145,7 +145,7 @@ class TestMain:
         indirect=True
     )
     def test_case_9(self, mock_file_system, mock_os_functions):
-        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].append("FilteredTextMining.txt")
+        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
         mock_chdir, mock_open = mock_os_functions
         main()
         text_mining_absent = all("text_mining.txt" not in call[0][0] for call in mock_open.call_args_list)
@@ -162,7 +162,7 @@ class TestMain:
         indirect=True
     )
     def test_case_10(self, mock_file_system, mock_os_functions):
-        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].append("FilteredTextMining.txt")
+        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
         with pytest.raises(NotADirectoryError, match=r"Not a directory: 'errore.txt'"):
             main()
         mock_chdir, mock_open = mock_os_functions
@@ -178,7 +178,7 @@ class TestMain:
         indirect=True
     )
     def test_case_11(self, mock_file_system, mock_os_functions):
-        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].append("FilteredTextMining.txt")
+        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
         mock_chdir, mock_open = mock_os_functions
         main()
         text_mining_absent = all("text_mining.txt" not in call[0][0] for call in mock_open.call_args_list)
@@ -195,7 +195,7 @@ class TestMain:
         indirect=True
     )
     def test_case_12(self, mock_file_system, mock_os_functions):
-        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].append("FilteredTextMining.txt")
+        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
         mock_chdir, mock_open = mock_os_functions
         main()
         text_mining_absent = all("text_mining.txt" not in call[0][0] for call in mock_open.call_args_list)
@@ -213,7 +213,7 @@ class TestMain:
         indirect=True
     )
     def test_case_13(self, mock_file_system, mock_os_functions):
-        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].append("FilteredTextMining.txt")
+        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
         _, mock_open = mock_os_functions
         main()
 
@@ -275,7 +275,7 @@ class TestMain:
         indirect=True
     )
     def test_case_14(self, mock_file_system, mock_os_functions):
-        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].append("FilteredTextMining.txt")
+        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
         _, mock_open = mock_os_functions
         main()
         write_calls = mock_open().write.call_args_list
@@ -338,7 +338,7 @@ class TestMain:
         indirect=True
     )
     def test_case_15(self, mock_file_system, mock_os_functions):
-        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].append("FilteredTextMining.txt")
+        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
         mock_chdir, mock_open = mock_os_functions
         print(mock_open.call_args_list)
         with pytest.raises(TypeError):
@@ -357,7 +357,7 @@ class TestMain:
         indirect=True
     )
     def test_case_16(self, mock_file_system, mock_os_functions):
-        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].append("FilteredTextMining.txt")
+        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
         mock_chdir, mock_open = mock_os_functions
         with pytest.raises(PermissionError):
             main()
@@ -376,7 +376,7 @@ class TestMain:
         indirect=True
     )
     def test_case_17(self, mock_print, mock_file_system, mock_os_functions):
-        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].append("FilteredTextMining.txt")
+        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
         mock_chdir, mock_open = mock_os_functions
         main()
         text_mining_absent = all("text_mining.txt" not in call[0][0] for call in mock_open.call_args_list)
@@ -395,7 +395,7 @@ class TestMain:
         indirect=True
     )
     def test_case_18(self, mock_file_system, mock_os_functions):
-        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].append("FilteredTextMining.txt")
+        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
         mock_chdir, mock_open = mock_os_functions
         main()
         text_mining_absent = all("text_mining.txt" not in call[0][0] for call in mock_open.call_args_list)
