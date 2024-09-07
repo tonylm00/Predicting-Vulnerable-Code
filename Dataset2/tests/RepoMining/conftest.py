@@ -11,33 +11,11 @@ from urllib.parse import urlparse
 
 from requests.exceptions import InvalidURL, MissingSchema
 
-@pytest.fixture
-def create_temp_dataset():
-    cwd = os.getcwd()
-    directory = 'Divided_Dataset'
-    filename = "1.csv"
+BACK_UP_DIR = 'temp_files'
+NAME_DIR = 'RepoMining'
+TEST_DIR = 'tests'
 
-    os.makedirs(directory, exist_ok=True)
 
-    os.chdir(os.path.join(cwd, directory))
-
-    # Create the empty file
-    with open(filename, 'w') as file:
-        # File is created and opened in write mode, but no content is written.
-        pass
-
-    yield
-
-    if os.path.isfile(filename):
-        os.remove(filename)
-
-    os.chdir(cwd)
-
-    if os.path.isdir(directory):
-        try:
-            os.rmdir(directory)
-        except OSError as e:
-            print(f"Error: {directory} : {e.strerror}")
 
 
 @pytest.fixture
@@ -327,8 +305,10 @@ def mock_os_chdir(request):
         yield mock_chdir
 
 
-def generate_csv_string(num_rows):
+def generate_csv_string(num_rows, is_format_invalid=False, is_link_invalid=False):
     # Fixed data for predictable results
+
+
     repo_urls = [
         "r_url1",
         "r_url2",
@@ -341,18 +321,26 @@ def generate_csv_string(num_rows):
 
     # Use StringIO to capture CSV output as a string
     output = io.StringIO()
-    writer = csv.writer(output, lineterminator='\r\n')  # Explicitly set line terminator
-    writer.writerow(['cve_id', 'repo_url', 'commit_id', 'cls'])  # Header
+    writer = csv.writer(output, lineterminator='\n')  # Use Unix-style line endings
 
-    for i in range(num_rows):
-        cve_id = i
-        repo_url = repo_urls[i % len(repo_urls)]  # Cycle through repo URLs
-        commit_id = base_commit_id * (i % 4 + 1)  # Generate predictable commit IDs
-        cls = cls_values[i % len(cls_values)]  # Cycle through cls values
+    if is_format_invalid:
+        writer.writerow(['cve_id', 'commit_id', 'cls'])  # Header
+        writer.writerow(['00', '11', 'pos'])  # Header
+    else:
+        writer.writerow(['cve_id', 'repo_url', 'commit_id', 'cls'])  # Header
 
-        writer.writerow([cve_id, repo_url, commit_id, cls])
+        for i in range(num_rows):
+            cve_id = i
+            if is_link_invalid:
+                repo_url = "link_not_valid"
+            else:
+                repo_url = repo_urls[i % len(repo_urls)]  # Cycle through repo URLs
+            commit_id = base_commit_id * (i % 4 + 1)  # Generate predictable commit IDs
+            cls = cls_values[i % len(cls_values)]  # Cycle through cls values
 
-    # Get the CSV string from the StringIO object
+            writer.writerow([cve_id, repo_url, commit_id, cls])
+
+        # Get the CSV string from the StringIO object
     csv_string = output.getvalue()
     output.close()
 
@@ -372,3 +360,86 @@ def mock_dataset_files(request):
 
     with patch('builtins.open', mock_open_side_effect) as _mock_open:
         yield mocks  # Yield the mocks and the patch object
+
+#-------------------------INTEGRATION-----------------------------------
+
+@pytest.fixture
+def setup_dir():
+    cwd = os.getcwd()
+    print("CWD:", cwd)
+    if NAME_DIR not in cwd:
+        test_path = os.path.join(os.getcwd(), "Dataset2", TEST_DIR, NAME_DIR)
+        print("TEST_PATH:", test_path)
+        os.chdir(test_path)
+
+    yield
+
+    os.chdir(cwd)
+    print(f"Changed directory to '{cwd}'.")
+
+@pytest.fixture
+def manage_temp_input_files(request, setup_dir):
+    print("CWD_MANAGE:", os.getcwd())
+    content_dict = request.param
+
+    for file_name, content in content_dict.items():
+        with open(file_name, "w") as file:
+            file.write(content)
+
+    yield
+
+    for file_name in content_dict.keys():
+        # Construct the full file path if needed, e.g., if you have the file in a subdirectory
+        file_path = os.path.join(os.getcwd(), file_name)
+        print("CWD:", os.getcwd())
+
+        if os.path.exists(file_path):
+            # Remove the file
+            os.remove(file_path)
+            print(f"File '{file_name}' has been removed.")
+        else:
+            print(f"File '{file_name}' does not exist.")
+
+
+@pytest.fixture
+def create_temp_file_sys(request, manage_temp_input_files):
+
+    dir_names = request.param
+
+    cwd = os.getcwd()
+
+    try:
+        dir_names.append('temp')
+        for dir in dir_names:
+            if os.path.exists(dir):
+                try:
+                    shutil.rmtree(dir)
+                    os.makedirs(dir, exist_ok=True)
+                except:
+                    continue
+            else:
+                os.makedirs(dir, exist_ok=True)
+
+        os.chdir(os.path.join(cwd, 'temp'))
+
+        yield
+
+    finally:
+
+        print("CWD-BEFORE-CREATE-CHDIR:", os.getcwd())
+
+        os.chdir(cwd)
+
+        print("CWD-AFTER-CREATE-CHDIR:", os.getcwd())
+
+        for dir in dir_names:
+            print("DIR:", dir)
+            if os.path.exists(dir):
+                try:
+                    shutil.rmtree(dir)
+                    print(f"Directory '{dir}' has been deleted.")
+                except:
+                    continue
+            else:
+                print(f"Directory '{dir}' does not exist.")
+
