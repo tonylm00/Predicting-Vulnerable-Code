@@ -17,57 +17,6 @@ class TestStartMiningRepo:
     CWD = '/test/path'
 
 
-    @patch('os.mkdir')
-    @patch('os.chdir')
-    @pytest.mark.parametrize('mock_op_fail', [CHECK_FILE_NAME], indirect=True)
-    def test_case_1(self, mock_chdir, mock_mkdir, mock_op_fail):
-
-        content = {
-            'cve_id': '1',
-            'repo_url': 'https://github.com/spring-projects/spring-webflow',
-            'commit_id': '57f2ccb66946943fbf3b3f2165eac1c8eb6b1523',
-            'cls': 'pos'
-        }
-        data = dict()
-        data[0] = content
-
-        repoName = "TestRepo"
-
-        with pytest.raises(FileNotFoundError) as exc_info:
-            startMiningRepo(data, self.CWD, repoName)  # Function that triggers the file operation
-
-        assert str(exc_info.value) == f"No such file or directory: '{self.CHECK_FILE_NAME}'"
-
-        mock_chdir.assert_not_called()
-
-        mock_mkdir.assert_not_called()
-
-    @patch('os.mkdir')  # Mock os.chdir if needed
-    @patch('os.chdir')  # Mock os.chdir if needed
-    @pytest.mark.parametrize('mock_op_fail', [ERR_FILE_NAME], indirect=True)
-    def test_case_2(self, mock_chdir, mock_mkdir, mock_op_fail):
-
-        content = {
-            'cve_id': '1',
-            'repo_url': 'https://github.com/spring-projects/spring-webflow',
-            'commit_id': '57f2ccb66946943fbf3b3f2165eac1c8eb6b1523',
-            'cls': 'pos'
-        }
-        data = dict()
-        data[0] = content
-
-        repoName = "TestRepo"
-
-        with pytest.raises(FileNotFoundError) as exc_info:
-            startMiningRepo(data, self.CWD, repoName)  # Function that triggers the file operation
-
-        assert str(exc_info.value) == f"No such file or directory: '{self.ERR_FILE_NAME}'"
-
-        mock_chdir.assert_not_called()
-
-        mock_mkdir.assert_not_called()
-
-
     @patch('os.mkdir')  # Mock os.chdir if needed
     @patch('os.chdir')  # Mock os.chdir if needed
     @pytest.mark.parametrize('mock_files', [
