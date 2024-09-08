@@ -32,12 +32,11 @@ class TestInitialize:
     @pytest.mark.parametrize('mock_listdir', [{'path_to_return_with_file': True}], indirect=True)
     @pytest.mark.parametrize('mock_getcwd', [{'path_to_return': '/Predicting-Vulnerable-Code/Dataset2/Text_Mining'}],
                              indirect=True)
-    @pytest.mark.parametrize('mock_open_file', [{'file_content': '''{'CamelCase': None, 'AnotherTest': 'string_value', 'validKey': 5}'''}],
+    @pytest.mark.parametrize('mock_open_file', [{'file_content': '''{'CamelCase': None, '1': 'string_value', 2: 5}'''}],
                              indirect=True)
     def test_case_4(self, mock_chdir, mock_listdir, mock_getcwd, mock_open_file):
-        expected_output = {'camel': None, 'case': None, 'another': 'string_value', 'test': 'string_value', 'valid': 5, 'key': 5}
-        output = initialize()
-        assert expected_output == output, f"Il dizionario restituito è {output} invece di {expected_output}."
+        with pytest.raises(TypeError):
+            initialize()
 
     @pytest.mark.parametrize('mock_chdir', [{}], indirect=True)
     @pytest.mark.parametrize('mock_listdir', [{'path_to_return_with_file': True}], indirect=True)
@@ -53,9 +52,19 @@ class TestInitialize:
     @pytest.mark.parametrize('mock_listdir', [{'path_to_return_with_file': True}], indirect=True)
     @pytest.mark.parametrize('mock_getcwd', [{'path_to_return': '/Predicting-Vulnerable-Code/Dataset2/Text_Mining'}],
                              indirect=True)
-    @pytest.mark.parametrize('mock_open_file', [{'file_to_fail': 'text_mining_dict.txt', 'error_type': 'PermissionError'}],
+    @pytest.mark.parametrize('mock_open_file', [{'file_content': '[2, 3, 4]'}],
                              indirect=True)
     def test_case_6(self, mock_chdir, mock_listdir, mock_getcwd, mock_open_file):
+        with pytest.raises(TypeError):  # ast legge un file vuoto, EOFError
+            initialize()
+
+    @pytest.mark.parametrize('mock_chdir', [{}], indirect=True)
+    @pytest.mark.parametrize('mock_listdir', [{'path_to_return_with_file': True}], indirect=True)
+    @pytest.mark.parametrize('mock_getcwd', [{'path_to_return': '/Predicting-Vulnerable-Code/Dataset2/Text_Mining'}],
+                             indirect=True)
+    @pytest.mark.parametrize('mock_open_file', [{'file_to_fail': 'text_mining_dict.txt', 'error_type': 'PermissionError'}],
+                             indirect=True)
+    def test_case_7(self, mock_chdir, mock_listdir, mock_getcwd, mock_open_file):
         with pytest.raises(PermissionError):
             initialize()
 
@@ -64,7 +73,7 @@ class TestInitialize:
     @pytest.mark.parametrize('mock_listdir', [{'path_to_return_mixed': True}], indirect=True)
     @pytest.mark.parametrize('mock_getcwd', [{'path_to_return': '/Predicting-Vulnerable-Code/Dataset2/Text_Mining'}],
                              indirect=True)
-    def test_case_7(self,  mock_print, mock_chdir, mock_listdir, mock_getcwd):
+    def test_case_8(self,  mock_print, mock_chdir, mock_listdir, mock_getcwd):
         initialize()
 
         assert mock_print.call_count == 4
