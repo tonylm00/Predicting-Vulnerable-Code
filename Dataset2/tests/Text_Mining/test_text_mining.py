@@ -180,7 +180,7 @@ class TestMain:
     )
     def test_case_1(self, mock_file_system, mock_os_functions):
         del mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results']
-        mock_file_system['/Predicting-Vulnerable-Code/Dataset2'] = []
+        mock_file_system['/Predicting-Vulnerable-Code/Dataset2'] = set()
 
         with pytest.raises(FileNotFoundError, match=r"No such directory: '/Predicting-Vulnerable-Code/Dataset2/mining_results'"):
             main()
@@ -194,7 +194,6 @@ class TestMain:
     )
     def test_case_2(self, mock_file_system, mock_os_functions):
         # 'mining_results' esiste, ma rimuoviamo una repository specifica, ad esempio 'RepositoryMining2'
-        #mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].remove('RepositoryMining2')
         del mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2']
         mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].remove("RepositoryMining2")
 
@@ -202,6 +201,8 @@ class TestMain:
         with pytest.raises(FileNotFoundError, match=r"No such directory: '/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2'"):
             main()
 
+    # text_mining.py prova ad accedere a RepositoryMining18, che non esiste
+    # controllare nel main così da evitare di accedere a RepositoryMining18
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
         [
@@ -215,8 +216,10 @@ class TestMain:
 
         text_mining_absent = all("text_mining.txt" not in call[0][0] for call in mock_open.call_args_list)
         assert text_mining_absent, "La sottostringa 'text_mining.txt' è presente nelle chiamate a open."
+        for i in range(1, 36):
+            if i != 18:
+                assert len(mock_file_system[f'/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining{i}']) == 0, f"è stato creato il file di text_mining"
         assert mock_chdir.call_count == 70
-        assert mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2'] == [], f"è stato creato il file di test_mining"
 
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
@@ -259,8 +262,11 @@ class TestMain:
         text_mining_absent = all("text_mining.txt" not in call[0][0] for call in mock_open.call_args_list)
         assert text_mining_absent, "La sottostringa 'text_mining.txt' è presente nelle chiamate a open."
         assert mock_chdir.call_count == 138
-        assert mock_file_system[
-                   '/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id1'] == [], f"è stato creato il file di test_mining"
+        for i in range(1, 36):
+            if i != 18:
+                assert len(mock_file_system[
+                               f'/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining{i}/cvd_id1']) == 0, f"è stato creato il file di text_mining"
+
 
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
@@ -305,8 +311,10 @@ class TestMain:
         assert text_mining_absent, "La sottostringa 'text_mining.txt' è presente nelle chiamate a open."
 
         assert mock_chdir.call_count == 206
-        assert mock_file_system[
-                   '/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id1/folder1'] == [], f"è stato creato il file di test_mining"
+        for i in range(1, 36):
+            if i != 18:
+                assert len(mock_file_system[
+                               f'/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining{i}/cvd_id1/folder1']) == 0, f"è stato creato il file di text_mining"
 
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
@@ -326,13 +334,49 @@ class TestMain:
         indirect=True
     )
     def test_case_10(self, mock_file_system, mock_os_functions):
-        mock_chdir, _ = mock_os_functions
+        mock_chdir, mock_open = mock_os_functions
         main()
 
         # Verifichiamo che il file di text mining sia stato creato
         expected_file = 'Example.java_text_mining.txt'
-        assert expected_file in mock_file_system[
-            '/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id1/folder1'], f"Il file {expected_file} avrebbe dovuto essere creato."
+        for i in range(1, 36):
+            if i != 18:
+                assert expected_file in mock_file_system[f'/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining{i}/cvd_id1/folder1'], f"Il file {expected_file} avrebbe dovuto essere creato."
+                assert len(mock_file_system[f'/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining{i}/cvd_id1/folder1']) == 2
+        mock_open().write.assert_called_once_with("{'public': 2, 'class': 1, 'Test': 1, 'static': 1, 'void': 1, 'main': 1, 'String': 1, 'args': 1, 'System': 1, 'out': 1, 'println': 1}")
+        assert mock_chdir.call_count == 206
+
+    #creazione concatenazione di java_text_mining.txt_text_mining.txt genera un file non previsto
+    @pytest.mark.parametrize(
+        'mock_file_system, mock_os_functions',
+        [
+            ({'repo_empty': 2, 'cvd_id_empty': 2, 'folder_empty': 2, 'cvd_id': "cvd_id1", 'folder': "folder1",
+              'file': 'Example.java'},
+             {'file_contents': {'Example.java': '''
+                public class Test { 
+                    /* This is a comment */ 
+                    public static void main(String[] args) { 
+                        // Single line comment
+                        System.out.println("Hello World"); /* Inline comment */
+                    } 
+                }
+                '''}}
+             )
+        ],
+        indirect=True
+    )
+    def test_case_11(self, mock_file_system, mock_os_functions):
+        expected_file = 'Example.java_text_mining.txt'
+        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id1/folder1'].add(expected_file)
+        mock_chdir, mock_open = mock_os_functions
+        main()
+
+        # Verifichiamo che il file di text mining sia stato creato
+        for i in range(1, 36):
+            if i != 18:
+                assert expected_file in mock_file_system[
+                    f'/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining{i}/cvd_id1/folder1'], f"Il file {expected_file} avrebbe dovuto essere creato."
+                assert mock_file_system[f'/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining{i}/cvd_id1/folder1'] == {'Example.java', 'Example.java_text_mining.txt'}
         assert mock_chdir.call_count == 206
 
     @pytest.mark.parametrize(
@@ -353,12 +397,15 @@ class TestMain:
         ],
         indirect=True
     )
-    def test_case_11(self, mock_file_system, mock_os_functions):
-        mock_chdir, _ = mock_os_functions
+    def test_case_12(self, mock_file_system, mock_os_functions):
+        mock_chdir, mock_open = mock_os_functions
         with pytest.raises(PermissionError):
             main()
-        assert "Example.java_text_mining.txt" not in mock_file_system[
-            '/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id1/folder1'], f"Il file Example.java_text_mining.txt non avrebbe dovuto essere creato."
+        for i in range(1, 36):
+            if i != 18:
+                assert "Example.java_text_mining.txt" not in mock_file_system[
+            f'/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining{i}/cvd_id1/folder1'], f"Il file Example.java_text_mining.txt non avrebbe dovuto essere creato."
+        mock_open.assert_any_call("Example.java_text_mining.txt", "w+", "utf-8")
         assert mock_chdir.call_count == 5
 
     @pytest.mark.parametrize(
@@ -379,12 +426,14 @@ class TestMain:
         ],
         indirect=True
     )
-    def test_case_12(self, mock_file_system, mock_os_functions):
+    def test_case_13(self, mock_file_system, mock_os_functions):
         mock_chdir, _ = mock_os_functions
         with pytest.raises(TypeError):
             main()
-        assert "Example.java_text_mining.txt" not in mock_file_system[
-            '/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id1/folder1'], f"Il file Example.java_text_mining.txt non avrebbe dovuto essere creato."
+        for i in range(1, 36):
+            if i != 18:
+                assert "Example.java_text_mining.txt" not in mock_file_system[
+                    f'/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining{i}/cvd_id1/folder1'], f"Il file Example.java_text_mining.txt non avrebbe dovuto essere creato."
         assert mock_chdir.call_count == 5
 
     @pytest.mark.parametrize(
@@ -405,12 +454,14 @@ class TestMain:
         ],
         indirect=True
     )
-    def test_case_13(self, mock_file_system, mock_os_functions):
+    def test_case_14(self, mock_file_system, mock_os_functions):
         mock_chdir, _ = mock_os_functions
         with pytest.raises(PermissionError):
             main()
-        assert "Example.java_text_mining.txt" not in mock_file_system[
-            '/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id1/folder1'], f"Il file Example.java_text_mining.txt non avrebbe dovuto essere creato."
+        for i in range(1, 36):
+            if i != 18:
+                assert "Example.java_text_mining.txt" not in mock_file_system[
+                    f'/Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining{i}/cvd_id1/folder1'], f"Il file Example.java_text_mining.txt non avrebbe dovuto essere creato."
         assert mock_chdir.call_count == 5
 
     @pytest.mark.parametrize(
@@ -422,7 +473,7 @@ class TestMain:
         ],
         indirect=True
     )
-    def test_case_14(self, mock_file_system, mock_os_functions):
+    def test_case_15(self, mock_file_system, mock_os_functions):
         main()
         for files in mock_file_system.values():
             for file in files:
@@ -438,8 +489,6 @@ class TestMain:
         ],
         indirect=True
     )
-    def test_case_15(self, mock_file_system, mock_os_functions):
+    def test_case_16(self, mock_file_system, mock_os_functions):
         with pytest.raises(IsADirectoryError):
             main()
-
-

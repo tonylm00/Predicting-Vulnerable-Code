@@ -12,7 +12,7 @@ class TestMain:
     )
     def test_case_1(self, mock_file_system, mock_os_functions):
         del mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results']
-        mock_file_system['/Predicting-Vulnerable-Code/Dataset2'] = []
+        mock_file_system['/Predicting-Vulnerable-Code/Dataset2'] = set()
 
         with pytest.raises(FileNotFoundError, match=r"No such directory: '/Predicting-Vulnerable-Code/Dataset2/mining_results'"):
             main()
@@ -45,18 +45,16 @@ class TestMain:
         indirect=True
     )
     def test_case_3(self, mock_print, mock_file_system, mock_os_functions):
-        with patch('builtins.open', mock_open()) as mocked_open:
-            # Execute the code that should write to the file
-            main()
+        mock_chdir, mock_open = mock_os_functions
 
-            # Retrieve the mock file handle
-            handle = mocked_open()
+        # Execute the code that should write to the file
+        main()
 
-            mocked_open.assert_any_call('text_mining_dict.txt', 'w+', 'utf-8') # aggiunto 'utf-8'
-            handle.write.assert_called_once_with('{}')
+        mock_open.assert_any_call('text_mining_dict.txt', 'w+', 'utf-8') # aggiunto 'utf-8'
+        mock_open().write.assert_called_once_with('{}')
 
-            mock_print.assert_any_call("Ci sono :0 chiavi(che) !")
-
+        mock_print.assert_any_call("Ci sono :0 chiavi(che) !")
+        assert mock_chdir.call_count == 70
 
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
@@ -78,17 +76,15 @@ class TestMain:
         indirect=True
     )
     def test_case_5(self, mock_print, mock_file_system, mock_os_functions):
-        with patch('builtins.open', mock_open()) as mocked_open:
-            # Execute the code that should write to the file
-            main()
+        mock_chdir, mock_open = mock_os_functions
+        # Execute the code that should write to the file
+        main()
 
-            # Retrieve the mock file handle
-            handle = mocked_open()
 
-            mocked_open.assert_any_call('text_mining_dict.txt', 'w+', 'utf-8') # aggiunto 'utf-8'
-            handle.write.assert_called_once_with('{}')
-
-            mock_print.assert_any_call("Ci sono :0 chiavi(che) !")
+        mock_open.assert_any_call('text_mining_dict.txt', 'w+', 'utf-8') # aggiunto 'utf-8'
+        mock_open().write.assert_called_once_with('{}')
+        mock_print.assert_any_call("Ci sono :0 chiavi(che) !")
+        assert mock_chdir.call_count == 70
 
     @patch('builtins.print')
     @pytest.mark.parametrize(
@@ -99,17 +95,15 @@ class TestMain:
         indirect=True
     )
     def test_case_6(self, mock_print, mock_file_system, mock_os_functions):
-        with patch('builtins.open', mock_open()) as mocked_open:
-            # Execute the code that should write to the file
-            main()
+        mock_chdir, mock_open = mock_os_functions
+        # Execute the code that should write to the file
+        main()
 
-            # Retrieve the mock file handle
-            handle = mocked_open()
+        mock_open.assert_any_call('text_mining_dict.txt', 'w+', 'utf-8') # aggiunto 'utf-8'
+        mock_open().write.assert_called_once_with('{}')
 
-            mocked_open.assert_any_call('text_mining_dict.txt', 'w+', 'utf-8') # aggiunto 'utf-8'
-            handle.write.assert_called_once_with('{}')
-
-            mock_print.assert_any_call("Ci sono :0 chiavi(che) !")
+        mock_print.assert_any_call("Ci sono :0 chiavi(che) !")
+        assert mock_chdir.call_count == 138
 
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
@@ -131,17 +125,15 @@ class TestMain:
         indirect=True
     )
     def test_case_8(self, mock_print, mock_file_system, mock_os_functions):
-        with patch('builtins.open', mock_open()) as mocked_open:
-            # Execute the code that should write to the file
-            main()
+        mock_chdir, mock_open = mock_os_functions
+        # Execute the code that should write to the file
+        main()
 
-            # Retrieve the mock file handle
-            handle = mocked_open()
+        mock_open.assert_any_call('text_mining_dict.txt', 'w+', 'utf-8') # aggiunto 'utf-8'
+        mock_open().write.assert_called_once_with('{}')
 
-            mocked_open.assert_any_call('text_mining_dict.txt', 'w+', 'utf-8') # aggiunto 'utf-8'
-            handle.write.assert_called_once_with('{}')
-
-            mock_print.assert_any_call("Ci sono :0 chiavi(che) !")
+        mock_print.assert_any_call("Ci sono :0 chiavi(che) !")
+        assert mock_chdir.call_count == 138
 
     @patch('builtins.print')
     @pytest.mark.parametrize(
@@ -152,17 +144,15 @@ class TestMain:
         indirect=True
     )
     def test_case_9(self, mock_print, mock_file_system, mock_os_functions):
-        with patch('builtins.open', mock_open()) as mocked_open:
-            # Execute the code that should write to the file
-            main()
+        mock_chdir, mock_open = mock_os_functions
+        # Execute the code that should write to the file
+        main()
 
-            # Retrieve the mock file handle
-            handle = mocked_open()
+        mock_open.assert_any_call('text_mining_dict.txt', 'w+', 'utf-8') # aggiunto 'utf-8'
+        mock_open().write.assert_called_once_with('{}')
 
-            mocked_open.assert_any_call('text_mining_dict.txt', 'w+', 'utf-8') # aggiunto 'utf-8'
-            handle.write.assert_called_once_with('{}')
-
-            mock_print.assert_any_call("Ci sono :0 chiavi(che) !")
+        mock_print.assert_any_call("Ci sono :0 chiavi(che) !")
+        assert mock_chdir.call_count == 206
 
     @patch('builtins.print')
     @pytest.mark.parametrize(
@@ -173,17 +163,15 @@ class TestMain:
         indirect=True
     )
     def test_case_10(self, mock_print, mock_file_system, mock_os_functions):
-        with patch('builtins.open', mock_open()) as mocked_open:
-            # Execute the code that should write to the file
-            main()
+        mock_chdir, mock_open = mock_os_functions
+        # Execute the code that should write to the file
+        main()
 
-            # Retrieve the mock file handle
-            handle = mocked_open()
+        mock_open.assert_any_call('text_mining_dict.txt', 'w+', 'utf-8') # aggiunto 'utf-8'
+        mock_open().write.assert_called_once_with('{}')
 
-            mocked_open.assert_any_call('text_mining_dict.txt', 'w+', 'utf-8') # aggiunto 'utf-8'
-            handle.write.assert_called_once_with('{}')
-
-            mock_print.assert_any_call("Ci sono :0 chiavi(che) !")
+        mock_print.assert_any_call("Ci sono :0 chiavi(che) !")
+        assert mock_chdir.call_count == 206
 
     @patch('builtins.print')
     @pytest.mark.parametrize(
@@ -195,17 +183,27 @@ class TestMain:
         indirect=True
     )
     def test_case_11(self, mock_print, mock_file_system, mock_os_functions):
-        with patch('builtins.open', mock_open()) as mocked_open:
-            # Execute the code that should write to the file
+        mock_chdir, mock_open = mock_os_functions
+        # Execute the code that should write to the file
+        main()
+
+        mock_open.assert_any_call('text_mining_dict.txt', 'w+', 'utf-8') # aggiunto 'utf-8'
+        mock_open().write.assert_called_once_with('{}')
+
+        mock_print.assert_any_call("Ci sono :0 chiavi(che) !")
+        assert mock_chdir.call_count == 206
+
+    @pytest.mark.parametrize(
+        'mock_file_system, mock_os_functions',
+        [
+            ({'repo_empty': 2, 'cvd_id_empty': 2, 'folder_empty': 2, 'cvd_id': "cvd_id1", 'folder': "folder1",
+              'file': 'text_mining.txtdirectory'}, {'file_to_fail': 'text_mining.txtdirectory', 'type_error': 'directory_error'})
+        ],
+        indirect=True
+    )
+    def test_case_12(self, mock_file_system, mock_os_functions):
+        with pytest.raises(IsADirectoryError):
             main()
-
-            # Retrieve the mock file handle
-            handle = mocked_open()
-
-            mocked_open.assert_any_call('text_mining_dict.txt', 'w+', 'utf-8') # aggiunto 'utf-8'
-            handle.write.assert_called_once_with('{}')
-
-            mock_print.assert_any_call("Ci sono :0 chiavi(che) !")
 
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
@@ -215,11 +213,10 @@ class TestMain:
         ],
         indirect=True
     )
-    def test_case_12(self, mock_file_system, mock_os_functions):
+    def test_case_13(self, mock_file_system, mock_os_functions):
         with pytest.raises(SyntaxError, match=r"unexpected EOF while parsing"): #dovuto ad ast
             main()
 
-    @patch('builtins.print')
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
         [
@@ -228,8 +225,8 @@ class TestMain:
         ],
         indirect=True
     )
-    def test_case_13(self, mock_print, mock_file_system, mock_os_functions):
-        with pytest.raises(SyntaxError, match=r"invalid syntax"):  # dovuto ad ast
+    def test_case_14(self, mock_file_system, mock_os_functions):
+        with pytest.raises(SyntaxError, match=r"invalid syntax"):
             main()
 
     # Abbiamo compreso che dict_generator non crea un dizionario di tutte le parole con la frequenza delle parole in tutti i file ma solo dell'ultimo file in cui era presente la parola
@@ -242,19 +239,20 @@ class TestMain:
         ],
         indirect=True
     )
-    def test_case_14(self, mock_print, mock_file_system, mock_os_functions):
+    def test_case_15(self, mock_print, mock_file_system, mock_os_functions):
         main()
         expected_file = 'text_mining_dict.txt'
         assert expected_file in mock_file_system[
             '/Predicting-Vulnerable-Code/Dataset2/mining_results'], f"Il file {expected_file} avrebbe dovuto essere creato."
-        _, mock_open = mock_os_functions
+        mock_chdir, mock_open = mock_os_functions
 
         mock_open().write.assert_called_once_with("{'package': 1, 'net': 1, 'bull': 1, 'javamelody': 1, 'import': 6, 'java': 4, 'io': 3}")
 
         # Verifica la chiamata alla funzione print
         mock_print.assert_any_call("Ci sono :7 chiavi(che) !")
+        assert mock_chdir.call_count == 206
 
-    @patch('builtins.print')
+
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
         [
@@ -264,7 +262,7 @@ class TestMain:
         ],
         indirect=True
     )
-    def test_case_15(self, mock_print, mock_file_system, mock_os_functions):
+    def test_case_16(self, mock_file_system, mock_os_functions):
         with pytest.raises(PermissionError):  # dovuto ad ast
             main()
 
@@ -276,7 +274,7 @@ class TestMain:
         ],
         indirect=True
     )
-    def test_case_16(self, mock_file_system, mock_os_functions):
+    def test_case_17(self, mock_file_system, mock_os_functions):
         with pytest.raises(SyntaxError, match=r"invalid syntax"):  # dovuto ad ast
             main()
 
@@ -288,7 +286,7 @@ class TestMain:
         ],
         indirect=True
     )
-    def test_case_17(self, mock_file_system, mock_os_functions):
+    def test_case_18(self, mock_file_system, mock_os_functions):
         with pytest.raises(PermissionError):
             main()
 

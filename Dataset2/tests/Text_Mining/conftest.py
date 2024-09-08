@@ -230,7 +230,7 @@ def mock_os_functions(mock_file_system, request):
             if file not in mock_file_system[path]:
                 raise FileNotFoundError(f"No such file: '{file}'")
 
-        file_mock = mock(file, mode)
+        file_mock = mock(file, mode, encoding)
         file_mock.read = MagicMock(return_value=file_contents.get(file, ''))
 
         if 'w' in mode or 'a' in mode:
