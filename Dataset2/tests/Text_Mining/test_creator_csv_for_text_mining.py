@@ -270,11 +270,28 @@ class TestMain:
               'file': 'Example.java_text_mining.txt'}, {
                  'file_contents': {
                      'FilteredTextMining.txt': '''{'package': 723, 'java': 16, 'apache': 32, 'sdk': 24, 'web': 1650, 'util': 986, 'import': 584, 'com': 180, 'static': 70}''',
-                     'Example.java_text_mining.txt': '''{}'''}})
+                     'Example.java_text_mining.txt': '''{'package': 1, 'com': 18, 'apache': 5, 'sdk': 2, 'import': 23, 'java': 6, 'util': 13}'''},
+                 'file_to_fail': 'csv_mining_final.csv', 'type_error': 'perm_error'})
         ],
         indirect=True
     )
     def test_case_14(self, mock_file_system, mock_os_functions):
+        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
+        with pytest.raises(PermissionError):  # dovuto ad ast
+            main()
+
+    @pytest.mark.parametrize(
+        'mock_file_system, mock_os_functions',
+        [
+            ({'repo_empty': 2, 'cvd_id_empty': 2, 'folder_empty': 2, 'cvd_id': "cvd_id1", 'folder': "folder1",
+              'file': 'Example.java_text_mining.txt'}, {
+                 'file_contents': {
+                     'FilteredTextMining.txt': '''{'package': 723, 'java': 16, 'apache': 32, 'sdk': 24, 'web': 1650, 'util': 986, 'import': 584, 'com': 180, 'static': 70}''',
+                     'Example.java_text_mining.txt': '''{}'''}})
+        ],
+        indirect=True
+    )
+    def test_case_15(self, mock_file_system, mock_os_functions):
         mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
         _, mock_open = mock_os_functions
         main()
@@ -325,7 +342,6 @@ class TestMain:
         text_mining_substring_present = any("text_mining.txt" in call[0][0] for call in mock_open.call_args_list)
         assert text_mining_substring_present, "La sottostringa 'text_mining.txt' non è presente nelle chiamate a open."
 
-
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
         [
@@ -337,7 +353,7 @@ class TestMain:
         ],
         indirect=True
     )
-    def test_case_15(self, mock_file_system, mock_os_functions):
+    def test_case_16(self, mock_file_system, mock_os_functions):
         mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
         mock_chdir, mock_open = mock_os_functions
         print(mock_open.call_args_list)
@@ -356,7 +372,7 @@ class TestMain:
         ],
         indirect=True
     )
-    def test_case_16(self, mock_file_system, mock_os_functions):
+    def test_case_17(self, mock_file_system, mock_os_functions):
         mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
         mock_chdir, mock_open = mock_os_functions
         with pytest.raises(PermissionError):
@@ -375,7 +391,7 @@ class TestMain:
         ],
         indirect=True
     )
-    def test_case_17(self, mock_print, mock_file_system, mock_os_functions):
+    def test_case_18(self, mock_print, mock_file_system, mock_os_functions):
         mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
         mock_chdir, mock_open = mock_os_functions
         main()
@@ -394,7 +410,7 @@ class TestMain:
         ],
         indirect=True
     )
-    def test_case_18(self, mock_file_system, mock_os_functions):
+    def test_case_19(self, mock_file_system, mock_os_functions):
         mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
         mock_chdir, mock_open = mock_os_functions
         main()
