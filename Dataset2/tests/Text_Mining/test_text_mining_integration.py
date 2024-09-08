@@ -330,7 +330,7 @@ class TestTextMiningIntegration:
         less_element_main()
         creator_csv_main()
 
-        file_path_csv = os.path.join(mining_results_dir, "mining_results", "csv_mining_final.csv")
+        file_path_csv = os.path.join(self.BASE_DIR, "mining_results", "csv_mining_final.csv")
         for i in range(1, 36, 1):
             if i < 17:
                 if i % 2 == 0:
