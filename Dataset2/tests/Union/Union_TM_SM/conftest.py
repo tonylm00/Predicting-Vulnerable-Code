@@ -177,7 +177,7 @@ def fixture_both_csv(base_fixture):
 
 
 @pytest.fixture
-def fixture_both_csv_empy(base_fixture):
+def fixture_both_csv_empty(base_fixture):
     text_mining_dir, software_metrics_dir, _ = base_fixture
 
     # Creazione dei file temporanei nelle directory appropriate
