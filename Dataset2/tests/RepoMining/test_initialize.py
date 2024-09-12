@@ -89,7 +89,7 @@ class TestInitialize:
     @patch('os.getcwd')
     @patch('os.mkdir')
     @pytest.mark.parametrize('mock_chdir_fail', ['mining_results'], indirect=True)
-    def test_case_ADD(self, mock_mkdir, mock_getcwd, mock_listdir, mock_open, mock_chdir_fail, setup_dir):
+    def test_case_4(self, mock_mkdir, mock_getcwd, mock_listdir, mock_open, mock_chdir_fail, setup_dir):
         # Setup mocks
         mock_getcwd.return_value = 'Dataset2/tests/RepoMining'
 
@@ -115,7 +115,7 @@ class TestInitialize:
     @patch('os.getcwd')
     @patch('os.mkdir')
     @patch('os.chdir')
-    def test_case_4(self, mock_chdir, mock_mkdir, mock_getcwd, mock_open, mock_listdir, mock_start_mining, setup_dir):
+    def test_case_5(self, mock_chdir, mock_mkdir, mock_getcwd, mock_open, mock_listdir, mock_start_mining, setup_dir):
 
         invalid_csv_content = ''';repo_url;commit_id;cls
         0,https://github.com/spring-projects/spring-webflow,57f2ccb66946943fbf3b3f2165eac1c8eb6b1523,pos
@@ -149,7 +149,7 @@ class TestInitialize:
 
     @pytest.mark.parametrize('process_data', [False], indirect=True)
     @pytest.mark.parametrize('mock_setup_repo_exist', [True], indirect=True)
-    def test_case_5(self, mock_setup_repo_exist, process_data, setup_dir):
+    def test_case_6(self, mock_setup_repo_exist, process_data, setup_dir):
         mock_listdir, mock_cwd, mock_mkdir, mock_op, mock_chdir, mock_start, extracted_data = mock_setup_repo_exist
 
         # Call the function to test
@@ -171,7 +171,7 @@ class TestInitialize:
 
     @pytest.mark.parametrize('process_data', [True], indirect=True)
     @pytest.mark.parametrize('mock_setup_repo_exist', [False], indirect=True)
-    def test_case_6(self, mock_setup_repo_exist, process_data, setup_dir):
+    def test_case_7(self, mock_setup_repo_exist, process_data, setup_dir):
         mock_listdir, mock_cwd, mock_mkdir, mock_op, mock_chdir, mock_start, extracted_data = mock_setup_repo_exist
 
         # Call the function to test
