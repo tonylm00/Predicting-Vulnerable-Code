@@ -56,7 +56,7 @@ def mock_setup_repo_exist(request, process_data):
 
     input_csv_data, extracted_data = process_data
     with patch('os.listdir', return_value=list_dir) as mock_listdir, \
-         patch('os.getcwd', return_value='test/path') as mock_cwd, \
+         patch('os.getcwd', return_value='Dataset2/tests/RepoMining') as mock_cwd, \
          patch('os.mkdir') as mock_mkdir, \
          patch('builtins.open', mock_open(read_data=input_csv_data)) as mock_op, \
          patch('os.chdir') as mock_chdir, \
@@ -80,6 +80,26 @@ def mock_op_fail(request):
     # Patch 'builtins.open' with our mock side effect
     with patch('builtins.open', mock_open_side_effect) as _mock_open:
         yield mock  # Yield the file name to the test
+
+@pytest.fixture
+def mock_chdir_fail(request):
+    path_to_fail = request.param
+
+    # Create a mock for os.chdir
+    mock_chdir = Mock()
+
+    # Define the side effect function for the mock
+    def mock_chdir_side_effect(path):
+        if path == path_to_fail:
+            raise FileNotFoundError(f"No such file or directory: '{path}'")
+        return None
+
+    # Attach the side effect to the mock
+    mock_chdir.side_effect = mock_chdir_side_effect
+
+    # Patch 'os.chdir' with the mock and yield it
+    with patch('os.chdir', mock_chdir) as patched_chdir:
+        yield patched_chdir
 
 
 @pytest.fixture
@@ -305,7 +325,7 @@ def mock_os_chdir(request):
         yield mock_chdir
 
 
-def generate_csv_string(num_rows, is_format_invalid=False, is_link_invalid=False):
+def generate_csv_string(num_rows, is_format_valid=True, is_link_valid=True, is_link_existent=True, is_repo_valid=True, is_commit_existent=True, is_commit_valid=True, is_mod_present=True, is_java_present=True, is_scb_absent=True, is_git_error=False):
     # Fixed data for predictable results
 
 
@@ -316,14 +336,17 @@ def generate_csv_string(num_rows, is_format_invalid=False, is_link_invalid=False
     ]
     cls_values = ["pos", "neg"]
 
+    count=0
+
     # Prepare predictable commit IDs
-    base_commit_id = "0a"  # Simplified commit ID base
+    commit_id = "0a"  # Simplified commit ID base
+
 
     # Use StringIO to capture CSV output as a string
     output = io.StringIO()
     writer = csv.writer(output, lineterminator='\n')  # Use Unix-style line endings
 
-    if is_format_invalid:
+    if not is_format_valid:
         writer.writerow(['cve_id', 'commit_id', 'cls'])  # Header
         writer.writerow(['00', '11', 'pos'])  # Header
     else:
@@ -331,11 +354,58 @@ def generate_csv_string(num_rows, is_format_invalid=False, is_link_invalid=False
 
         for i in range(num_rows):
             cve_id = i
-            if is_link_invalid:
+            if not is_link_valid:
                 repo_url = "link_not_valid"
+                is_link_valid=True
             else:
-                repo_url = repo_urls[i % len(repo_urls)]  # Cycle through repo URLs
-            commit_id = base_commit_id * (i % 4 + 1)  # Generate predictable commit IDs
+                if not is_link_existent:
+                    repo_url = "https://github"
+                    is_link_existent=True
+                else:
+                    if not is_repo_valid:
+                        repo_url = 'https://github.com/spring-projects/not_valid'
+                    else:
+                        if not is_commit_existent:
+                            repo_url = 'https://github.com/spring-projects/spring-webflow'
+                            commit_id = '1200fh3'
+                            is_repo_valid = False
+                        else:
+                            if not is_commit_valid:
+                                if count == 0:
+                                    repo_url = 'https://github.com/apache/poi'
+                                    commit_id = 'd72bd78c19dfb7b57395a66ae8d9269d59a87bd2'
+                                elif count ==1:
+                                    repo_url = 'https://github.com/apache/santuario-java'
+                                    commit_id = 'a09b9042f7759d094f2d49f40fc7bcf145164b25'
+                                else:
+                                    repo_url = 'https://github.com/spring-projects/not_valid'
+                                count+=1
+
+                            else:
+                                if not is_mod_present:
+                                    repo_url = 'https://github.com/bahmutov/test-make-empty-github-commit'
+                                    commit_id = 'bb87e5f'
+                                    is_repo_valid=False
+                                else:
+                                    if is_java_present:
+                                        if not is_scb_absent:
+                                            if is_git_error:
+                                                repo_url = 'https://github.com/apache/flink'
+                                                commit_id = 'd9931c8af05d0f1f721be9fe920690fe122507ad'
+                                                is_repo_valid=False
+                                            else:
+                                                repo_url = 'https://github.com/learning-zone/java-basics'
+                                                commit_id = '8ab4deb1030b4d863f8d8048b892d34f18dfaebe'
+                                                is_repo_valid=False
+                                        else:
+                                            repo_url = 'https://github.com/winterbe/java8-tutorial'
+                                            commit_id = '81a0fa3aa1d6ec2409e0226d3a6c2f5c2d19a41d'
+                                            is_repo_valid=False
+                                    else:
+                                        repo_url = 'https://github.com/vi3k6i5/pandas_basics'
+                                        commit_id = '340c441'
+                                        is_repo_valid=False
+
             cls = cls_values[i % len(cls_values)]  # Cycle through cls values
 
             writer.writerow([cve_id, repo_url, commit_id, cls])
@@ -431,6 +501,9 @@ def create_temp_file_sys(request, manage_temp_input_files):
         os.chdir(cwd)
 
         print("CWD-AFTER-CREATE-CHDIR:", os.getcwd())
+
+        if 'Dataset_Divided' not in dir_names:
+            dir_names.append('Dataset_Divided')
 
         for dir in dir_names:
             print("DIR:", dir)

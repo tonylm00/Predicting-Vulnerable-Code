@@ -86,6 +86,7 @@ def startMiningRepo(data, cwd, repoName):
                     toWrite = toWrite +status
                     file1.write(toWrite)
                     file2.write(toWrite+","+commit_id)
+                    j+=1
 
             else:
                 status = statusNE

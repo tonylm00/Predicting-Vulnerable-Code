@@ -206,33 +206,52 @@ class TestStartMiningRepo:
     @pytest.mark.parametrize('mock_repo_mining', [(False, False, False, False)], indirect=True)
     def test_case_8(self, mock_chdir, mock_mkdir, mock_files, mock_requests_get, mock_repo_mining):
 
-        url_repo_exist = 'https://github.com/apache/poi'
-        commit_exist = 'd72bd78c19dfb7b57395a66ae8d9269d59a87bd2'
+        url_repo_exist_1 = 'https://github.com/apache/poi'
+        commit_exist_1 = 'd72bd78c19dfb7b57395a66ae8d9269d59a87bd2'
 
-        content = {
+        url_repo_exist_2 = 'https://github.com/apache/santuario-java'
+        commit_exist_2 = 'a09b9042f7759d094f2d49f40fc7bcf145164b25'
+
+        content_1 = {
             'cve_id': 1,
-            'repo_url': url_repo_exist,
-            'commit_id': commit_exist,
+            'repo_url': url_repo_exist_1,
+            'commit_id': commit_exist_1,
             'cls': 'pos'
         }
 
-        data = {0: content}
+        content_2 = {
+            'cve_id': 2,
+            'repo_url': url_repo_exist_2,
+            'commit_id': commit_exist_2,
+            'cls': 'pos'
+        }
+
+        data = {0: content_1, 1:content_2}
 
         repoName = "TestRepo"
 
         startMiningRepo(data, self.CWD, repoName)
 
         statusVE = "VALUE ERROR! COMMIT HASH NOT EXISTS\n"
-        str_check = f"indice: 1 link repo: {content['repo_url']} status: " + statusVE
-        str_err = f"indice: 1 link repo: {content['repo_url']} status: " + statusVE + "," + commit_exist
+        str_check_1 = f"indice: 1 link repo: {content_1['repo_url']} status: " + statusVE
+        str_err_1 = f"indice: 1 link repo: {content_1['repo_url']} status: " + statusVE + "," + commit_exist_1
+
+        str_check_2 = f"indice: 2 link repo: {content_2['repo_url']} status: " + statusVE
+        str_err_2 = f"indice: 2 link repo: {content_2['repo_url']} status: " + statusVE + "," + commit_exist_2
 
 
         mock_requests_get.assert_has_calls([
-            call(url_repo_exist + ".git"),
-            call(url_repo_exist +"/commit/"+ commit_exist )
+            call(url_repo_exist_1 + ".git"),
+            call(url_repo_exist_1 +"/commit/"+ commit_exist_1 ),
+            call(url_repo_exist_2 + ".git"),
+            call(url_repo_exist_2 + "/commit/" + commit_exist_2)
         ])
 
-        mock_repo_mining.assert_called_once_with(url_repo_exist + '.git', commit_exist)
+
+        mock_repo_mining.assert_has_calls([
+            call(url_repo_exist_1 + '.git', commit_exist_1),
+            call(url_repo_exist_2 + '.git', commit_exist_2),
+        ])
 
         mock_chdir.assert_not_called()
 
@@ -241,8 +260,14 @@ class TestStartMiningRepo:
         check_file_mock = mock_files[self.CHECK_FILE_NAME]()
         error_file_mock = mock_files[self.ERR_FILE_NAME]()
 
-        check_file_mock.write.assert_called_once_with(str_check)
-        error_file_mock.write.assert_called_once_with(str_err)
+        check_file_mock.write.assert_has_calls([
+            call(str_check_1),
+            call(str_check_2),
+        ])
+        error_file_mock.write.assert_has_calls([
+            call(str_err_1),
+            call(str_err_2),
+        ])
 
 
     @patch('os.chdir')
