@@ -123,7 +123,7 @@ class TestTextMiningIntegration:
     def test_case_5(self, setup_environment, create_temp_file):
         for i in range(1, 36, 1):
             if i != 18:
-                create_temp_file(self.BASE_DIR + "/mining_results/" + f"RepositoryMining{i}/" + f".DS_Store", "")
+                create_temp_file(self.BASE_DIR + "/mining_results/" + f"RepositoryMining{i}/" + f"CHECK.txt", "")
 
         text_mining_main()
         dict_gen_main()
@@ -212,7 +212,7 @@ class TestTextMiningIntegration:
     def test_case_8(self, setup_environment, create_temp_file):
         for i in range(1, 36, 1):
             if i != 18:
-                create_temp_file(self.BASE_DIR + "/mining_results/" + f"RepositoryMining{i}/" + str(i) + f"CHECK.txt", "")
+                create_temp_file(self.BASE_DIR + "/mining_results/" + f"RepositoryMining{i}/" + str(i) + f"/.DS_Store", "")
 
         text_mining_main()
         dict_gen_main()
@@ -288,7 +288,7 @@ class TestTextMiningIntegration:
     def test_case_10(self, setup_environment, create_temp_file):
         for i in range(1, 36, 1):
             if i != 18:
-                create_temp_file(self.BASE_DIR + "/mining_results/" + f"RepositoryMining{i}/" + str(i) + f"commit{i}/" + f".DS_Store", "")
+                create_temp_file(self.BASE_DIR + "/mining_results/" + f"RepositoryMining{i}/" + str(i) + f"/commit{i}/" + f".DS_Store", "")
 
         text_mining_main()
         dict_gen_main()
