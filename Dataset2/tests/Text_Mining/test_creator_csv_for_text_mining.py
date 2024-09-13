@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, call
 from Dataset2.Text_Mining.creator_csv_for_TextMining import main
 
 class TestMain:
@@ -101,6 +101,7 @@ class TestMain:
         text_mining_absent = all("text_mining.txt" not in call[0][0] for call in mock_open.call_args_list)
         assert text_mining_absent, "La sottostringa 'text_mining.txt' è presente nelle chiamate a open."
         assert mock_chdir.call_count == 70
+        assert mock_open().write.call_args_list == [call('NameClass'), call(' ,apache'), call(' ,import'), call(' ,org'), call(' ,package'), call(' ,shiro'), call(' ,util'), call(' ,web'), call(' ,class'), call('\n\n')]
 
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
@@ -134,6 +135,8 @@ class TestMain:
         text_mining_absent = all("text_mining.txt" not in call[0][0] for call in mock_open.call_args_list)
         assert text_mining_absent, "La sottostringa 'text_mining.txt' è presente nelle chiamate a open."
         assert mock_chdir.call_count == 70
+        assert mock_open().write.call_args_list == [call('NameClass'), call(' ,apache'), call(' ,import'), call(' ,org'), call(' ,package'), call(' ,shiro'), call(' ,util'), call(' ,web'), call(' ,class'), call('\n\n')]
+
 
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
@@ -151,6 +154,7 @@ class TestMain:
         text_mining_absent = all("text_mining.txt" not in call[0][0] for call in mock_open.call_args_list)
         assert text_mining_absent, "La sottostringa 'text_mining.txt' è presente nelle chiamate a open."
         assert mock_chdir.call_count == 138
+        assert mock_open().write.call_args_list == [call('NameClass'), call(' ,apache'), call(' ,import'), call(' ,org'), call(' ,package'), call(' ,shiro'), call(' ,util'), call(' ,web'), call(' ,class'), call('\n\n')]
 
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
@@ -184,6 +188,7 @@ class TestMain:
         text_mining_absent = all("text_mining.txt" not in call[0][0] for call in mock_open.call_args_list)
         assert text_mining_absent, "La sottostringa 'text_mining.txt' è presente nelle chiamate a open."
         assert mock_chdir.call_count == 138
+        assert mock_open().write.call_args_list == [call('NameClass'), call(' ,apache'), call(' ,import'), call(' ,org'), call(' ,package'), call(' ,shiro'), call(' ,util'), call(' ,web'), call(' ,class'), call('\n\n')]
 
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
@@ -201,6 +206,7 @@ class TestMain:
         text_mining_absent = all("text_mining.txt" not in call[0][0] for call in mock_open.call_args_list)
         assert text_mining_absent, "La sottostringa 'text_mining.txt' è presente nelle chiamate a open."
         assert mock_chdir.call_count == 206
+        assert mock_open().write.call_args_list == [call('NameClass'), call(' ,apache'), call(' ,import'), call(' ,org'), call(' ,package'), call(' ,shiro'), call(' ,util'), call(' ,web'), call(' ,class'), call('\n\n')]
 
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
@@ -399,6 +405,7 @@ class TestMain:
         assert text_mining_absent, "La sottostringa 'text_mining.txt' è presente nelle chiamate a open."
         assert mock_chdir.call_count == 206
         mock_print.assert_any_call(".DS_Store occured")
+        assert mock_open().write.call_args_list == [call('NameClass'), call(' ,apache'), call(' ,import'), call(' ,org'), call(' ,package'), call(' ,shiro'), call(' ,util'), call(' ,web'), call(' ,class'), call('\n\n')]
 
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
@@ -417,3 +424,4 @@ class TestMain:
         text_mining_absent = all("text_mining.txt" not in call[0][0] for call in mock_open.call_args_list)
         assert text_mining_absent, "La sottostringa 'text_mining.txt' è presente nelle chiamate a open."
         assert mock_chdir.call_count == 206
+        assert mock_open().write.call_args_list == [call('NameClass'), call(' ,apache'), call(' ,import'), call(' ,org'), call(' ,package'), call(' ,shiro'), call(' ,util'), call(' ,web'), call(' ,class'), call('\n\n')]
