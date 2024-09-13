@@ -13,21 +13,27 @@ def divide_dataset_to_test():
     '''
     Divide the entire dataset in small pieces of 50 commits.
     '''
-    print("OS_CWD_BEFORE_CHDIR:", os.getcwd())
     os.chdir("..")
     cwd = os.getcwd()
-    print("OS_CWD_TESTF:", cwd)
-    print("OS_LISTDIR_TESTF:", os.listdir())
-
     csvfile = open('initial_Dataset.csv', 'r').readlines()
     filename = 1
     if "Dataset_Divided" not in os.listdir():
         os.mkdir("Dataset_Divided")
     os.chdir(cwd + "/Dataset_Divided")
-    for i in range(len(csvfile)):
-        if i % 50 == 0:
-            open(str(filename) + '.csv', 'w+').writelines(csvfile[i:i + 50])
-            filename += 1
+    header = csvfile[0]
+
+    csvfile = csvfile[1:]
+
+    if len(csvfile)==0:
+        with open(str(filename) + '.csv', 'w+') as new_file:
+            new_file.writelines([header])
+    else:
+        for i in range(0, len(csvfile)):
+            if i % 50 == 0:
+                with open(str(filename) + '.csv', 'w+') as new_file:
+                    new_file.write(header)
+                    new_file.writelines(csvfile[i:i + 50])
+                filename += 1
 
 class TestDivideDataset:
 
@@ -92,7 +98,6 @@ class TestDivideDataset:
     # FALLIMENTO: QUANDO NON HO RECORD MI ASPETTO DIVIDE_DATASET DIR VUOTA
     # ERRORE: 1.CSV CONTIENE GLI HEADER DI INITIAL DATASET (SONO PRESENTI SOLO IN QUESTO FILE)
 
-    @pytest.mark.xfail
     @patch('os.getcwd', return_value=TEST_PATH)
     @patch('os.listdir', return_value=[])
     @patch('os.chdir')

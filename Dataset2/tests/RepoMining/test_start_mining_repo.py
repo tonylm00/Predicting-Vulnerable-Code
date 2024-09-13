@@ -16,13 +16,37 @@ class TestStartMiningRepo:
 
     CWD = '/test/path'
 
+    @patch('os.mkdir')  # Mock os.chdir if needed
+    @patch('os.chdir')  # Mock os.chdir if needed
+    @pytest.mark.parametrize('mock_files', [
+        {CHECK_FILE_NAME: 'File1 content', ERR_FILE_NAME: 'File2 content'}
+    ], indirect=True)
+    def test_case_1(self, mock_chdir, mock_mkdir, mock_files):
+        # content missing cve_id key
+
+        data = dict()
+
+        repoName = "TestRepo"
+
+        startMiningRepo(data, self.CWD, repoName)  # Function that triggers the file operation
+
+        mock_chdir.assert_not_called()
+
+        mock_mkdir.assert_not_called()
+
+        check_file_mock = mock_files[self.CHECK_FILE_NAME]()
+        error_file_mock = mock_files[self.ERR_FILE_NAME]()
+
+        check_file_mock.write.assert_not_called()
+        error_file_mock.write.assert_not_called()
+
 
     @patch('os.mkdir')  # Mock os.chdir if needed
     @patch('os.chdir')  # Mock os.chdir if needed
     @pytest.mark.parametrize('mock_files', [
         {CHECK_FILE_NAME: 'File1 content', ERR_FILE_NAME: 'File2 content'}
     ], indirect=True)
-    def test_case_3(self, mock_chdir, mock_mkdir, mock_files):
+    def test_case_2(self, mock_chdir, mock_mkdir, mock_files):
 
         #content missing cve_id key
         content = {
@@ -53,7 +77,7 @@ class TestStartMiningRepo:
         {CHECK_FILE_NAME: 'File1 content', ERR_FILE_NAME: 'File2 content'}
     ], indirect=True)
     @pytest.mark.parametrize('mock_requests_get', [(False, False, False, False)], indirect=True)
-    def test_case_4(self, mock_chdir, mock_mkdir, mock_files, mock_requests_get):
+    def test_case_3(self, mock_chdir, mock_mkdir, mock_files, mock_requests_get):
 
         invalid_url = 'not_url'
 
@@ -86,7 +110,7 @@ class TestStartMiningRepo:
         {CHECK_FILE_NAME: 'File1 content', ERR_FILE_NAME: 'File2 content'}
     ], indirect=True)
     @pytest.mark.parametrize('mock_requests_get', [(True, False, False, False)], indirect=True)
-    def test_case_5(self, mock_chdir, mock_mkdir, mock_files, mock_requests_get):
+    def test_case_4(self, mock_chdir, mock_mkdir, mock_files, mock_requests_get):
 
         url_link_not_exist = 'https://github'
 
@@ -121,7 +145,7 @@ class TestStartMiningRepo:
         {CHECK_FILE_NAME: 'File1 content', ERR_FILE_NAME: 'File2 content'}
     ], indirect=True)
     @pytest.mark.parametrize('mock_requests_get', [(True, True, False, False)], indirect=True)
-    def test_case_6(self, mock_chdir, mock_mkdir, mock_files, mock_requests_get):
+    def test_case_5(self, mock_chdir, mock_mkdir, mock_files, mock_requests_get):
 
         url_repo_not_exist = 'https://github.com/repo_not_found'
 
@@ -161,7 +185,7 @@ class TestStartMiningRepo:
         {CHECK_FILE_NAME: 'File1 content', ERR_FILE_NAME: 'File2 content'}
     ], indirect=True)
     @pytest.mark.parametrize('mock_requests_get', [(True, True, True, False)], indirect=True)
-    def test_case_7(self, mock_chdir, mock_mkdir, mock_files, mock_requests_get):
+    def test_case_6(self, mock_chdir, mock_mkdir, mock_files, mock_requests_get):
 
         url_repo_exist = 'https://github.com/spring-projects/spring-webflow'
         commit_not_exist = '1200fh3'
@@ -204,7 +228,7 @@ class TestStartMiningRepo:
     ], indirect=True)
     @pytest.mark.parametrize('mock_requests_get', [(True, True, True, True)], indirect=True)
     @pytest.mark.parametrize('mock_repo_mining', [(False, False, False, False)], indirect=True)
-    def test_case_8(self, mock_chdir, mock_mkdir, mock_files, mock_requests_get, mock_repo_mining):
+    def test_case_7(self, mock_chdir, mock_mkdir, mock_files, mock_requests_get, mock_repo_mining):
 
         url_repo_exist_1 = 'https://github.com/apache/poi'
         commit_exist_1 = 'd72bd78c19dfb7b57395a66ae8d9269d59a87bd2'
@@ -277,7 +301,7 @@ class TestStartMiningRepo:
     ], indirect=True)
     @pytest.mark.parametrize('mock_requests_get', [(True, True, True, True)], indirect=True)
     @pytest.mark.parametrize('mock_repo_mining', [(True, False, False, False)], indirect=True)
-    def test_case_9(self, mock_mkdir, mock_chdir, mock_files, mock_requests_get, mock_repo_mining):
+    def test_case_8(self, mock_mkdir, mock_chdir, mock_files, mock_requests_get, mock_repo_mining):
 
         url_repo_exist = 'https://github.com/apache/poi'
         commit_exist = 'd72bd78c19dfb7b57395a66ae8d9269d59a87bd2'
@@ -323,7 +347,7 @@ class TestStartMiningRepo:
     ], indirect=True)
     @pytest.mark.parametrize('mock_requests_get', [(True, True, True, True)], indirect=True)
     @pytest.mark.parametrize('mock_repo_mining', [(True, True, False, False)], indirect=True)
-    def test_case_10(self, mock_mkdir, mock_chdir, mock_files, mock_requests_get, mock_repo_mining):
+    def test_case_9(self, mock_mkdir, mock_chdir, mock_files, mock_requests_get, mock_repo_mining):
 
         url_repo_exist = 'https://github.com/apache/poi'
         commit_exist = 'd72bd78c19dfb7b57395a66ae8d9269d59a87bd2'
@@ -373,7 +397,7 @@ class TestStartMiningRepo:
         {"cve_id": '1', "cve_id_exists": False, "commit_id": 'd72bd78c19dfb7b57395a66ae8d9269d59a87bd2' , "commit_exists": False}
     ]
         , indirect=True)
-    def test_case_11(self, mock_mkdir, mock_chdir, mock_files, mock_requests_get, mock_repo_mining, mock_os_listdir):
+    def test_case_10(self, mock_mkdir, mock_chdir, mock_files, mock_requests_get, mock_repo_mining, mock_os_listdir):
         mock_list, cve_id, commit_id = mock_os_listdir
 
         url_repo_exist = 'https://github.com/apache/poi'
@@ -435,7 +459,7 @@ class TestStartMiningRepo:
         {"cve_id": '1', "cve_id_exists": True, "commit_id": 'd72bd78c19dfb7b57395a66ae8d9269d59a87bd2' , "commit_exists": True}
     ]
         , indirect=True)
-    def test_case_12(self, mock_mkdir, mock_chdir, mock_files, mock_requests_get, mock_repo_mining, mock_os_listdir):
+    def test_case_11(self, mock_mkdir, mock_chdir, mock_files, mock_requests_get, mock_repo_mining, mock_os_listdir):
         mock_list, cve_id, commit_id = mock_os_listdir
 
         url_repo_exist = 'https://github.com/apache/poi'
@@ -494,7 +518,7 @@ class TestStartMiningRepo:
     ]
         , indirect=True)
     @pytest.mark.parametrize('mock_os_chdir', [{'error_path': None}], indirect=True)
-    def test_case_13(self, mock_mkdir, mock_files, mock_requests_get, mock_repo_mining, mock_os_listdir, mock_os_chdir):
+    def test_case_12(self, mock_mkdir, mock_files, mock_requests_get, mock_repo_mining, mock_os_listdir, mock_os_chdir):
         mock_list, cve_id, commit_id = mock_os_listdir
 
         url_repo_exist = 'https://github.com/apache/poi'
@@ -534,7 +558,7 @@ class TestStartMiningRepo:
     ]
         , indirect=True)
     @pytest.mark.parametrize('mock_os_chdir', [{'error_path': None}], indirect=True)
-    def test_case_14(self, mock_mkdir, mock_files, mock_requests_get, mock_repo_mining, mock_os_listdir, mock_os_chdir):
+    def test_case_13(self, mock_mkdir, mock_files, mock_requests_get, mock_repo_mining, mock_os_listdir, mock_os_chdir):
         mock_list, cve_id, commit_id = mock_os_listdir
 
         url_repo_exist = 'https://github.com/apache/poi'
@@ -577,7 +601,7 @@ class TestStartMiningRepo:
     ]
         , indirect=True)
     @pytest.mark.parametrize('mock_os_chdir', [{'check_path_exist': False, 'error_path': CWD + "/" + 'test'}], indirect=True)
-    def test_case_15(self, mock_mkdir, mock_files, mock_requests_get, mock_repo_mining, mock_os_listdir, mock_os_chdir):
+    def test_case_14(self, mock_mkdir, mock_files, mock_requests_get, mock_repo_mining, mock_os_listdir, mock_os_chdir):
         mock_list, cve_id, commit_id = mock_os_listdir
 
         url_repo_exist = 'https://github.com/apache/poi'
@@ -612,7 +636,7 @@ class TestStartMiningRepo:
         {'Default': None}
     ], indirect=True)
     @pytest.mark.parametrize('mock_op_permission_err', [CHECK_FILE_NAME], indirect=True)
-    def test_case_16(self, mock_chdir, mock_mkdir, mock_op_permission_err, mock_files):
+    def test_case_15(self, mock_chdir, mock_mkdir, mock_op_permission_err, mock_files):
 
         content = {
             'cve_id': '1',
@@ -639,7 +663,7 @@ class TestStartMiningRepo:
         {'Default': None}
     ], indirect=True)
     @pytest.mark.parametrize('mock_op_permission_err', [ERR_FILE_NAME], indirect=True)
-    def test_case_17(self, mock_chdir, mock_mkdir, mock_op_permission_err, mock_files):
+    def test_case_16(self, mock_chdir, mock_mkdir, mock_op_permission_err, mock_files):
 
         content = {
             'cve_id': '1',
