@@ -66,15 +66,38 @@ class TestRepoMiningIntegration:
         os.chdir('..')
         main_repo_mining()
 
+
+    @pytest.mark.parametrize('manage_temp_input_files', [
+        {},
+    ], indirect=True)
+    @pytest.mark.parametrize('create_temp_file_sys', [
+        ['mining_results']
+    ], indirect=True)
+    def test_case_1(self, create_temp_file_sys):
+        with pytest.raises(FileNotFoundError):
+            self.execute_pipeline()
+
     @pytest.mark.parametrize('manage_temp_input_files', [
         {},
     ], indirect=True)
     @pytest.mark.parametrize('create_temp_file_sys', [
         []
     ], indirect=True)
-    def test_case_ADD(self, create_temp_file_sys):
+    def test_case_2(self, create_temp_file_sys):
         with pytest.raises(FileNotFoundError):
             self.execute_pipeline()
+
+    @pytest.mark.parametrize('manage_temp_input_files', [
+        {'initial_Dataset.csv': generate_csv_string(DATASET_SIZE_TO_50, False)},
+    ], indirect=True)
+    @pytest.mark.parametrize('create_temp_file_sys', [
+        ['Dataset_Divided', 'mining_results']
+    ], indirect=True)
+    def test_case_3(self, manage_temp_input_files, create_temp_file_sys):
+        with pytest.raises(KeyError) as exc_info:
+            self.execute_pipeline()
+
+        assert "repo_url" in str(exc_info.value)
 
     @pytest.mark.parametrize('manage_temp_input_files', [
         {'initial_Dataset.csv': generate_csv_string(0)},
@@ -82,7 +105,7 @@ class TestRepoMiningIntegration:
     @pytest.mark.parametrize('create_temp_file_sys', [
         ['mining_results']
     ], indirect=True)
-    def test_case_ADD_SIZE_ZERO(self, create_temp_file_sys):
+    def test_case_4(self, create_temp_file_sys):
         start_cwd = os.getcwd()
 
         os.chdir('..')
@@ -102,46 +125,9 @@ class TestRepoMiningIntegration:
 
         error_path = os.path.join(os.getcwd(), "mining_results", "ERRORS.txt")
 
-
         assert dir_not_exist_before and dir_exist_after
         assert not os.path.exists(check_path)
         assert not os.path.exists(error_path)
-
-
-
-    @pytest.mark.parametrize('manage_temp_input_files', [
-        {'initial_Dataset.csv': generate_csv_string(1, False)},
-    ], indirect=True)
-    @pytest.mark.parametrize('create_temp_file_sys', [
-        ['Dataset_Divided', 'mining_results']
-    ], indirect=True)
-    def test_case_2(self, manage_temp_input_files, create_temp_file_sys):
-        with pytest.raises(KeyError) as exc_info:
-            self.execute_pipeline()
-
-        assert "repo_url" in str(exc_info.value)
-
-    @pytest.mark.parametrize('manage_temp_input_files', [
-        {},
-    ], indirect=True)
-    @pytest.mark.parametrize('create_temp_file_sys', [
-        ['mining_results']
-    ], indirect=True)
-    def test_case_1(self, create_temp_file_sys):
-        with pytest.raises(FileNotFoundError):
-            self.execute_pipeline()
-
-    @pytest.mark.parametrize('manage_temp_input_files', [
-        {'initial_Dataset.csv': generate_csv_string(DATASET_SIZE_TO_50, False)},
-    ], indirect=True)
-    @pytest.mark.parametrize('create_temp_file_sys', [
-        ['Dataset_Divided', 'mining_results']
-    ], indirect=True)
-    def test_case_2(self, manage_temp_input_files, create_temp_file_sys):
-        with pytest.raises(KeyError) as exc_info:
-            self.execute_pipeline()
-
-        assert "repo_url" in str(exc_info.value)
 
     @pytest.mark.parametrize('manage_temp_input_files', [
         {'initial_Dataset.csv': generate_csv_string(DATASET_SIZE_TO_50, True, False)},
@@ -149,7 +135,7 @@ class TestRepoMiningIntegration:
     @pytest.mark.parametrize('create_temp_file_sys', [
         ['mining_results']
     ], indirect=True)
-    def test_case_3(self, manage_temp_input_files, create_temp_file_sys):
+    def test_case_5(self, manage_temp_input_files, create_temp_file_sys):
         start_cwd = os.getcwd()
 
         os.chdir('..')
@@ -176,7 +162,7 @@ class TestRepoMiningIntegration:
     @pytest.mark.parametrize('create_temp_file_sys', [
         ['Dataset_Divided', 'mining_results']
     ], indirect=True)
-    def test_case_4(self, manage_temp_input_files, create_temp_file_sys):
+    def test_case_6(self, manage_temp_input_files, create_temp_file_sys):
 
         with pytest.raises(ConnectionError) as exc_info:
             self.execute_pipeline()
@@ -187,7 +173,7 @@ class TestRepoMiningIntegration:
     @pytest.mark.parametrize('create_temp_file_sys', [
         ['Dataset_Divided', 'mining_results']
     ], indirect=True)
-    def test_case_5(self, manage_temp_input_files, create_temp_file_sys):
+    def test_case_7(self, manage_temp_input_files, create_temp_file_sys):
         self.execute_pipeline()
 
         num_repos = int(DATASET_SIZE_OVER_50 // 50)+1
@@ -210,7 +196,7 @@ class TestRepoMiningIntegration:
     @pytest.mark.parametrize('create_temp_file_sys', [
         ['Dataset_Divided', 'mining_results']
     ], indirect=True)
-    def test_case_6(self, manage_temp_input_files, create_temp_file_sys):
+    def test_case_8(self, manage_temp_input_files, create_temp_file_sys):
         self.execute_pipeline()
 
         path_to_test_check = os.path.join(os.getcwd(), "mining_results", "RepositoryMining1", "CHECK.txt")
@@ -227,7 +213,7 @@ class TestRepoMiningIntegration:
     @pytest.mark.parametrize('create_temp_file_sys', [
         ['Dataset_Divided', 'mining_results']
     ], indirect=True)
-    def test_case_7(self, manage_temp_input_files, create_temp_file_sys):
+    def test_case_9(self, manage_temp_input_files, create_temp_file_sys):
         self.execute_pipeline()
 
         print("CWD-7: ", os.getcwd())
@@ -255,7 +241,7 @@ class TestRepoMiningIntegration:
     @pytest.mark.parametrize('create_temp_file_sys', [
         ['Dataset_Divided', 'mining_results']
     ], indirect=True)
-    def test_case_8(self, manage_temp_input_files, create_temp_file_sys):
+    def test_case_10(self, manage_temp_input_files, create_temp_file_sys):
         self.execute_pipeline()
 
         path_to_repo_mining = os.path.join(os.getcwd(), "mining_results", "RepositoryMining1")
@@ -280,7 +266,7 @@ class TestRepoMiningIntegration:
     @pytest.mark.parametrize('create_temp_file_sys', [
         ['Dataset_Divided', 'mining_results']
     ], indirect=True)
-    def test_case_9(self, manage_temp_input_files, create_temp_file_sys):
+    def test_case_11(self, manage_temp_input_files, create_temp_file_sys):
         self.execute_pipeline()
 
         path_to_repo_mining = os.path.join(os.getcwd(), "mining_results", "RepositoryMining1")
@@ -304,7 +290,7 @@ class TestRepoMiningIntegration:
     @pytest.mark.parametrize('create_temp_file_sys', [
         ['Dataset_Divided', 'mining_results']
     ], indirect=True)
-    def test_case_10(self, manage_temp_input_files, create_temp_file_sys):
+    def test_case_12(self, manage_temp_input_files, create_temp_file_sys):
         self.execute_pipeline()
 
         path_to_repo_mining = os.path.join(os.getcwd(), "mining_results", "RepositoryMining1")
@@ -328,7 +314,7 @@ class TestRepoMiningIntegration:
     @pytest.mark.parametrize('create_temp_file_sys', [
         ['Dataset_Divided', 'mining_results']
     ], indirect=True)
-    def test_case_11(self, manage_temp_input_files, create_temp_file_sys):
+    def test_case_13(self, manage_temp_input_files, create_temp_file_sys):
         self.execute_pipeline()
 
         path_to_repo_mining = os.path.join(os.getcwd(), "mining_results", "RepositoryMining1")
@@ -360,7 +346,7 @@ class TestRepoMiningIntegration:
     @pytest.mark.parametrize('create_temp_file_sys', [
         ['Dataset_Divided', 'mining_results']
     ], indirect=True)
-    def test_case_12(self, manage_temp_input_files, create_temp_file_sys):
+    def test_case_14(self, manage_temp_input_files, create_temp_file_sys):
         self.execute_pipeline()
 
         path_to_repo_mining = os.path.join(os.getcwd(), "mining_results", "RepositoryMining1")
