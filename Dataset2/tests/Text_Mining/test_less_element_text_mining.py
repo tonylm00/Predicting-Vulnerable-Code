@@ -14,8 +14,8 @@ class TestInitialize:
     @pytest.mark.parametrize('mock_getcwd', [{'path_to_return': '/Predicting-Vulnerable-Code/Dataset2/Text_Mining'}], indirect=True)
     def test_case_2(self, mock_chdir, mock_listdir, mock_getcwd):
         with patch('builtins.open', mock_open()) as mock_file:
-            initialize()
-
+            result = initialize()
+            assert result == None
             mock_file.assert_not_called()
 
     @pytest.mark.parametrize('mock_chdir', [{}], indirect=True)
@@ -74,8 +74,8 @@ class TestInitialize:
     @pytest.mark.parametrize('mock_getcwd', [{'path_to_return': '/Predicting-Vulnerable-Code/Dataset2/Text_Mining'}],
                              indirect=True)
     def test_case_8(self,  mock_print, mock_chdir, mock_listdir, mock_getcwd):
-        initialize()
-
+        result = initialize()
+        assert result == None
         assert mock_print.call_count == 4
         mock_print.assert_any_call("File doesn't exist, sorry :(")
 

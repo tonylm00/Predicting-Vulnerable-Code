@@ -68,7 +68,6 @@ class TestStringTokenizer:
 #I single line comment non vengono rimossi
 class TestRemoveComment:
     def test_case_1(self, mock_file_read_permission_error):
-        #java_file = io.StringIO(self.java_code)
         with pytest.raises(PermissionError):
             removeComments(mock_file_read_permission_error)
 
