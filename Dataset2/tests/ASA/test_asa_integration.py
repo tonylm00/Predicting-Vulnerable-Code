@@ -207,6 +207,23 @@ class TestASAIntegration:
 
         assert content == oracle_header + oracle_neg_output + oracle_pos_output
 
+    @pytest.mark.parametrize('manage_temp_input_files',
+                             [{RES_NEG_NAME, RES_POS_NAME}],
+                             indirect=True)
+    @pytest.mark.parametrize('remove_result_file', [{DICT_VUL_NAME, DICT_RUL_NAME, RESULT_CSV_NAME}], indirect=True)
+    @pytest.mark.parametrize('prepare_content_data', [(
+            {'file_name': RES_NEG_NAME, 'number_of_records': 0},
+            {'file_name': RES_POS_NAME, 'number_of_records': 0}
+    )
+    ], indirect=True)
+    def test_case_8(self, prepare_content_data, manage_temp_input_files, remove_result_file):
+        self.execute_pipeline()
+
+        with open(self.RESULT_CSV_NAME, 'r') as file:
+            text = file.read()
+
+            assert text == "Name, class\n"
+
 
 
 
