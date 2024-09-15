@@ -283,7 +283,7 @@ class TestMainCSV:
     )
     def test_case_14(self, mock_file_system, mock_os_functions):
         mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
-        with pytest.raises(PermissionError):  # dovuto ad ast
+        with pytest.raises(PermissionError):
             main()
 
     @pytest.mark.parametrize(
@@ -425,3 +425,19 @@ class TestMainCSV:
         assert text_mining_absent, "La sottostringa 'text_mining.txt' è presente nelle chiamate a open."
         assert mock_chdir.call_count == 206
         assert mock_open().write.call_args_list == [call('NameClass'), call(' ,apache'), call(' ,import'), call(' ,org'), call(' ,package'), call(' ,shiro'), call(' ,util'), call(' ,web'), call(' ,class'), call('\n\n')]
+
+    @pytest.mark.parametrize(
+        'mock_file_system, mock_os_functions',
+        [
+            ({'repo_empty': 2, 'cvd_id_empty': 2, 'folder_empty': 2, 'cvd_id': "cvd_id1", 'folder': "folder1",
+              'file': 'file_text_mining.txtdirectory'}, {
+                 'file_contents': {
+                     'FilteredTextMining.txt': '''{'package': 723, 'org': 16, 'apache': 32, 'shiro': 24, 'web': 1650, 'util': 986, 'import': 584}'''},
+                 'file_to_fail': 'file_text_mining.txtdirectory', 'type_error': 'directory_error'})
+        ],
+        indirect=True
+    )
+    def test_case_20(self, mock_file_system, mock_os_functions):
+        mock_file_system['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add("FilteredTextMining.txt")
+        with pytest.raises(IsADirectoryError):
+            main()
