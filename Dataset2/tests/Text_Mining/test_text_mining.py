@@ -170,7 +170,7 @@ class TestTakeJavaClass:
         with pytest.raises(IsADirectoryError):
             takeJavaClass("another_directory")
 
-class TestMain:
+class TestMainMining:
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
         [

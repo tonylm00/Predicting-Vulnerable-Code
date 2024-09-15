@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch, call
 from Dataset2.Text_Mining.creator_csv_for_TextMining import main
 
-class TestMain:
+class TestMainCSV:
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
         [

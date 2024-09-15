@@ -2,7 +2,7 @@ from unittest.mock import patch, mock_open
 import pytest
 from Dataset2.Text_Mining.dict_generator import main
 
-class TestMain:
+class TestMainDict:
     @pytest.mark.parametrize(
         'mock_file_system, mock_os_functions',
         [
