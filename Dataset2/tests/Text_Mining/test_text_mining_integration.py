@@ -135,7 +135,7 @@ class TestTextMiningIntegration:
 
             repo_name = f"RepositoryMining{i}"
             repo_dir = os.path.join(self.BASE_DIR, "mining_results", repo_name)
-            assert os.listdir(repo_dir) == [".DS_Store"]
+            assert os.listdir(repo_dir) == ["CHECK.txt"]
 
         file_path = os.path.join(self.BASE_DIR, "mining_results", "text_mining_dict.txt")
         with open(file_path, 'r') as file:
