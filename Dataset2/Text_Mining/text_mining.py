@@ -35,6 +35,7 @@ def removeComments(java_file):
 	text=java_file.read()
 	text=re.sub(r'\/\*(.|\n)*?\*\/',' ',text)
 	return text
+
 '''
 @Param java_file_name: name of the file.
 Execute the Tokenization deleting the comments, strings and no-Alpha characters.
