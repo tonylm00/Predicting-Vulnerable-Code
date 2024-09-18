@@ -65,7 +65,6 @@ class TestStringTokenizer:
         assert output == ["string", "main",
                           "return"], f"Test fallito per stringa con costanti e commenti. Output ottenuto: {output}"
 
-
 #I single line comment non vengono rimossi
 class TestRemoveComment:
     def test_case_1(self, mock_file_read_permission_error):
