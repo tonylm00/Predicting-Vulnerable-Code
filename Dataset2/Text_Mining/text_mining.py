@@ -11,30 +11,31 @@ perform the Text Mining.
 Delete the constant value inside the string line and return a vector of unigrams.
 '''
 def stringTokenizer(s):
-	#Take the string constant values
-    strings_values= re.findall(r'\"(.+?)\"', s)
-    #Take the comments
-    comments= re.findall(r'\/\/(.*)', s)
-    #Put the comments and the string values in a single list
-    discard_list= strings_values+comments
+    # Prendi i valori di stringa
+    discard_list = re.findall(r'\"(.+?)\"', s)
     tokens = re.findall(r"[\w']+|[^\w\s']", s)
-    #split the discard_list in words
+    # Dividi i valori di stringa in parole
     for string in discard_list:
-        word_vector=string.split(" ")
-        #remove each word in tokens
+        word_vector = string.split(" ")
+        # Rimuovi ogni parola nei tokens
         for word in word_vector:
-           if word in tokens:
-              tokens.remove(word)
+            if word in tokens:
+                tokens.remove(word)
     withoutAlpha = removeNotAlpha(tokens)
     return withoutAlpha
+
 '''
 @Param java_file: file object 
-Delete the different type of comments inside the "java_file".
+Delete all types of comments inside the "java_file".
 '''
 def removeComments(java_file):
-	text=java_file.read()
-	text=re.sub(r'\/\*(.|\n)*?\*\/',' ',text)
-	return text
+    text = java_file.read()
+    # Rimuovi i commenti multi-line
+    text = re.sub(r'\/\*(.|\n)*?\*\/', ' ', text)
+    # Rimuovi i commenti single-line
+    text = re.sub(r'\/\/.*', ' ', text)
+
+    return text
 
 '''
 @Param java_file_name: name of the file.
