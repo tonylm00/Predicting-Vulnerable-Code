@@ -56,7 +56,7 @@ class TestInitialize:
         output_file_path = output_dir_path / "output.csv"
 
         with pytest.raises(FileNotFoundError):
-            with output_file_path.open("w", encoding="utf-8") as output:
+            with output_file_path.open("w") as output:
                 initialize("", "mining_results_sm_final.csv", output)
 
         written_data = output_file_path.read_text()
@@ -67,7 +67,7 @@ class TestInitialize:
         output_file_path = output_dir_path / "output.csv"
 
         with pytest.raises(FileNotFoundError):
-            with output_file_path.open("w", encoding="utf-8") as output:
+            with output_file_path.open("w") as output:
                 initialize("not_csv_mining_final", "mining_results_sm_final.csv", output)
 
         written_data = output_file_path.read_text()
@@ -78,7 +78,7 @@ class TestInitialize:
         output_file_path = output_dir_path / "output.csv"
 
         with pytest.raises(FileNotFoundError):
-            with output_file_path.open("w", encoding="utf-8") as output:
+            with output_file_path.open("w") as output:
                 initialize("csv_mining_final", "", output)
 
         written_data = output_file_path.read_text()
@@ -90,7 +90,7 @@ class TestInitialize:
         output_file_path = output_dir_path / "output.csv"
 
         with pytest.raises(FileNotFoundError):
-            with output_file_path.open("w", encoding="utf-8") as output:
+            with output_file_path.open("w") as output:
                 initialize("csv_mining_final", "not_mining_results_sm_final", output)
 
         written_data = output_file_path.read_text()
@@ -108,7 +108,7 @@ class TestInitialize:
         # Esegui la funzione initialize e verifica che sollevi un `PermissionError`
         with pytest.raises(PermissionError):
             initialize("csv_mining_final.csv", "mining_results_sm_final.csv",
-                       output_file_path.open("w", encoding="utf-8"))
+                       output_file_path.open("w"))
 
         # Ripristina i permessi del file dopo il test per evitare problemi
         output_file_path.chmod(0o666)
@@ -120,7 +120,7 @@ class TestInitialize:
 
         # Esegui la funzione initialize e verifica che sollevi un FileNotFoundError
         with pytest.raises(FileNotFoundError):
-            with output_file_path.open("w", encoding="utf-8") as output:
+            with output_file_path.open("w") as output:
                 initialize("csv_mining_final.csv", "mining_results_sm_final.csv", output)
 
     def test_case_7(self, fixture_only_tm, base_fixture):
@@ -130,7 +130,7 @@ class TestInitialize:
 
         # Esegui la funzione initialize e verifica che sollevi un FileNotFoundError
         with pytest.raises(FileNotFoundError):
-            with output_file_path.open("w", encoding="utf-8") as output:
+            with output_file_path.open("w") as output:
                 initialize("csv_mining_final.csv", "mining_results_sm_final.csv", output)
 
     def test_case_8(self, fixture_empty_tm, base_fixture):
@@ -138,7 +138,7 @@ class TestInitialize:
         output_file_path = output_dir_path / "output.csv"
 
         # Esegui la funzione initialize usando i file temporanei
-        with output_file_path.open("w", encoding="utf-8") as output:
+        with output_file_path.open("w") as output:
             initialize("csv_mining_final.csv", "mining_results_sm_final.csv", output)
 
         # Leggi il contenuto dell'output per verificare
@@ -153,7 +153,7 @@ class TestInitialize:
         output_file_path = output_dir_path / "output.csv"
 
         # Esegui la funzione initialize usando i file temporanei
-        with output_file_path.open("w", encoding="utf-8") as output:
+        with output_file_path.open("w") as output:
             initialize("csv_mining_final.csv", "mining_results_sm_final.csv", output)
 
         # Leggi il contenuto dell'output per verificare
@@ -168,7 +168,7 @@ class TestInitialize:
         output_file_path = output_dir_path / "output.csv"
 
         # Esegui la funzione initialize usando i file temporanei
-        with output_file_path.open("w", encoding="utf-8") as output:
+        with output_file_path.open("w") as output:
             initialize("csv_mining_final.csv", "mining_results_sm_final.csv", output)
 
         # Leggi il contenuto dell'output per verificare
@@ -182,8 +182,7 @@ class TestInitialize:
         _, _, output_dir_path = base_fixture
         output_file_path = output_dir_path / "output.csv"
 
-        # Esegui la funzione initialize usando i file temporanei
-        with output_file_path.open("w", encoding="utf-8") as output:
+        with output_file_path.open("w") as output:
             initialize("csv_mining_final.csv", "mining_results_sm_final.csv", output)
 
         # Leggi il contenuto dell'output per verificare
@@ -198,7 +197,7 @@ class TestInitialize:
         output_file_path = output_dir_path / "output.csv"
 
         # Esegui la funzione initialize usando i file temporanei
-        with output_file_path.open("w", encoding="utf-8") as output:
+        with output_file_path.open("w") as output:
             initialize("csv_mining_final.csv", "mining_results_sm_final.csv", output)
 
         # Leggi il contenuto dell'output per verificare

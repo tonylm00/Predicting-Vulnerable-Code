@@ -192,3 +192,79 @@ def fixture_both_csv_empty(base_fixture):
     soft_m_csv_path.write_text(soft_m_csv_content)
 
     yield
+
+
+@pytest.fixture
+def fixture_both_csv_headers(base_fixture):
+    text_mining_dir, software_metrics_dir, _ = base_fixture
+
+    # Creazione dei file temporanei nelle directory appropriate
+    mining_csv_content = (
+        'NameClass,a1,a2,a3,a4,a5,a6,a7,a8,a9,class\n'
+    )
+    soft_m_csv_content = (
+        'kind,Name,m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,class\n'
+    )
+
+    # Scrivi i file nella struttura di directory
+    mining_csv_path = text_mining_dir / "csv_mining_final.csv"
+    soft_m_csv_path = software_metrics_dir / "mining_results_sm_final.csv"
+
+    mining_csv_path.write_text(mining_csv_content)
+    soft_m_csv_path.write_text(soft_m_csv_content)
+
+    yield
+
+
+@pytest.fixture
+def fixture_tm_not_valid_sm(base_fixture):
+    text_mining_dir, software_metrics_dir, _ = base_fixture
+
+    # Creazione dei file temporanei nelle directory appropriate
+    mining_csv_content = (
+        'NameClass,a1,a2,a3,a4,a5,a6,a7,a8,a9,class\n'
+        'tony.java;1;2;3 ,4,5,6,7,8,9,pos\n'
+        'paky,1,2,3,4,5,6,7,8,9,pos\n'
+        'dani,1,2,3,4,5,6,7,8,9,pos\n'
+    )
+    soft_m_csv_content = (
+        'kind,Name,m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,class\n'
+        'txt,nicola,1,2,3,4,5,6,7,8,9,10,11,pos\n'
+        'txt,tony.java,1,2,3,4,5,6,7,8,9,10,11,pos\n'
+    )
+
+    # Scrivi i file nella struttura di directory
+    mining_csv_path = text_mining_dir / "csv_mining_final.csv"
+    soft_m_csv_path = software_metrics_dir / "mining_results_sm_final.csv"
+
+    mining_csv_path.write_text(mining_csv_content)
+    soft_m_csv_path.write_text(soft_m_csv_content)
+
+    yield
+
+
+@pytest.fixture
+def fixture_tm_sm_not_valid(base_fixture):
+    text_mining_dir, software_metrics_dir, _ = base_fixture
+
+    # Creazione dei file temporanei nelle directory appropriate
+    mining_csv_content = (
+        'NameClass,a1,a2,a3,a4,a5,a6,a7,a8,a9,class\n'
+        'tony.java,1,2,3,4,5,6,7,8,9,pos\n'
+        'paky,1,2,3,4,5,6,7,8,9,pos\n'
+        'dani,1,2,3,4,5,6,7,8,9,pos\n'
+    )
+    soft_m_csv_content = (
+        'kind,Name,m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,class\n'
+        'txt,nicola,1,2,3,4,5,6,7,8,9,10,11,pos\n'
+        'txt,tony.java; 1;  .2,3,4,5,6,7,8,9,10,11,pos\n'
+    )
+
+    # Scrivi i file nella struttura di directory
+    mining_csv_path = text_mining_dir / "csv_mining_final.csv"
+    soft_m_csv_path = software_metrics_dir / "mining_results_sm_final.csv"
+
+    mining_csv_path.write_text(mining_csv_content)
+    soft_m_csv_path.write_text(soft_m_csv_content)
+
+    yield
