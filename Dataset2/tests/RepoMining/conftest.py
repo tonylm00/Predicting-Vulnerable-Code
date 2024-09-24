@@ -490,6 +490,22 @@ def create_temp_file_sys(request, manage_temp_input_files):
             else:
                 os.makedirs(dir, exist_ok=True)
 
+        if 'mining_results' in dir_names and 'RepositoryMining1' in dir_names:
+            repo_dir = os.path.join("mining_results", 'RepositoryMining1')
+            check_file = os.path.join(repo_dir, "CHECK.txt")
+            error_file = os.path.join(repo_dir, "ERRORS.txt")
+            if not os.path.exists(repo_dir):
+                os.mkdir(repo_dir)
+            with open(check_file, "w") as file:
+                file.write('')
+            with open(error_file, "w") as file:
+                file.write('')
+
+            print("OS:", os.listdir())
+            print("MINING_RES: ", os.listdir('mining_results'))
+
+
+
         os.chdir(os.path.join(cwd, 'temp'))
 
         yield
