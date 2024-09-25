@@ -56,7 +56,7 @@ def mock_setup_repo_exist(request, process_data):
 
     input_csv_data, extracted_data = process_data
     with patch('os.listdir', return_value=list_dir) as mock_listdir, \
-         patch('os.getcwd', return_value='Dataset2/tests/RepoMining') as mock_cwd, \
+         patch('os.getcwd', return_value='Dataset2/tests') as mock_cwd, \
          patch('os.mkdir') as mock_mkdir, \
          patch('builtins.open', mock_open(read_data=input_csv_data)) as mock_op, \
          patch('os.chdir') as mock_chdir, \
