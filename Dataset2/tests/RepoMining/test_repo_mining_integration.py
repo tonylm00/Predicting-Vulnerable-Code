@@ -204,7 +204,12 @@ class TestRepoMiningIntegration:
     def test_case_8(self, manage_temp_input_files, create_temp_file_sys):
         self.execute_pipeline()
 
-        path_to_test_check = os.path.join(os.getcwd(), "mining_results", "RepositoryMining1", "CHECK.txt")
+        base_dir = os.getcwd().split("temp")[0]
+
+        print("BASE_DIR:", base_dir)
+
+        path_to_repo_mining = os.path.join(base_dir, "mining_results", "RepositoryMining1")
+        path_to_test_check = os.path.join(path_to_repo_mining, "CHECK.txt")
 
         # SPECIFICARE CHECK.TXT DI QUALE REPO
         with open(path_to_test_check, 'r') as check_file:
@@ -221,10 +226,14 @@ class TestRepoMiningIntegration:
     def test_case_9(self, manage_temp_input_files, create_temp_file_sys):
         self.execute_pipeline()
 
-        print("CWD-7: ", os.getcwd())
+        base_dir = os.getcwd().split("temp")[0]
 
-        path_to_test_check = os.path.join(os.getcwd(), "mining_results", "RepositoryMining1", "CHECK.txt")
-        path_to_test_error = os.path.join(os.getcwd(), "mining_results", "RepositoryMining1", "ERRORS.txt")
+        print("BASE_DIR:", base_dir)
+
+        path_to_repo_mining = os.path.join(base_dir, "mining_results", "RepositoryMining1")
+
+        path_to_test_check = os.path.join(path_to_repo_mining, "CHECK.txt")
+        path_to_test_error = os.path.join(path_to_repo_mining, "ERRORS.txt")
 
         # SPECIFICARE CHECK.TXT DI QUALE REPO
         with open(path_to_test_check, 'r') as check_file:
@@ -248,8 +257,6 @@ class TestRepoMiningIntegration:
     ], indirect=True)
     def test_case_10(self, manage_temp_input_files, create_temp_file_sys):
 
-        path_to_repo_mining = os.path.join(os.getcwd(), "mining_results", "RepositoryMining1")
-
         with pytest.raises(GitCommandError) as exc_info:
             self.execute_pipeline()
 
@@ -262,7 +269,12 @@ class TestRepoMiningIntegration:
     def test_case_11(self, manage_temp_input_files, create_temp_file_sys):
         self.execute_pipeline()
 
-        path_to_repo_mining = os.path.join(os.getcwd(), "mining_results", "RepositoryMining1")
+        base_dir = os.getcwd().split("temp")[0]
+
+        print("BASE_DIR:", base_dir)
+
+        path_to_repo_mining = os.path.join(base_dir, "mining_results", "RepositoryMining1")
+
         path_to_test_check = os.path.join(path_to_repo_mining, "CHECK.txt")
         path_to_test_error = os.path.join(path_to_repo_mining, "ERRORS.txt")
 
@@ -286,7 +298,9 @@ class TestRepoMiningIntegration:
     def test_case_12(self, manage_temp_input_files, create_temp_file_sys):
         self.execute_pipeline()
 
-        path_to_repo_mining = os.path.join(os.getcwd(), "mining_results", "RepositoryMining1")
+        base_dir = os.getcwd().split("temp")[0]
+
+        path_to_repo_mining = os.path.join(base_dir, "mining_results", "RepositoryMining1")
         path_to_test_check = os.path.join(path_to_repo_mining, "CHECK.txt")
         path_to_test_error = os.path.join(path_to_repo_mining, "ERRORS.txt")
 
@@ -310,7 +324,11 @@ class TestRepoMiningIntegration:
     def test_case_13(self, manage_temp_input_files, create_temp_file_sys):
         self.execute_pipeline()
 
-        path_to_repo_mining = os.path.join(os.getcwd(), "mining_results", "RepositoryMining1")
+        base_dir = os.getcwd().split("temp")[0]
+
+        print("BASE_DIR:", base_dir)
+
+        path_to_repo_mining = os.path.join(base_dir, "mining_results", "RepositoryMining1")
         path_to_test_check = os.path.join(path_to_repo_mining, "CHECK.txt")
         path_to_test_error = os.path.join(path_to_repo_mining, "ERRORS.txt")
 
@@ -342,7 +360,9 @@ class TestRepoMiningIntegration:
     def test_case_14(self, manage_temp_input_files, create_temp_file_sys):
         self.execute_pipeline()
 
-        path_to_repo_mining = os.path.join(os.getcwd(), "mining_results", "RepositoryMining1")
+        base_dir = os.getcwd().split("temp")[0]
+
+        path_to_repo_mining = os.path.join(base_dir, "mining_results", "RepositoryMining1")
         path_to_test_check = os.path.join(path_to_repo_mining, "CHECK.txt")
         path_to_test_error = os.path.join(path_to_repo_mining, "ERRORS.txt")
 
