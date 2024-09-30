@@ -28,14 +28,34 @@ def stringTokenizer(s):
 @Param java_file: file object 
 Delete all types of comments inside the "java_file".
 '''
+# problema con // all'interno di stringhe
 def removeComments(java_file):
-    text = java_file.read()
-    # Rimuovi i commenti multi-line
-    text = re.sub(r'\/\*(.|\n)*?\*\/', ' ', text)
-    # Rimuovi i commenti single-line
-    text = re.sub(r'\/\/.*', ' ', text)
+	text = java_file.read()
+	# Pattern per stringhe (sia con virgolette doppie che singole)
+	string_pattern = r'"(\\.|[^"\\])*"|\'(\\.|[^\'\\])*\''
 
-    return text
+	# Pattern per commenti multi-linea
+	multiline_comment_pattern = r'/\*(.|\n)*?\*/'
+
+	# Pattern per commenti single-line
+	singleline_comment_pattern = r'//.*'
+
+	# Prima, rimuoviamo i commenti multi-linea e single-line solo se NON sono dentro stringhe
+	def replacer(match):
+		# Se il match corrisponde a una stringa, la restituiamo com'è
+		if re.match(string_pattern, match.group(0)):
+			return match.group(0)
+		# Altrimenti, è un commento, lo sostituiamo con uno spazio
+		else:
+			return ' '
+
+	# Uniamo tutti i pattern: stringhe e commenti
+	combined_pattern = f'{string_pattern}|{multiline_comment_pattern}|{singleline_comment_pattern}'
+
+	# Applichiamo il replacer al testo per rimuovere i commenti fuori dalle stringhe
+	result = re.sub(combined_pattern, replacer, text)
+
+	return result
 
 '''
 @Param java_file_name: name of the file.
