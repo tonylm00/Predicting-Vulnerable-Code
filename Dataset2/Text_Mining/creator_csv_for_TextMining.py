@@ -45,7 +45,7 @@ def main():
 											#convert the single text mining file in a dictionary.
 											current_dict = ast.literal_eval(current_file.read())
 											current_dict = less_element_text_mining.splitCamelCase(current_dict) #splitting the current dict of the java class in more words by CamelCase
-											name_of_file_for_csv = file.replace("text_mining.txt", "")
+											name_of_file_for_csv = file.replace("_text_mining.txt", "")
 											final_csv.write(commit_name + "/" + name_of_file_for_csv)
 											for element in csv_sorted:
 												if element in current_dict.keys():
