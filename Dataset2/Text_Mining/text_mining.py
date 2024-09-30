@@ -110,11 +110,12 @@ def main():
 								os.chdir(folder)
 								for file in os.listdir():
 									if file != ".DS_Store":
-										java_file_name = file
-										dic = takeJavaClass(java_file_name)
-										file = open(java_file_name+"_text_mining.txt", "w+", encoding="utf-8")
-										file.write(str(dic))
-										file.close()
+										if file.endswith(".java"):
+											java_file_name = file
+											dic = takeJavaClass(java_file_name)
+											file = open(java_file_name+"_text_mining.txt", "w+", encoding="utf-8")
+											file.write(str(dic))
+											file.close()
 									else:
 										print(".DS_Store occured")
 								os.chdir("..")
