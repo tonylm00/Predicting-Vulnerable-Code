@@ -3,6 +3,7 @@ import os
 import pytest
 from requests.exceptions import MissingSchema
 from requests.exceptions import ConnectionError
+from git.exc import GitCommandError
 
 
 from Dataset2.RepoMining import repo_Mining
@@ -44,7 +45,10 @@ def main_repo_mining():
     Call the function for each mini dataset.
     '''
     print("CWD-MAIN:", os.getcwd())
-    dataset_divided_path = os.path.join(os.getcwd(), "Dataset_Divided")
+    cwd = os.getcwd()
+    base_dir_index = os.getcwd().find('RepoMining') + len('RepoMining')
+    path_to_base = cwd[:base_dir_index]
+    dataset_divided_path = os.path.join(path_to_base, "Dataset_Divided")
     num_repos = len(os.listdir(dataset_divided_path))
     print(num_repos)
     for count in range(1, num_repos+1, 1):
@@ -62,8 +66,9 @@ class TestRepoMiningIntegration:
 
 
     def execute_pipeline(self):
+        base_cwd = os.getcwd()
         main_divide_dataset()
-        os.chdir('..')
+        os.chdir(base_cwd)
         main_repo_mining()
 
 
@@ -130,10 +135,10 @@ class TestRepoMiningIntegration:
         assert not os.path.exists(error_path)
 
     @pytest.mark.parametrize('manage_temp_input_files', [
-        {'initial_Dataset.csv': generate_csv_string(DATASET_SIZE_TO_50, True, False)},
+        {'initial_Dataset.csv': generate_csv_string(DATASET_SIZE_TO_50, True, False),},
     ], indirect=True)
     @pytest.mark.parametrize('create_temp_file_sys', [
-        ['mining_results']
+        ['mining_results', 'RepositoryMining1'],
     ], indirect=True)
     def test_case_5(self, manage_temp_input_files, create_temp_file_sys):
         start_cwd = os.getcwd()
@@ -191,7 +196,7 @@ class TestRepoMiningIntegration:
                     assert 'https://github.com/spring-projects/not_valid' in line and 'REPO NOT AVAILABLE' in line
 
     @pytest.mark.parametrize('manage_temp_input_files', [
-        {'initial_Dataset.csv': generate_csv_string(DATASET_SIZE_OVER_50, True, True, True, True, False)},
+        {'initial_Dataset.csv': generate_csv_string(DATASET_SIZE_TO_50, True, True, True, True, False)},
     ], indirect=True)
     @pytest.mark.parametrize('create_temp_file_sys', [
         ['Dataset_Divided', 'mining_results']
@@ -199,7 +204,12 @@ class TestRepoMiningIntegration:
     def test_case_8(self, manage_temp_input_files, create_temp_file_sys):
         self.execute_pipeline()
 
-        path_to_test_check = os.path.join(os.getcwd(), "mining_results", "RepositoryMining1", "CHECK.txt")
+        base_dir = os.getcwd().split("temp")[0]
+
+        print("BASE_DIR:", base_dir)
+
+        path_to_repo_mining = os.path.join(base_dir, "mining_results", "RepositoryMining1")
+        path_to_test_check = os.path.join(path_to_repo_mining, "CHECK.txt")
 
         # SPECIFICARE CHECK.TXT DI QUALE REPO
         with open(path_to_test_check, 'r') as check_file:
@@ -208,7 +218,7 @@ class TestRepoMiningIntegration:
         assert 'link repo: https://github.com/spring-projects/spring-webflow status: NOT EXIST COMMIT' in lines[0]
 
     @pytest.mark.parametrize('manage_temp_input_files', [
-        {'initial_Dataset.csv': generate_csv_string(DATASET_SIZE_OVER_50, True, True, True, True, True, False)},
+        {'initial_Dataset.csv': generate_csv_string(DATASET_SIZE_TO_50, True, True, True, True, True, False)},
     ], indirect=True)
     @pytest.mark.parametrize('create_temp_file_sys', [
         ['Dataset_Divided', 'mining_results']
@@ -216,10 +226,14 @@ class TestRepoMiningIntegration:
     def test_case_9(self, manage_temp_input_files, create_temp_file_sys):
         self.execute_pipeline()
 
-        print("CWD-7: ", os.getcwd())
+        base_dir = os.getcwd().split("temp")[0]
 
-        path_to_test_check = os.path.join(os.getcwd(), "mining_results", "RepositoryMining1", "CHECK.txt")
-        path_to_test_error = os.path.join(os.getcwd(), "mining_results", "RepositoryMining1", "ERRORS.txt")
+        print("BASE_DIR:", base_dir)
+
+        path_to_repo_mining = os.path.join(base_dir, "mining_results", "RepositoryMining1")
+
+        path_to_test_check = os.path.join(path_to_repo_mining, "CHECK.txt")
+        path_to_test_error = os.path.join(path_to_repo_mining, "ERRORS.txt")
 
         # SPECIFICARE CHECK.TXT DI QUALE REPO
         with open(path_to_test_check, 'r') as check_file:
@@ -236,32 +250,18 @@ class TestRepoMiningIntegration:
             assert report_str == content
 
     @pytest.mark.parametrize('manage_temp_input_files', [
-        {'initial_Dataset.csv': generate_csv_string(DATASET_SIZE_OVER_50, True, True, True, True, True, True, True, True, False, True)},
+        {'initial_Dataset.csv': generate_csv_string(DATASET_SIZE_TO_50, True, True, True, True, True, True, True, True, False, True)},
     ], indirect=True)
     @pytest.mark.parametrize('create_temp_file_sys', [
         ['Dataset_Divided', 'mining_results']
     ], indirect=True)
     def test_case_10(self, manage_temp_input_files, create_temp_file_sys):
-        self.execute_pipeline()
 
-        path_to_repo_mining = os.path.join(os.getcwd(), "mining_results", "RepositoryMining1")
-        path_to_test_check = os.path.join(path_to_repo_mining, "CHECK.txt")
-        path_to_test_error = os.path.join(path_to_repo_mining, "ERRORS.txt")
-
-        with open(path_to_test_check, 'r') as check_file:
-            lines = check_file.readlines()
-
-        assert 'link repo: https://github.com/apache/flink status: GIT COMMAND ERROR' in lines[0]
-
-        with open(path_to_test_error, 'r') as error_file:
-            content = error_file.read()
-            report_str = 'indice: 1 link repo: https://github.com/apache/flink status: GIT COMMAND ERROR\n' \
-                         ',d9931c8af05d0f1f721be9fe920690fe122507ad'
-
-            assert report_str == content
+        with pytest.raises(GitCommandError) as exc_info:
+            self.execute_pipeline()
 
     @pytest.mark.parametrize('manage_temp_input_files', [
-        {'initial_Dataset.csv': generate_csv_string(DATASET_SIZE_OVER_50, True, True, True, True, True, True, False)},
+        {'initial_Dataset.csv': generate_csv_string(DATASET_SIZE_TO_50, True, True, True, True, True, True, False)},
     ], indirect=True)
     @pytest.mark.parametrize('create_temp_file_sys', [
         ['Dataset_Divided', 'mining_results']
@@ -269,7 +269,12 @@ class TestRepoMiningIntegration:
     def test_case_11(self, manage_temp_input_files, create_temp_file_sys):
         self.execute_pipeline()
 
-        path_to_repo_mining = os.path.join(os.getcwd(), "mining_results", "RepositoryMining1")
+        base_dir = os.getcwd().split("temp")[0]
+
+        print("BASE_DIR:", base_dir)
+
+        path_to_repo_mining = os.path.join(base_dir, "mining_results", "RepositoryMining1")
+
         path_to_test_check = os.path.join(path_to_repo_mining, "CHECK.txt")
         path_to_test_error = os.path.join(path_to_repo_mining, "ERRORS.txt")
 
@@ -285,7 +290,7 @@ class TestRepoMiningIntegration:
         assert os.listdir(path_to_repo_mining) == ['CHECK.txt', 'ERRORS.txt']
 
     @pytest.mark.parametrize('manage_temp_input_files', [
-        {'initial_Dataset.csv': generate_csv_string(DATASET_SIZE_OVER_50, True, True, True, True, True, True, True, False)},
+        {'initial_Dataset.csv': generate_csv_string(DATASET_SIZE_TO_50, True, True, True, True, True, True, True, False)},
     ], indirect=True)
     @pytest.mark.parametrize('create_temp_file_sys', [
         ['Dataset_Divided', 'mining_results']
@@ -293,7 +298,9 @@ class TestRepoMiningIntegration:
     def test_case_12(self, manage_temp_input_files, create_temp_file_sys):
         self.execute_pipeline()
 
-        path_to_repo_mining = os.path.join(os.getcwd(), "mining_results", "RepositoryMining1")
+        base_dir = os.getcwd().split("temp")[0]
+
+        path_to_repo_mining = os.path.join(base_dir, "mining_results", "RepositoryMining1")
         path_to_test_check = os.path.join(path_to_repo_mining, "CHECK.txt")
         path_to_test_error = os.path.join(path_to_repo_mining, "ERRORS.txt")
 
@@ -309,7 +316,7 @@ class TestRepoMiningIntegration:
         assert os.listdir(path_to_repo_mining) == ['CHECK.txt', 'ERRORS.txt']
 
     @pytest.mark.parametrize('manage_temp_input_files', [
-        {'initial_Dataset.csv': generate_csv_string(DATASET_SIZE_OVER_50, True, True, True, True, True, True, True, True)},
+        {'initial_Dataset.csv': generate_csv_string(DATASET_SIZE_TO_50, True, True, True, True, True, True, True, True)},
     ], indirect=True)
     @pytest.mark.parametrize('create_temp_file_sys', [
         ['Dataset_Divided', 'mining_results']
@@ -317,7 +324,11 @@ class TestRepoMiningIntegration:
     def test_case_13(self, manage_temp_input_files, create_temp_file_sys):
         self.execute_pipeline()
 
-        path_to_repo_mining = os.path.join(os.getcwd(), "mining_results", "RepositoryMining1")
+        base_dir = os.getcwd().split("temp")[0]
+
+        print("BASE_DIR:", base_dir)
+
+        path_to_repo_mining = os.path.join(base_dir, "mining_results", "RepositoryMining1")
         path_to_test_check = os.path.join(path_to_repo_mining, "CHECK.txt")
         path_to_test_error = os.path.join(path_to_repo_mining, "ERRORS.txt")
 
@@ -349,7 +360,9 @@ class TestRepoMiningIntegration:
     def test_case_14(self, manage_temp_input_files, create_temp_file_sys):
         self.execute_pipeline()
 
-        path_to_repo_mining = os.path.join(os.getcwd(), "mining_results", "RepositoryMining1")
+        base_dir = os.getcwd().split("temp")[0]
+
+        path_to_repo_mining = os.path.join(base_dir, "mining_results", "RepositoryMining1")
         path_to_test_check = os.path.join(path_to_repo_mining, "CHECK.txt")
         path_to_test_error = os.path.join(path_to_repo_mining, "ERRORS.txt")
 

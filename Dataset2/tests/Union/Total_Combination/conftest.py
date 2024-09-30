@@ -107,9 +107,9 @@ def fixture_empty_sm(base_fixture):
     # Creazione dei file temporanei nelle directory appropriate
     mining_csv_content = (
         'NameClass,a1,a2,a3,a4,a5,a6,a7,a8,a9,class\n'
-        'tony.java,1,2,3,4,5,6,7,8,9,pos\n'
-        'paky,1,2,3,4,5,6,7,8,9,pos\n'
-        'dani,1,2,3,4,5,6,7,8,9,pos\n'
+        'tony.java,1,2,3,4,5,6,7,8,9,缀,pos\n'
+        'paky,1,2,3,4,5,6,7,8,9,缀,pos\n'
+        'dani,1,2,3,4,5,6,7,8,9,缀,pos\n'
     )
     soft_m_csv_content = ""
 

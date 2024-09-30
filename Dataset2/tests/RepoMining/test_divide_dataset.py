@@ -55,8 +55,6 @@ class TestDivideDataset:
             divide_dataset_to_test()
 
 
-    # FAILURE: NO RECORD MEANS DATASET_DIVIDED DIR EMPTY
-    # 1.CSV CONTAINS HEADER OF THE DATASET
 
     @patch('os.getcwd', return_value=TEST_PATH)
     @patch('os.listdir', return_value=[DIR_NAME])
