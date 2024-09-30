@@ -20,11 +20,11 @@ def initialize(name_csv_mining, name_csv_asa, new_Union):
 	#Return to folder Dataset2
 	os.chdir("..")
 	os.chdir("Text_Mining")
-	csv_mining = open(name_csv_mining, "r+",encoding="utf-8")
+	csv_mining = open(name_csv_mining, "r+", encoding="utf-8")
 	#Return to Dataset2
 	os.chdir("..")
 	os.chdir("mining_results_asa")
-	csv_asa = open(name_csv_asa, "r+",encoding="utf-8")
+	csv_asa = open(name_csv_asa, "r+", encoding="utf-8")
 	os.chdir("..")
 	os.chdir("Union/Union_TM_ASA")
 	number_of_file = 0
@@ -40,7 +40,7 @@ def initialize(name_csv_mining, name_csv_asa, new_Union):
 			#If it's the first line of the asa
 			if( flag_asa == True):
 				flag_asa = False
-					
+
 				withoutFirst2Argument = line_asa.split(',')
 				withoutFirst2Argument = withoutFirst2Argument[1:20]
 				toString = ""
@@ -49,7 +49,7 @@ def initialize(name_csv_mining, name_csv_asa, new_Union):
 				withoutClassInMining = line_tm[:-7]
 				new_Union.write(withoutClassInMining + toString + ",class")
 				new_Union.write("\n")
-				
+
 		else:
 			csv_asa.seek(0,0)
 			csv_asa.readline()
@@ -125,10 +125,10 @@ def getClass(line):
 	for element in lista:
 		count+=1
 	return lista[count-1]
-	
+
 
 def main():
-	new_Union = open("union_TM_ASA.csv", "w")
+	new_Union = open("Union_TM_ASA.csv", "w", encoding="utf-8")
 	name_csv_mining = "csv_mining_final.csv"
 	name_csv_asa = "csv_ASA_final.csv"
 	initialize(name_csv_mining, name_csv_asa, new_Union)
