@@ -1,6 +1,6 @@
 import ast
 import os
-import random
+import re
 from . import less_element_text_mining #CamelCase splitting module
 '''
 This script takes the "FilteredTextMining" dictionary and every single text mining file to perform a new dataset 
@@ -40,7 +40,7 @@ def main():
 								commit_name = folder
 								for file in os.listdir():
 									if file != ".DS_Store":
-										if "text_mining.txt" in file:
+										if re.match(r'^[A-Z][\w]*\.java_text_mining\.txt$', file):
 											current_file = open(file, "r", encoding="utf-8")
 											#convert the single text mining file in a dictionary.
 											current_dict = ast.literal_eval(current_file.read())
@@ -59,9 +59,6 @@ def main():
 											else:
 												if count >18:
 													final_csv.write(", neg")
-
-												
-
 											final_csv.write("\n")
 									else:
 										print(".DS_Store occured")

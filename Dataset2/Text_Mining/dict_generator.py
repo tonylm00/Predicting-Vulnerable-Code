@@ -1,5 +1,6 @@
 import ast
 import os
+import re
 '''
 This script collect all possible words contained in several text mining java files.
 Perform a visit inside every Repository mining folder and for each text mining file 
@@ -29,7 +30,7 @@ def main():
 								os.chdir(folder)
 								for file in os.listdir():
 									if file != ".DS_Store":
-										if "text_mining.txt" in file:
+										if re.match(r'^[A-Z][\w]*\.java_text_mining\.txt$', file):
 											read_txt=open(file,"r", encoding="utf-8")
 											mini_dict= ast.literal_eval(read_txt.read())
 											tm_dict={**tm_dict,**mini_dict}
