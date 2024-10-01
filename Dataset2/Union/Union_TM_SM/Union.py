@@ -57,7 +57,7 @@ def initialize(name_csv_mining, name_csv_soft_m, new_Union):
             csv_software_metric.readline()
             for line_sm in csv_software_metric:
                 file_name_sm = line_sm.split(',')[1].replace("\"", "")
-                file_name_tm = line_tm.split(',')[0].replace("_", "")
+                file_name_tm = line_tm.split(',')[0]
 
                 print("Software Metric :" + file_name_sm)
                 print("Text Mining :" + file_name_tm)

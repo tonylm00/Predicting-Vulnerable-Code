@@ -57,8 +57,8 @@ def initialize(name_csv_mining, name_csv_soft_m, new_Union):
             csv_software_metric.readline()
             for line_sm in csv_software_metric:
                 file_name_sm = line_sm.split(',')[1].replace("\"", "")
-                file_name_tm = line_tm.split(',')[0].replace(".java_", ".java")
-                if (file_name_tm == file_name_sm):
+                file_name_tm = line_tm.split(',')[0]
+                if file_name_tm == file_name_sm:
                     number_of_file += 1
                     class_element = getClass(line_tm)
                     element_text_mining = another_option(None, line_tm, class_element)

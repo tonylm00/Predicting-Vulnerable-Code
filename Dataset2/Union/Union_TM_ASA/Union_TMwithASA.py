@@ -53,7 +53,7 @@ def initialize(name_csv_mining, name_csv_asa, new_Union):
 		else:
 			csv_asa.seek(0,0)
 			csv_asa.readline()
-			file_name_tm = line_tm.split(',')[0].replace(".java_",".java")
+			file_name_tm = line_tm.split(',')[0]
 			class_element = getClass(line_tm)
 			element_doesnt_match = another_option(None, line_tm, class_element)
 			for line_asa in csv_asa:
