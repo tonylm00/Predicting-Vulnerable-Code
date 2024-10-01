@@ -17,36 +17,19 @@ The aim is to take the Before Image of the commit that fixes the vulnerability.
 1. Collect the commits in a python dict and call the function StartMiningRepo.
 '''
 def initialize(miniDatasetName):
-    # Determina la directory base del progetto, rimuovendo "RepoMining" dal percorso corrente del file
-
-    print("CWD-initialize:", os.getcwd())
-
     cwd = os.getcwd()
 
-    index = cwd.index('RepoMining') + len('RepoMining')
-    base_dir = cwd[:index]
-    # print(f"Base_dir: {base_dir}")
-    print("base-dir:", base_dir)
+    os.chdir("..")
 
+    repoName = 'RepositoryMining' + str(miniDatasetName)
 
-    # Costruisce i percorsi per le directory dei dataset divisi e dei risultati del mining
-    dataset_divided_dir = os.path.join(base_dir, "Dataset_Divided")
-    print("dataset_divided_dir:", dataset_divided_dir)
-    # print(f"dataset_divided_dir: {dataset_divided_dir}")
-
-    mining_results_dir = os.path.join(base_dir, "mining_results")
-
-    # print(f"mining_results_dir: {mining_results_dir}")
-    repoName = 'RepositoryMining'+str(miniDatasetName)
-    os.chdir(dataset_divided_dir)
-    name_dataset = str(miniDatasetName)+'.csv'
+    os.chdir("Dataset_Divided")
+    name_dataset = str(miniDatasetName) + '.csv'
     with open(name_dataset, mode='r') as csv_file:
             os.chdir("..")
             os.chdir("mining_results")
-            print("OS-INITIALIZE:", os.listdir())
             if repoName not in os.listdir():
                 os.mkdir(repoName)
-            print("OS-INITIALIZE-POST:", os.listdir())
             os.chdir(repoName)
             csv_reader = csv.DictReader(csv_file)
             first = 0
@@ -55,8 +38,8 @@ def initialize(miniDatasetName):
             for riga in csv_reader:
                 data[i]=riga
                 i+=1
-            startMiningRepo(data, mining_results_dir, repoName)
-            os.chdir(base_dir)
+            startMiningRepo(data, cwd, repoName)
+            os.chdir(cwd)
 '''
 @Param data: the line that contains the commits.
 @Param cwd: the current directory.
@@ -66,11 +49,13 @@ For each commit, takes all the before images and create the java files that are 
 Create the resulting ERROR, CHECK files that contins the different status of each commit.
 '''
 def startMiningRepo(data, cwd, repoName):
+    base_dir = os.sep.join(cwd.split(os.sep)[:-1])
+    print("BASE_DIR_ST:", base_dir)
+    print(len(base_dir))
     statusOK = "OK!\n"
     statusNE = "NOT EXIST COMMIT\n"
     statusNR = "REPO NOT AVAILABLE\n"
     statusVE = "VALUE ERROR! COMMIT HASH NOT EXISTS\n"
-    statusG = "GIT COMMAND ERROR\n"
     file1 = open("CHECK.txt", "a")
     file2 = open("ERRORS.txt","a")
     j = 0
@@ -91,6 +76,7 @@ def startMiningRepo(data, cwd, repoName):
                 try:
                     for commit in RepositoryMining(link, commit_id).traverse_commits():
                        for mod in commit.modifications:
+                          print("MOD:", mod.filename)
                           if ".java" in mod.filename:
                              if cve_id not in os.listdir():
                                  os.mkdir(cve_id)
@@ -99,12 +85,9 @@ def startMiningRepo(data, cwd, repoName):
                                 os.mkdir(commit_id)
                              os.chdir(commit_id)
                              if mod.source_code_before != None:
-                                javafile=open(mod.filename,"w+")
+                                javafile=open(mod.filename,"w+", encoding='utf-8')
                                 javafile.write(mod.source_code_before)
-                             print("I AM HERE")
-                             print(cwd+"/"+repoName)
-                             os.chdir(cwd+"/"+repoName)
-                             print(os.getcwd())
+                             os.chdir(os.path.join(base_dir, 'mining_results', repoName))
                     status = statusOK
                     toWrite = toWrite + status
                     file1.write(toWrite)
@@ -116,14 +99,7 @@ def startMiningRepo(data, cwd, repoName):
                     file1.write(toWrite)
                     file2.write(toWrite+","+commit_id)
                     j+=1
-                except GitCommandError:
-                    # Gestione di errori generici, come problemi di rete o errori di lettura/scrittura
-                    print("GitCommandError")
-                    status = statusG
-                    toWrite = toWrite + status
-                    file1.write(toWrite)
-                    file2.write(toWrite + "," + commit_id)
-                    j += 1
+
 
             else:
                 print(statusNE)
