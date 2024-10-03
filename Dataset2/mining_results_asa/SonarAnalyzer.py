@@ -310,6 +310,6 @@ if __name__ == "__main__":
         sonar_host="http://localhost:9000",
         sonar_token="squ_95089cde86a31904f6f2f0191e033099beb06c27",
         sonar_path=r"C:\Program Files\SonarScanner\bin\sonar-scanner.bat",
-        file_name="RepositoryMining_ASAResults2.csv"
+        file_name="RepositoryMining_ASAResults.csv"
     )
     sonar_analyzer.process_repositories()
