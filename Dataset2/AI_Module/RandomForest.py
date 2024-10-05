@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, cross_val_score
@@ -9,7 +11,8 @@ from sklearn.preprocessing import LabelEncoder
 def save_vocabulary(data, name_vocab):
     original_vocab = data.columns.tolist()
 
-    # Save the column names (vocabulary)
+    os.makedirs(os.path.dirname(name_vocab), exist_ok=True)
+
     joblib.dump(original_vocab, name_vocab)
 
 def train(csv_path, name_model, name_vocab):
@@ -35,18 +38,7 @@ def train(csv_path, name_model, name_vocab):
     # Addestra il modello
     rf.fit(X_train, y_train)
 
-    # Esegui una cross-validation a 5-fold
-    scores = cross_val_score(rf, X_train, y_train, cv=5)
-    print(f"Cross-validation scores: {scores}")
-
-    # Fai le predizioni
-    y_pred = rf.predict(X_test)
-
-    # Stampa il rapporto di classificazione
-    print(classification_report(y_test, y_pred))
-
-    # Matrice di confusione
-    print(confusion_matrix(y_test, y_pred))
+    os.makedirs(os.path.dirname(name_model), exist_ok=True)
 
     # Salva il modello su un file
     joblib.dump(rf, name_model)
@@ -103,9 +95,9 @@ def predict_csv(input_csv_path, model_path, label_encoder_path, vocab_path):
     return predicted_classes.tolist()
 
 if __name__ == '__main__':
-    #train('../mining_results_asa/csv_ASA_final.csv', 'random_forest_ASA.pkl', 'vocab/original_vocab_ASA.pkl')
-    #train('../mining_results_asa/csv_mining_final.csv', 'random_forest_TM.pkl', 'vocab/original_vocab_TM.pkl')
-    train('../Software_Metrics/mining_results_sm_final.csv', 'random_forest_SM.pkl', 'vocab/original_vocab_SM.pkl')
+    #train('../mining_results_asa/csv_ASA_final.csv', 'model/random_forest_ASA.pkl', 'vocab/original_vocab_ASA.pkl')
+    #train('../mining_results_asa/csv_mining_final.csv', 'model/random_forest_TM.pkl', 'vocab/original_vocab_TM.pkl')
+    train('../Software_Metrics/mining_results_sm_final.csv', 'model/random_forest_SM.pkl', 'vocab/original_vocab_SM.pkl')
 
     #print(predict_csv('../../Dataset2/mining_results/csv_mining_final_neg.csv', 'random_forest_TM.pkl', 'label_encoder.pkl', 'original_vocab_TM.pkl'))
     #print(predict_dict({'class':1, 'public':3, 'pasquale': 5}, 'random_forest_TM.pkl', 'label_encoder.pkl', 'original_vocab_TM.pkl'))
