@@ -1,4 +1,5 @@
-from . import less_element_text_mining
+from .JavaTextMining import JavaTextMining
+
 
 class CSVWriter:
     def __init__(self, filtered_dict, mining_dict, output_csv_name):
@@ -30,7 +31,7 @@ class CSVWriter:
         with open(self.output_csv_name, "a", encoding="utf-8") as final_csv:
             for commit_name, current_dict in self.mining_dict.items():
                 final_csv.write(commit_name)
-                dict = less_element_text_mining.splitCamelCase(current_dict[0])  # Splitting the Java class words by CamelCase
+                dict = JavaTextMining.splitDict(current_dict[0])  # Splitting the Java class words by CamelCase
                 for element in self.csv_sorted:
                     if element in dict.keys():
                         final_csv.write("," + str(dict[element]))
