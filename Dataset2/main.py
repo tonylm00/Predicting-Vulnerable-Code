@@ -10,26 +10,28 @@ from Dataset2.mining_results_asa.CsvCreatorForAsa import CsvCreatorForASA
 from Dataset2.mining_results_asa.DictGenerator import DictGenerator
 from Dataset2.mining_results_asa.SonarAnalyzer import SonarAnalyzer
 
+
 def run_repo_mining():
-	dataset_div = DatasetDivider(os.getcwd(), 'initial_Dataset.csv')
-	dataset_div.divide_dataset()
+    dataset_div = DatasetDivider(os.getcwd(), 'initial_Dataset.csv')
+    dataset_div.divide_dataset()
 
-	os.chdir('..')
+    os.chdir('..')
 
-	repo_miner = RepoMiner(os.getcwd())
+    repo_miner = RepoMiner(os.getcwd())
 
-	dataset_divided_path = os.path.join(os.getcwd(), "Dataset_Divided")
-	num_repos = len(os.listdir(dataset_divided_path))
-	print(num_repos)
-	for count in range(1, num_repos + 1, 1):
-		print("Starting file:")
-		print(count)
-		repo_miner.initialize_repo_mining(count)
-		print("------------------")
-		print("The file:")
-		print(count)
-		print(" is Ready!!!")
-		print("------------------")
+    dataset_divided_path = os.path.join(os.getcwd(), "Dataset_Divided")
+    num_repos = len(os.listdir(dataset_divided_path))
+    print(num_repos)
+    for count in range(1, num_repos + 1, 1):
+        print("Starting file:")
+        print(count)
+        repo_miner.initialize_repo_mining(count)
+        print("------------------")
+        print("The file:")
+        print(count)
+        print(" is Ready!!!")
+        print("------------------")
+
 
 def run_text_mining():
     tm_dict = {}
@@ -88,7 +90,6 @@ def run_text_mining():
     os.chdir("..")  # Torna alla cartella di lavoro principale
 
 
-
 def run_software_metrics():
     csv_file = os.path.abspath("Software_Metrics/metrics_results_sm_final.csv")
     csv_writer = MetricsWriter(csv_file)
@@ -126,25 +127,25 @@ def run_software_metrics():
     os.chdir("..")
 
 
-def run_sonar_analyzer():
+def run_ASA(sonar_host, sonar_token, sonar_path):
     sonar_analyzer = SonarAnalyzer(
-        sonar_host="http://localhost:9000",
-        sonar_token="squ_95089cde86a31904f6f2f0191e033099beb06c27",
-        sonar_path=r"C:\Program Files\SonarScanner\bin\sonar-scanner.bat",
-        file_name="mining_results_asa\RepositoryMining_ASAResults.csv"
+        sonar_host=sonar_host,
+        sonar_token=sonar_token,
+        sonar_path=sonar_path,
+        file_name="mining_results_asa/RepositoryMining_ASAResults.csv"
     )
     sonar_analyzer.process_repositories()
 
-def run_ASA():
-    generator = DictGenerator("mining_results_asa\RepositoryMining_ASAResults.csv")
+    generator = DictGenerator("mining_results_asa/RepositoryMining_ASAResults.csv")
     rules = generator.generate_rules_dict()
     print(f"Rules: {rules}")
 
     vulnerability = generator.generate_vulnerability_dict()
     print(f"Vulnerability: {vulnerability}")
 
-    creator = CsvCreatorForASA("mining_results_asa\csv_ASA_final.csv", rules, vulnerability)
+    creator = CsvCreatorForASA("mining_results_asa/csv_ASA_final.csv", rules, vulnerability)
     creator.create_csv()
+
 
 def combine_tm_sm():
     combiner = DatasetCombiner("Union/Union_TM_SM.csv")
@@ -180,6 +181,6 @@ if __name__ == "__main__":
     run_text_mining()
     run_software_metrics()
     combine_tm_sm()
-    #combine_sm_asa()
-    #combine_tm_asa()
-    #total_combination()
+    # combine_sm_asa()
+    # combine_tm_asa()
+    # total_combination()
