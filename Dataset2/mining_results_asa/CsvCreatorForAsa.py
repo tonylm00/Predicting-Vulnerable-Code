@@ -2,8 +2,8 @@ from Dataset2.mining_results_asa.DictGenerator import DictGenerator
 
 
 class CsvCreatorForASA:
-    def __init__(self, rules_dict, vulnerabilities):
-        self.final_csv_name = "csv_ASA_final.csv"
+    def __init__(self, final_csv_name, rules_dict, vulnerabilities):
+        self.final_csv_name = final_csv_name
         self.big_dict = {}
         self.rules_dict = rules_dict
         self.vulnerabilities = vulnerabilities
@@ -41,17 +41,6 @@ class CsvCreatorForASA:
                     final_csv.write("," + str(java_class_dict.get(rule, 0)))
                 final_csv.write("," + java_class_dict["CLS"] + "\n")
 
-
-if __name__ == '__main__':
-    generator = DictGenerator("RepositoryMining_ASAResults.csv")
-    rules = generator.generate_rules_dict()
-    print(f"Rules: {rules}")
-
-    vulnerability = generator.generate_vulnerability_dict()
-    print(f"Vulnerability: {vulnerability}")
-
-    creator = CsvCreatorForASA(rules, vulnerability)
-    creator.create_csv()
 
 
 
