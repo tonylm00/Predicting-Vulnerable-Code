@@ -17,8 +17,6 @@ class DatasetCombiner:
         for df in dfs:
             if 'NameClass' in df.columns:
                 df.rename(columns={'NameClass': 'Name'}, inplace=True)
-            if 'class' in df.columns:
-                df.rename(columns={'class': 'CLS'}, inplace=True)
 
         merged_df = dfs[0]
         for df in dfs[1:]:

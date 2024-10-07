@@ -4,7 +4,7 @@ class MetricsWriter:
     def __init__(self, csv_file):
         self.csv_file = csv_file
         self.fieldnames = ["Kind", "Name", "CountLineCode", "CountDeclClass", "CountDeclFunction", "CountLineCodeDecl",
-                           "SumEssential", "SumCyclomaticStrict", "MaxEssential", "MaxCyclomaticStrict", "MaxNesting", "CLS"]
+                           "SumEssential", "SumCyclomaticStrict", "MaxEssential", "MaxCyclomaticStrict", "MaxNesting"]
 
     def write_header(self):
         try:
@@ -14,15 +14,14 @@ class MetricsWriter:
         except IOError as e:
             print(f"Errore durante l'apertura del file: {e}")
 
-    def write_metrics(self, kind, name, metrics, file_cls):
+    def write_metrics(self, kind, name, metrics):
         try:
             with open(self.csv_file, mode="a", newline='', encoding='utf-8') as file:
                 writer = csv.DictWriter(file, fieldnames=self.fieldnames)
                 csv_data = {
                     "Kind": kind,
                     "Name": name,
-                    **metrics,
-                    "CLS": file_cls
+                    **metrics
                 }
                 writer.writerow(csv_data)
         except IOError as e:

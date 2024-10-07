@@ -69,12 +69,7 @@ class Main():
                                             with open(java_file_name + "_text_mining.txt", "w+", encoding="utf-8") as file:
                                                 file.write(str(dict))
 
-                                            file_cls = predict_dict(dict,
-                                                                    "../../../../AI_module/model/random_forest_TM.pkl",
-                                                                    "../../../../AI_module/model/label_encoder.pkl",
-                                                                    "../../../../AI_module/vocab/original_vocab_TM")
-
-                                            dict_java_files[folder + "/" + java_file_name] = [dict, file_cls]
+                                            dict_java_files[folder + "/" + java_file_name] = dict
                                             tm_dict = JavaTextMining.mergeDict(tm_dict, dict)
 
                                     os.chdir("..")  # Torna alla cartella principale del cvd_id
@@ -125,8 +120,7 @@ class Main():
                                                     file_content = java_file.read()
                                                 analyzer = SoftwareMetrics(java_file_path, file_content)
                                                 metrics = analyzer.analyze()
-                                                file_cls = predict_dict(metrics, "../../../../AI_module/model/random_forest_SM.pkl", "../../../../AI_module/model/label_encoder.pkl","../../../../AI_module/vocab/original_vocab_SM")
-                                                csv_writer.write_metrics("File", java_file_path, metrics, file_cls)
+                                                csv_writer.write_metrics("File", java_file_path, metrics)
                                     os.chdir("..")
                             os.chdir("..")
                     os.chdir("..")

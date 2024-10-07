@@ -21,7 +21,6 @@ class CSVWriter:
             final_csv.write("Name")
             for element in self.csv_sorted:
                 final_csv.write(", " + str(element))
-            final_csv.write(", CLS")
             final_csv.write("\n")
 
     def write_rows(self):
@@ -31,11 +30,10 @@ class CSVWriter:
         with open(self.output_csv_name, "a", encoding="utf-8") as final_csv:
             for commit_name, current_dict in self.mining_dict.items():
                 final_csv.write(commit_name)
-                dict = JavaTextMining.splitDict(current_dict[0])  # Splitting the Java class words by CamelCase
+                dict = JavaTextMining.splitDict(current_dict)  # Splitting the Java class words by CamelCase
                 for element in self.csv_sorted:
                     if element in dict.keys():
                         final_csv.write("," + str(dict[element]))
                     else:
                         final_csv.write(",0")
-                final_csv.write(f", {current_dict[1]}")
                 final_csv.write("\n")
