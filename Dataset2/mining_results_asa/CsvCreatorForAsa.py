@@ -23,14 +23,14 @@ class CsvCreatorForASA:
                 else:
                     self.big_dict[component][rule] = 1
             else:
-                self.big_dict[component] = {"CLS": el["CLS"], rule: 1}
+                self.big_dict[component] = {rule: 1}
 
     def write_final_csv(self):
         with open(self.final_csv_name, "w") as final_csv:
             final_csv.write("Name")
             for key in self.rules_dict.keys():
                 final_csv.write("," + key)
-            final_csv.write(",CLS\n")
+            final_csv.write("\n")
 
             for java_class_key, java_class_dict in self.big_dict.items():
                 print(f"Java class: {java_class_key}")
@@ -39,9 +39,4 @@ class CsvCreatorForASA:
                 final_csv.write(java_class_key)
                 for rule in self.rules_dict:
                     final_csv.write("," + str(java_class_dict.get(rule, 0)))
-                final_csv.write("," + java_class_dict["CLS"] + "\n")
-
-
-
-
-
+                final_csv.write("\n")
