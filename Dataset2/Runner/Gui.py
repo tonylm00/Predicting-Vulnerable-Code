@@ -4,16 +4,14 @@ from tkinter import ttk
 from tkinter import messagebox, filedialog
 import os
 import TKinterModernThemes as Tkmt
-import pandas as pd
 
 from Dataset2.RepoMining.Dataset_Divider import DatasetDivider
 from Dataset2.RepoMining.RepoMiner import RepoMiner
-from Dataset2.main import Main
 
 
 class Gui:
     def __init__(self):
-        self.directory_destinazione = '..'
+        self.directory_destinazione = 'data/'
         self.main_frame = Tkmt.ThemedTKinterFrame("Perseverance", "sun-valley", "dark")
         self.window = self.main_frame.root
         self.window.title("Perseverance")
@@ -215,24 +213,7 @@ class Gui:
                 messagebox.showwarning("Errore", "Carica un file CSV per continuare.")
             else:
                 messagebox.showinfo("Predict", f"Predizione con file CSV: {self.csv_label['text']} \n")
-                run = Main()
-                run.run_repo_mining(self.csv_label['text'])
-                if self.tm_checkbox.get() == 1:
-                    run.run_text_mining()
-                    if self.sm_checkbox.get() == 1:
-                        run.run_software_metrics()
-                        if self.asa_checkbox.get() == 1:
-                            run.run_ASA(self.sonarcloud_host_entry, self.sonarcloud_token_entry, self.sonarcloud_path_entry)
-                            run.total_combination()
-                        else:
-                            run.combine_tm_sm()
-                    elif self.asa_checkbox.get() == 1:
-                        run.run_ASA(self.sonarcloud_host_entry, self.sonarcloud_token_entry, self.sonarcloud_path_entry)
-                        run.combine_tm_asa()
-                elif self.sm_checkbox.get() == 1:
-                    run.run_software_metrics()
-                    if self.asa_checkbox.get() == 1:
-                        run.run_ASA(self.sonarcloud_host_entry, self.sonarcloud_token_entry, self.sonarcloud_path_entry)
+                self.pipeline(self.csv_label['text'])
         else:
             commit_id = self.commit_id_entry.get().strip()
             repo_url = self.repo_url_entry.get().strip()
@@ -240,30 +221,33 @@ class Gui:
                 messagebox.showwarning("Errore", "Inserisci commit_id e repo_url per continuare.")
             else:
                 messagebox.showinfo("Predict", f"Predizione per commit_id: {commit_id}, repo_url: {repo_url}")
-                run = Main()
-                df = pd.DataFrame({'cve_id': [0], 'repo_url': [repo_url], 'commit_id': [commit_id]})
-                df.to_csv('../repository.csv', index=False)
-                run.run_repo_mining("repository.csv")
-                if self.tm_checkbox.get() == 1:
-                    run.run_text_mining()
-                    if self.sm_checkbox.get() == 1:
-                        run.run_software_metrics()
-                        if self.asa_checkbox.get() == 1:
-                            #check diverso da none credo
-                            run.run_ASA(self.sonarcloud_host_entry, self.sonarcloud_token_entry, self.sonarcloud_path_entry)
-                            run.total_combination()
-                        else:
-                            run.combine_tm_sm()
-                    elif self.asa_checkbox.get() == 1:
-                        run.run_ASA(self.sonarcloud_host_entry, self.sonarcloud_token_entry, self.sonarcloud_path_entry)
-                        run.combine_tm_asa()
-                elif self.sm_checkbox.get() == 1:
-                    run.run_software_metrics()
-                    if self.asa_checkbox.get() == 1:
-                        run.run_ASA(self.sonarcloud_host_entry, self.sonarcloud_token_entry, self.sonarcloud_path_entry)
+
+    def pipeline(self, dataset_name):
+        dataset_divider = DatasetDivider(os.path.join(os.getcwd(), 'data'), dataset_name)
+        dataset_divider.divide_dataset()
+
+        os.chdir('..')
+
+        repo_miner = RepoMiner(os.getcwd())
+
+        dataset_divided_path = os.path.join(os.getcwd(), "Dataset_Divided")
+        num_repos = len(os.listdir(dataset_divided_path))
+        print(num_repos)
+        for count in range(1, num_repos + 1, 1):
+            print("Starting file:")
+            print(count)
+            repo_miner.initialize_repo_mining(count)
+            print("------------------")
+            print("The file:")
+            print(count)
+            print(" is Ready!!!")
+            print("------------------")
+
+        self.show_results_frame()
 
     def start(self):
         self.window.mainloop()
+
 
 if __name__ == '__main__':
     gui = Gui()
