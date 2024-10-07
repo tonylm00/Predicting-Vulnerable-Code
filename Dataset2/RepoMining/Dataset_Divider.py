@@ -1,4 +1,5 @@
 import os
+import shutil
 
 
 class DatasetDivider:
@@ -11,8 +12,12 @@ class DatasetDivider:
         divide_dataset_path = os.path.join(self.base_dir, 'Dataset_Divided')
         csvfile = open(dataset_path, 'r').readlines()
         filename = 1
-        if "Dataset_Divided" not in os.listdir():
-            os.mkdir("Dataset_Divided")
+        if os.path.exists(divide_dataset_path):
+            shutil.rmtree(divide_dataset_path)  # Remove the directory and its contents
+
+            # Create a new, empty directory
+        os.makedirs(divide_dataset_path)
+
         os.chdir(divide_dataset_path)
 
         header = csvfile[0]
