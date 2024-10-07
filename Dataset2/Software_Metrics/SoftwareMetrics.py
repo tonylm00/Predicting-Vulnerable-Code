@@ -1,5 +1,3 @@
-import csv
-import os
 import re
 
 import lizard
@@ -7,7 +5,6 @@ import javalang
 from tree_sitter import Language, Parser
 import tree_sitter_java as tjava
 
-# Carica la libreria Java per tree-sitter (assicurati che il file sia corretto)
 JAVA_LANGUAGE = Language(tjava.language())
 
 class SoftwareMetrics:
@@ -274,30 +271,35 @@ class SoftwareMetrics:
                     count += 1
         return count
 
-
-
-    def compute_complexity(self, java_code):
+    def compute_essential_complexity_metrics(self, file_content):
         max_essential_complexity = 1
         sum_essential_complexity = 0
         decision_points = 0
+
+        def visit_children(node):
+            if node is not None:
+                for attr in node.attrs:
+                    child = getattr(node, attr)
+                    if isinstance(child, javalang.ast.Node):
+                        reduce_node(child)
+                    elif isinstance(child, list):
+                        for item in child:
+                            if isinstance(item, javalang.ast.Node):
+                                reduce_node(item)
 
         def is_reducible_stat(node):
             return not isinstance(node, (
                 javalang.tree.ReturnStatement, javalang.tree.BreakStatement, javalang.tree.ContinueStatement))
 
-        def is_control_stat(node):
-            return isinstance(node, (
-                javalang.tree.IfStatement, javalang.tree.WhileStatement, javalang.tree.DoStatement,
-                javalang.tree.ForStatement,
-                javalang.tree.SwitchStatement, javalang.tree.TryStatement))
-
         def is_case_reducible(case):
             is_break_present = False
             is_case_reducible = True
 
+            visit_children(case)
+
             for statement in case.statements:
                 if isinstance(statement, javalang.tree.Statement):
-                    reduce_node(statement)
+                    visit_children(statement)
                     if not isinstance(statement, javalang.tree.BreakStatement) and not statement.is_reducible:
                         is_case_reducible = is_case_reducible and False
                     else:
@@ -317,9 +319,10 @@ class SoftwareMetrics:
             for catch in catches:
                 catch.is_reducible = True
                 not_reducible_types = set()
+                reduce_node(catch)
                 for statement in catch.block:
+                    reduce_node(statement)
                     if isinstance(statement, javalang.tree.Statement):
-                        reduce_node(statement)
                         if not statement.is_reducible:
                             if not is_reducible_stat(statement):
                                 not_reducible_types.add(statement.__class__.__name__)
@@ -342,46 +345,42 @@ class SoftwareMetrics:
             return True
 
         def reduce_node(node):
+            nonlocal max_essential_complexity, sum_essential_complexity, decision_points
+
             if node is not None:
-                if isinstance(node, javalang.tree.CompilationUnit):
-                    for type in node.types:
-                        reduce_node(type)
+                if isinstance(node, (
+                javalang.tree.CompilationUnit, javalang.tree.ClassDeclaration, javalang.tree.ClassCreator,
+                javalang.tree.MethodInvocation)):
+                    visit_children(node)
 
-                if isinstance(node, javalang.tree.ClassDeclaration) and node.body is not None:
-                    for declaration in node.body:
-                        reduce_node(declaration)
+                elif isinstance(node, (javalang.tree.MethodDeclaration, javalang.tree.ConstructorDeclaration)):
 
-                if isinstance(node, javalang.tree.ClassCreator):
                     if node.body is not None:
-                        for method in node.body:
-                            reduce_node(method)
-                    if node.arguments is not None:
-                        for arg in node.arguments:
-                            reduce_node(arg)
+                        sum_dp = 0
+                        for statement in node.body:
+                            decision_points = 0
+                            reduce_node(statement)
+                            sum_dp += decision_points
 
-                if isinstance(node, javalang.tree.ConstructorDeclaration) and node.body is not None:
-                    for declaration in node.body:
-                        reduce_node(declaration)
+                        ec = sum_dp + 1
 
-                elif isinstance(node, javalang.tree.MethodDeclaration) and node.body is not None:
-                    for statement in node.body:
-                        reduce_node(statement)
+                        if (ec == 2):
+                            ec = 1
 
-                elif isinstance(node, javalang.tree.MethodInvocation) and node.arguments is not None:
-                    for arg in node.arguments:
-                        reduce_node(arg)
 
-                elif isinstance(node, javalang.tree.StatementExpression) and node.expression is not None:
+                        max_essential_complexity = max(max_essential_complexity, ec)
+                        sum_essential_complexity += ec
+
+
+                elif isinstance(node, javalang.tree.StatementExpression):
                     setattr(node, 'is_reducible', True)
-                    reduce_node(node.expression)
-
+                    visit_children(node)
 
                 elif isinstance(node, javalang.tree.Statement):
                     setattr(node, 'is_reducible', True)
 
                     if isinstance(node, javalang.tree.IfStatement):
-                        reduce_node(node.then_statement)
-                        reduce_node(node.else_statement)
+                        visit_children(node)
 
                         else_is_reducible = True
                         then_is_reducible = True
@@ -394,12 +393,17 @@ class SoftwareMetrics:
 
                         node.is_reducible = else_is_reducible and then_is_reducible
 
-                    if isinstance(node,
-                                  (
-                                  javalang.tree.WhileStatement, javalang.tree.ForStatement, javalang.tree.DoStatement)):
-                        reduce_node(node.body)
+                        if (not node.is_reducible):
+                            decision_points += 1
+
+                    if isinstance(node, (
+                    javalang.tree.WhileStatement, javalang.tree.ForStatement, javalang.tree.DoStatement)):
+                        visit_children(node)
 
                         node.is_reducible = node.body.is_reducible
+
+                        if (not node.is_reducible):
+                            decision_points += 1
 
                     elif isinstance(node, javalang.tree.SwitchStatement):
                         switch_is_reducible = True
@@ -410,12 +414,16 @@ class SoftwareMetrics:
 
                         node.is_reducible = switch_is_reducible
 
+                        if not node.is_reducible and node.cases is not None:
+                            decision_points += len(node.cases)
+
 
                     elif isinstance(node, javalang.tree.BlockStatement):
+                        visit_children(node)
                         is_block_reducible = True
                         for statement in node.statements:
-                            if isinstance(statement, javalang.tree.Statement):
-                                reduce_node(statement)
+                            if isinstance(statement, javalang.tree.Statement) and not isinstance(statement,
+                                                                                                 javalang.tree.StatementExpression):
                                 is_block_reducible = is_block_reducible and statement.is_reducible
 
                         node.is_reducible = is_block_reducible
@@ -423,103 +431,40 @@ class SoftwareMetrics:
                     elif isinstance(node, javalang.tree.TryStatement):
                         is_try_reducible = True
 
-                        for statement in node.block:
-                            if isinstance(statement, javalang.tree.Statement):
-                                reduce_node(statement)
-                                is_try_reducible = is_try_reducible and statement.is_reducible
-
-                        if node.finally_block is not None:
-                            for statement in node.finally_block:
-                                if isinstance(statement, javalang.tree.Statement):
-                                    reduce_node(statement)
+                        for element in node.block:
+                            reduce_node(element)
+                            if isinstance(element, javalang.tree.Statement) and not isinstance(element,
+                                                                                               javalang.tree.StatementExpression):
+                                is_try_reducible = is_try_reducible and element.is_reducible
 
                         if node.catches is not None:
-                            is_try_reducible = is_try_reducible and is_catches_reducible(node.catches)
+                            is_catches_all_reducible = is_catches_reducible(node.catches)
+                            is_try_reducible = is_try_reducible and is_catches_all_reducible
 
                         node.is_reducible = is_try_reducible
 
+                        if node.finally_block is not None:
+                            for element in node.finally_block:
+                                reduce_node(element)
+
+                        if not node.is_reducible and node.catches is not None:
+                            decision_points += len(node.catches)
+
 
                     elif isinstance(node, javalang.tree.SynchronizedStatement):
-                        if node.block is not None:
-                            for statement in node.block:
-                                if isinstance(statement, javalang.tree.Statement):
-                                    reduce_node(statement)
+                        visit_children(node)
 
                     elif not is_reducible_stat(node):
                         node.is_reducible = False
-                        if isinstance(node, javalang.tree.ReturnStatement) and node.expression is not None:
-                            reduce_node(node.expression)
+                        visit_children(node)
 
                     else:
                         pass
 
-        def check_red_visit_node(node):
-            nonlocal max_essential_complexity, sum_essential_complexity, decision_points
-
-            if node is not None:
-                if isinstance(node, javalang.tree.CompilationUnit):
-                    for type in node.types:
-                        check_red_visit_node(type)
-
-                if isinstance(node, javalang.tree.ClassDeclaration) and node.body is not None:
-                    for method in node.body:
-                        check_red_visit_node(method)
-
-                if isinstance(node, javalang.tree.ClassCreator):
-                    if node.body is not None:
-                        for method in node.body:
-                            check_red_visit_node(method)
-                    if node.arguments is not None:
-                        for arg in node.arguments:
-                            check_red_visit_node(arg)
-
-                elif isinstance(node, (
-                javalang.tree.MethodDeclaration, javalang.tree.ConstructorDeclaration)) and node.body is not None:
-                    sum_dp = 0
-                    for statement in node.body:
-                        decision_points = 0
-                        check_red_visit_node(statement)
-                        sum_dp += decision_points
-                    ec = sum_dp + 1
-                    if (ec == 2):
-                        ec = 1
-
-                    max_essential_complexity = max(max_essential_complexity, ec)
-                    sum_essential_complexity += ec
-
-                elif isinstance(node, javalang.tree.MethodInvocation) and node.arguments is not None:
-                    for arg in node.arguments:
-                        check_red_visit_node(arg)
-
-                elif isinstance(node, javalang.tree.StatementExpression) and node.expression is not None:
-                    check_red_visit_node(node.expression)
-
-                elif isinstance(node, javalang.tree.Statement):
-                    if is_control_stat(node) and not node.is_reducible:
-                        if isinstance(node, javalang.tree.SwitchStatement):
-                            if node.cases is not None:
-                                decision_points += len(node.cases)
-                        elif isinstance(node, javalang.tree.TryStatement):
-                            if node.catches is not None:
-                                decision_points += len(node.catches)
-                        else:
-                            decision_points += 1
-
-                    if node is not None:
-                        for attr in node.attrs:
-                            child = getattr(node, attr)
-                            if isinstance(child, javalang.ast.Node):
-                                check_red_visit_node(child)
-                            elif isinstance(child, list):
-                                for item in child:
-                                    if isinstance(item, javalang.ast.Node):
-                                        check_red_visit_node(item)
-
-        tokens = javalang.tokenizer.tokenize(java_code)
+        tokens = javalang.tokenizer.tokenize(file_content)
         parser = javalang.parser.Parser(tokens)
         tree = parser.parse()
         reduce_node(tree)
-        check_red_visit_node(tree)
         return max_essential_complexity, sum_essential_complexity
 
     def analyze(self):
@@ -536,10 +481,11 @@ class SoftwareMetrics:
             self.metrics["CountDeclFunction"] = self.count_method_declarations()
             self.metrics["CountLineCode"] = self.count_lines_of_code()
 
-            self.metrics["MaxEssential"], self.metrics["SumEssential"] = self.compute_complexity(self.file_content)
+            self.metrics["MaxEssential"], self.metrics["SumEssential"] = self.compute_essential_complexity_metrics(self.file_content)
 
         except Exception as e:
             print(self.file_path, e)
 
         return self.metrics
+
 
