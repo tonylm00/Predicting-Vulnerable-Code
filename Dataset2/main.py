@@ -35,7 +35,7 @@ class Main():
             print("------------------")
 
     def run_text_mining(self):
-        os.chdir('..')
+        #os.chdir('..')
         tm_dict = {}
         dict_java_files = {}
         cwd = os.getcwd()
@@ -91,7 +91,6 @@ class Main():
 
 
     def run_software_metrics(self):
-        os.chdir('..')
         csv_file = os.path.abspath("Software_Metrics/metrics_results_sm_final.csv")
         csv_writer = MetricsWriter(csv_file)
         csv_writer.write_header()
@@ -132,44 +131,44 @@ class Main():
             sonar_host=sonar_host,
             sonar_token=sonar_token,
             sonar_path=sonar_path,
-            file_name="../mining_results_asa/RepositoryMining_ASAResults.csv"
+            file_name="mining_results_asa/RepositoryMining_ASAResults.csv"
         )
         sonar_analyzer.process_repositories()
 
-        generator = DictGenerator("../mining_results_asa/RepositoryMining_ASAResults.csv")
+        generator = DictGenerator("mining_results_asa/RepositoryMining_ASAResults.csv")
         rules = generator.generate_rules_dict()
         print(f"Rules: {rules}")
 
         vulnerability = generator.generate_vulnerability_dict()
         print(f"Vulnerability: {vulnerability}")
 
-        creator = CsvCreatorForASA("../mining_results_asa/csv_ASA_final.csv", rules, vulnerability)
+        creator = CsvCreatorForASA("mining_results_asa/csv_ASA_final.csv", rules, vulnerability)
         creator.create_csv()
 
     def combine_tm_sm(self):
-        combiner = DatasetCombiner("../Union/Union_TM_SM.csv")
-        tm_csv = "../mining_results/csv_mining_final.csv"
-        sm_csv = "../Software_Metrics/mining_results_sm_final.csv"
+        combiner = DatasetCombiner("Union/Union_TM_SM.csv")
+        tm_csv = "mining_results/csv_mining_final.csv"
+        sm_csv = "Software_Metrics/mining_results_sm_final.csv"
         combiner.merge(tm_csv, sm_csv)
 
 
     def combine_tm_asa(self):
-        combiner = DatasetCombiner("../Union/Union_TM_ASA.csv")
-        tm_csv = "../mining_results/csv_mining_final.csv"
-        asa_csv = "../mining_results_asa/csv_ASA_final.csv"
+        combiner = DatasetCombiner("Union/Union_TM_ASA.csv")
+        tm_csv = "mining_results/csv_mining_final.csv"
+        asa_csv = "mining_results_asa/csv_ASA_final.csv"
         combiner.merge(tm_csv, asa_csv)
 
 
     def combine_sm_asa(self):
-        combiner = DatasetCombiner("../Union/Union_SM_ASA.csv")
-        sm_csv = "../Software_Metrics/mining_results_sm_final.csv"
-        asa_csv = "../mining_results_asa/csv_ASA_final.csv"
+        combiner = DatasetCombiner("Union/Union_SM_ASA.csv")
+        sm_csv = "Software_Metrics/mining_results_sm_final.csv"
+        asa_csv = "mining_results_asa/csv_ASA_final.csv"
         combiner.merge(sm_csv, asa_csv)
 
 
     def total_combination(self):
-        combiner = DatasetCombiner("../Union/3COMBINATION.csv")
-        tm_csv = "../mining_results/csv_mining_final.csv"
-        sm_csv = "../Software_Metrics/mining_results_sm_final.csv"
-        asa_csv = "../mining_results_asa/csv_ASA_final.csv"
+        combiner = DatasetCombiner("Union/3COMBINATION.csv")
+        tm_csv = "mining_results/csv_mining_final.csv"
+        sm_csv = "Software_Metrics/mining_results_sm_final.csv"
+        asa_csv = "mining_results_asa/csv_ASA_final.csv"
         combiner.merge(sm_csv, tm_csv, asa_csv)
