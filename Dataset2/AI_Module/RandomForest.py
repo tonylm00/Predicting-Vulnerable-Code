@@ -86,7 +86,7 @@ def predict_dict(input_dict, model_path, label_encoder_path, vocab_path):
 
     return predicted_class[0]
 
-def predict_csv(input_csv_path, model_path, label_encoder_path, vocab_path):
+def predict_csv(input_csv_path, model_path, label_encoder_path, vocab_path, path_csv):
     # Converti il dizionario in DataFrame
     original_vocab = joblib.load(vocab_path)
     model = joblib.load(model_path)
@@ -108,6 +108,10 @@ def predict_csv(input_csv_path, model_path, label_encoder_path, vocab_path):
 
     # Riconverti la predizione in pos o neg
     predicted_classes = label_encoder.inverse_transform(predictions)
+
+    df = pd.DataFrame({'Name': df_new['Name'], 'CLS': predicted_classes})
+    os.makedirs(os.path.dirname(path_csv), exist_ok=True)
+    df.to_csv(path_csv, index=False)
 
     return predicted_classes.tolist()
 

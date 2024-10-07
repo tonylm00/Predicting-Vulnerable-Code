@@ -35,7 +35,7 @@ class Main():
             print("------------------")
 
     def run_text_mining(self):
-        #os.chdir('..')
+        os.chdir('..')
         tm_dict = {}
         dict_java_files = {}
         cwd = os.getcwd()

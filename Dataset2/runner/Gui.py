@@ -5,7 +5,9 @@ from tkinter import messagebox, filedialog
 import os
 import TKinterModernThemes as Tkmt
 import pandas as pd
+from sympy.codegen.ast import continue_
 
+from Dataset2.AI_Module.RandomForest import predict_dict, predict_csv
 from Dataset2.RepoMining.Dataset_Divider import DatasetDivider
 from Dataset2.RepoMining.RepoMiner import RepoMiner
 from Dataset2.main import Main
@@ -210,57 +212,75 @@ class Gui:
             messagebox.showinfo("Download", f"Downloading {file_name}")
 
     def predict(self):
+        tm = self.tm_checkbox.get() == 1
+        sm = self.sm_checkbox.get() == 1
+        asa = self.asa_checkbox.get() == 1
+        run = Main()
         if self.switch_input_value.get() == "csv":
             if self.csv_label['text'] == "":
                 messagebox.showwarning("Errore", "Carica un file CSV per continuare.")
+                continue_exec = False
             else:
                 messagebox.showinfo("Predict", f"Predizione con file CSV: {self.csv_label['text']} \n")
-                run = Main()
-                run.run_repo_mining(self.csv_label['text'])
-                if self.tm_checkbox.get() == 1:
-                    run.run_text_mining()
-                    if self.sm_checkbox.get() == 1:
-                        run.run_software_metrics()
-                        if self.asa_checkbox.get() == 1:
-                            run.run_ASA(self.sonarcloud_host_entry, self.sonarcloud_token_entry, self.sonarcloud_path_entry)
-                            run.total_combination()
-                        else:
-                            run.combine_tm_sm()
-                    elif self.asa_checkbox.get() == 1:
-                        run.run_ASA(self.sonarcloud_host_entry, self.sonarcloud_token_entry, self.sonarcloud_path_entry)
-                        run.combine_tm_asa()
-                elif self.sm_checkbox.get() == 1:
-                    run.run_software_metrics()
-                    if self.asa_checkbox.get() == 1:
-                        run.run_ASA(self.sonarcloud_host_entry, self.sonarcloud_token_entry, self.sonarcloud_path_entry)
+                continue_exec = True
+                #run.run_repo_mining(self.csv_label['text'])
         else:
             commit_id = self.commit_id_entry.get().strip()
             repo_url = self.repo_url_entry.get().strip()
             if not (commit_id and repo_url):
                 messagebox.showwarning("Errore", "Inserisci commit_id e repo_url per continuare.")
+                continue_exec = False
             else:
                 messagebox.showinfo("Predict", f"Predizione per commit_id: {commit_id}, repo_url: {repo_url}")
-                run = Main()
+                continue_exec = True
                 df = pd.DataFrame({'cve_id': [0], 'repo_url': [repo_url], 'commit_id': [commit_id]})
                 df.to_csv('../repository.csv', index=False)
-                run.run_repo_mining("repository.csv")
-                if self.tm_checkbox.get() == 1:
-                    run.run_text_mining()
-                    if self.sm_checkbox.get() == 1:
-                        run.run_software_metrics()
-                        if self.asa_checkbox.get() == 1:
-                            #check diverso da none credo
-                            run.run_ASA(self.sonarcloud_host_entry, self.sonarcloud_token_entry, self.sonarcloud_path_entry)
-                            run.total_combination()
-                        else:
-                            run.combine_tm_sm()
-                    elif self.asa_checkbox.get() == 1:
-                        run.run_ASA(self.sonarcloud_host_entry, self.sonarcloud_token_entry, self.sonarcloud_path_entry)
-                        run.combine_tm_asa()
-                elif self.sm_checkbox.get() == 1:
-                    run.run_software_metrics()
-                    if self.asa_checkbox.get() == 1:
-                        run.run_ASA(self.sonarcloud_host_entry, self.sonarcloud_token_entry, self.sonarcloud_path_entry)
+                #run.run_repo_mining("repository.csv")
+        if continue_exec:
+            if tm:
+                run.run_text_mining()
+                predict_csv("mining_results/csv_mining_final.csv",
+                            "AI_Module/model/random_forest_TM.pkl",
+                            "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_TM.pkl",
+                            "Predict/Predict_TM.csv")
+
+            if sm:
+                run.run_software_metrics()
+                predict_csv("Software_Metrics/metrics_results_sm_final.csv",
+                            "AI_Module/model/random_forest_SM.pkl",
+                            "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_SM.pkl",
+                            "Predict/Predict_SM.csv")
+
+            if asa:
+                run.run_ASA(self.sonarcloud_host_entry, self.sonarcloud_token_entry, self.sonarcloud_path_entry)
+                predict_csv("mining_results_ASA/csv_ASA_final.csv",
+                            "AI_Module/model/random_forest_ASA.pkl",
+                            "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_ASA.pkl",
+                            "Predict/Predict_ASA.csv")
+            if tm and sm and asa:
+                run.total_combination()
+                predict_csv("Union/3COMBINATION.csv",
+                            "AI_Module/model/random_forest_3Combination.pkl",
+                            "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_3Combination.pkl",
+                            "Predict/Predict_3Combination.csv")
+            elif tm and sm:
+                run.combine_tm_sm()
+                predict_csv("Union/Union_TM_SM.csv",
+                            "AI_Module/model/random_forest_TMSM.pkl",
+                            "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_TMSM.pkl",
+                            "Predict/Predict_TMSM.csv")
+            elif tm and asa:
+                run.combine_tm_asa()
+                predict_csv("Union/Union_TM_ASA.csv",
+                            "AI_Module/model/random_forest_TMASA.pkl",
+                            "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_TMASA.pkl",
+                            "Predict/Predict_TMASA.csv")
+            elif sm and asa:
+                run.combine_sm_asa()
+                predict_csv("Union/Union_SM_ASA.csv",
+                            "AI_Module/model/random_forest_SMASA.pkl",
+                            "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_SMASA.pkl",
+                            "Predict/Predict_SMASA.csv")
 
     def start(self):
         self.window.mainloop()
