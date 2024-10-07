@@ -4,14 +4,14 @@ from tkinter import ttk
 from tkinter import messagebox, filedialog
 import os
 import TKinterModernThemes as Tkmt
-
-from Dataset2.RepoMining.Dataset_Divider import DatasetDivider
-from Dataset2.RepoMining.RepoMiner import RepoMiner
+import pandas as pd
+from Dataset2.AI_Module.RandomForest import predict_csv
+from Dataset2.main import Main
 
 
 class Gui:
     def __init__(self):
-        self.directory_destinazione = 'data/'
+        self.directory_destinazione = '..'
         self.main_frame = Tkmt.ThemedTKinterFrame("Perseverance", "sun-valley", "dark")
         self.window = self.main_frame.root
         self.window.title("Perseverance")
@@ -208,46 +208,78 @@ class Gui:
             messagebox.showinfo("Download", f"Downloading {file_name}")
 
     def predict(self):
+        tm = self.tm_checkbox.get() == 1
+        sm = self.sm_checkbox.get() == 1
+        asa = self.asa_checkbox.get() == 1
+        run = Main()
         if self.switch_input_value.get() == "csv":
             if self.csv_label['text'] == "":
                 messagebox.showwarning("Errore", "Carica un file CSV per continuare.")
+                continue_exec = False
             else:
                 messagebox.showinfo("Predict", f"Predizione con file CSV: {self.csv_label['text']} \n")
-                self.pipeline(self.csv_label['text'])
+                continue_exec = True
+                run.run_repo_mining(self.csv_label['text'])
         else:
             commit_id = self.commit_id_entry.get().strip()
             repo_url = self.repo_url_entry.get().strip()
             if not (commit_id and repo_url):
                 messagebox.showwarning("Errore", "Inserisci commit_id e repo_url per continuare.")
+                continue_exec = False
             else:
                 messagebox.showinfo("Predict", f"Predizione per commit_id: {commit_id}, repo_url: {repo_url}")
+                continue_exec = True
+                df = pd.DataFrame({'cve_id': [0], 'repo_url': [repo_url], 'commit_id': [commit_id]})
+                df.to_csv('../repository.csv', index=False)
+                #run.run_repo_mining("repository.csv")
+        if continue_exec:
+            if tm:
+                run.run_text_mining()
+                predict_csv("mining_results/csv_mining_final.csv",
+                            "AI_Module/model/random_forest_TM.pkl",
+                            "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_TM.pkl",
+                            "Predict/Predict_TM.csv")
 
-    def pipeline(self, dataset_name):
-        dataset_divider = DatasetDivider(os.path.join(os.getcwd(), 'data'), dataset_name)
-        dataset_divider.divide_dataset()
+            if sm:
+                run.run_software_metrics()
+                predict_csv("Software_Metrics/metrics_results_sm_final.csv",
+                            "AI_Module/model/random_forest_SM.pkl",
+                            "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_SM.pkl",
+                            "Predict/Predict_SM.csv")
 
-        os.chdir('..')
-
-        repo_miner = RepoMiner(os.getcwd())
-
-        dataset_divided_path = os.path.join(os.getcwd(), "Dataset_Divided")
-        num_repos = len(os.listdir(dataset_divided_path))
-        print(num_repos)
-        for count in range(1, num_repos + 1, 1):
-            print("Starting file:")
-            print(count)
-            repo_miner.initialize_repo_mining(count)
-            print("------------------")
-            print("The file:")
-            print(count)
-            print(" is Ready!!!")
-            print("------------------")
-
-        self.show_results_frame()
+            if asa:
+                run.run_ASA(self.sonarcloud_host_entry, self.sonarcloud_token_entry, self.sonarcloud_path_entry)
+                predict_csv("mining_results_ASA/csv_ASA_final.csv",
+                            "AI_Module/model/random_forest_ASA.pkl",
+                            "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_ASA.pkl",
+                            "Predict/Predict_ASA.csv")
+            if tm and sm and asa:
+                run.total_combination()
+                predict_csv("Union/3COMBINATION.csv",
+                            "AI_Module/model/random_forest_3Combination.pkl",
+                            "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_3Combination.pkl",
+                            "Predict/Predict_3Combination.csv")
+            elif tm and sm:
+                run.combine_tm_sm()
+                predict_csv("Union/Union_TM_SM.csv",
+                            "AI_Module/model/random_forest_TMSM.pkl",
+                            "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_TMSM.pkl",
+                            "Predict/Predict_TMSM.csv")
+            elif tm and asa:
+                run.combine_tm_asa()
+                predict_csv("Union/Union_TM_ASA.csv",
+                            "AI_Module/model/random_forest_TMASA.pkl",
+                            "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_TMASA.pkl",
+                            "Predict/Predict_TMASA.csv")
+            elif sm and asa:
+                run.combine_sm_asa()
+                predict_csv("Union/Union_SM_ASA.csv",
+                            "AI_Module/model/random_forest_SMASA.pkl",
+                            "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_SMASA.pkl",
+                            "Predict/Predict_SMASA.csv")
 
     def start(self):
         self.window.mainloop()
-
 
 if __name__ == '__main__':
     gui = Gui()
