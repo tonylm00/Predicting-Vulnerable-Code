@@ -15,7 +15,6 @@ class SonarAnalyzer:
         sonar_token (str): The authentication token for the SonarQube server.
         sonar_path (str): The path to the SonarScanner executable.
         output_csv (str): The name of the output CSV file for storing issues.
-        existing_project_keys (set): A set of project keys already analyzed and stored in the CSV.
     """
 
     def __init__(self, sonar_host, sonar_token, sonar_path, file_name):
@@ -246,7 +245,6 @@ class SonarAnalyzer:
                         "key": issue.get("key", ""),
                         "hash": issue.get("hash", ""),
                         "status": issue.get("status", ""),
-                        "class": self.get_project_class(issue.get("project", "").split(":")[-1])
                     })
 
     def process_repositories(self):
@@ -279,28 +277,3 @@ class SonarAnalyzer:
                             issues = self.get_project_issues(sonar_project_key)
                             print(f"Progetto: {sonar_project_key} - Trovate {len(issues)} issue(s).")
                             self.save_issues_to_csv(issues)
-
-    @staticmethod
-    def get_project_class(commit_id):
-        """
-        Retrieves the class associated with a specific commit_id from the dataset.
-
-        Args:
-            commit_id (str): The commit ID to search for in the dataset.
-
-        Returns:
-            str: The class associated with the commit ID, or 'Unknown' if not found.
-        """
-        try:
-            with open("../initial_Dataset.csv", mode='r') as file:
-                reader = csv.DictReader(file)
-                for row in reader:
-                    if row["commit_id"] == commit_id:
-                        return row["cls"]
-        except FileNotFoundError:
-            print(f"Errore: il file initial_Dataset non è stato trovato.")
-        except KeyError:
-            print("Errore: il dataset non contiene la colonna 'commit_id' o 'class'.")
-
-        return "Unknown"
-
