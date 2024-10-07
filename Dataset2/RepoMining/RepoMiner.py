@@ -1,4 +1,6 @@
 import csv
+import shutil
+
 import requests
 import os
 from pydriller import RepositoryMining
@@ -20,6 +22,12 @@ class RepoMiner:
         name_dataset = str(mini_dataset_name) + '.csv'
         with open(name_dataset, mode='r') as csv_file:
             os.chdir("..")
+
+            if os.path.exists('mining_results'):
+                shutil.rmtree('mining_results')  # Remove the directory and its contents
+
+                # Create a new, empty directory
+            os.makedirs('mining_results')
             os.chdir("mining_results")
             if repo_name not in os.listdir():
                 os.mkdir(repo_name)
