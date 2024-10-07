@@ -51,6 +51,7 @@ class Gui:
         self.tm_button = None
         self.sm_button = None
         self.asa_button = None
+        self.results_button = None
 
         self.build_predict_frame()
         self.build_options_frame()
@@ -115,15 +116,20 @@ class Gui:
         self.results_frame.pack_forget()
 
         self.tm_button = ttk.Button(self.results_frame, text="Download Text Mining Results",
-                                    command=lambda: self.download_csv('text_mining'), state=tk.DISABLED)
+                                    command=lambda: self.download_analysis_csv('text_mining'), state=tk.DISABLED)
         self.sm_button = ttk.Button(self.results_frame, text="Download Software Metrics Results",
-                                    command=lambda: self.download_csv('software_metrics'), state=tk.DISABLED)
+                                    command=lambda: self.download_analysis_csv('software_metrics'), state=tk.DISABLED)
         self.asa_button = ttk.Button(self.results_frame, text="Download ASA Results",
-                                     command=lambda: self.download_csv('asa'), state=tk.DISABLED)
+                                     command=lambda: self.download_analysis_csv('asa'), state=tk.DISABLED)
+
+        self.results_button = ttk.Button(self.results_frame, text="Download Predictions",
+                                     command=lambda: self.download_results_csv(), state=tk.NORMAL)
+
 
         self.tm_button.pack(pady=5, fill="x")
         self.sm_button.pack(pady=5, fill="x")
         self.asa_button.pack(pady=5, fill="x")
+        self.results_button.pack(pady=5, fill="x")
 
     def build_start_frame(self):
         start_frame = tk.LabelFrame(self.window, bd=0)
@@ -197,15 +203,51 @@ class Gui:
         return options
 
     @staticmethod
-    def download_csv(file_type):
-        file_map = {
-            'text_mining': 'text_mining_results.csv',
-            'software_metrics': 'software_metrics_results.csv',
-            'asa': 'asa_results.csv'
-        }
-        file_name = file_map.get(file_type)
-        if file_name:
-            messagebox.showinfo("Download", f"Downloading {file_name}")
+    def download_analysis_csv(file_type):
+
+        # Ask the user where to save the zip file
+        saving_path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV Files", "*.csv"),
+                                                                ("All Files", "*.*")],
+                                                     title="Save the CSV file as")
+
+        if saving_path:  # Check if user selected a file location
+            try:
+                run = Main()
+
+                run.download_analysis_results(file_type, saving_path)
+
+                # Display a success message
+                messagebox.showinfo("Success", f"File saved successfully at {saving_path}")
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to save the file: {e}")
+        else:
+            messagebox.showwarning("Cancelled", "File save operation was cancelled.")
+
+    def download_results_csv(self):
+        tm = self.tm_checkbox.get() == 1
+        sm = self.sm_checkbox.get() == 1
+        asa = self.asa_checkbox.get() == 1
+
+        results_type = {'text_mining': tm, 'software_metrics': sm, 'asa': asa}
+
+        saving_path = filedialog.asksaveasfilename(defaultextension=".zip",
+                                                     filetypes=[("ZIP files", "*.zip")],
+                                                     title="Save ZIP file as")
+
+        if saving_path:  # Check if user selected a file location
+            try:
+                run = Main()
+
+                run.download_results(results_type, saving_path)
+
+                # Display a success message
+                messagebox.showinfo("Success", f"File saved successfully at {saving_path}")
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to save the file: {e}")
+        else:
+            messagebox.showwarning("Cancelled", "File save operation was cancelled.")
+
+
 
     def predict(self):
         tm = self.tm_checkbox.get() == 1
@@ -219,7 +261,7 @@ class Gui:
             else:
                 messagebox.showinfo("Predict", f"Predizione con file CSV: {self.csv_label['text']} \n")
                 continue_exec = True
-                run.run_repo_mining(self.csv_label['text'])
+                #run.run_repo_mining(self.csv_label['text'])
         else:
             commit_id = self.commit_id_entry.get().strip()
             repo_url = self.repo_url_entry.get().strip()
@@ -231,7 +273,7 @@ class Gui:
                 continue_exec = True
                 df = pd.DataFrame({'cve_id': [0], 'repo_url': [repo_url], 'commit_id': [commit_id]})
                 df.to_csv('../repository.csv', index=False)
-                #run.run_repo_mining("repository.csv")
+                run.run_repo_mining("repository.csv")
         if continue_exec:
             if tm:
                 run.run_text_mining()
@@ -277,6 +319,7 @@ class Gui:
                             "AI_Module/model/random_forest_SMASA.pkl",
                             "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_SMASA.pkl",
                             "Predict/Predict_SMASA.csv")
+        self.show_results_frame()
 
     def start(self):
         self.window.mainloop()
