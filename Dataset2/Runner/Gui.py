@@ -276,7 +276,7 @@ class Gui:
 
         if saving_path:  # Check if user selected a file location
             try:
-                run = Main()
+                run = Main(os.path.dirname(os.getcwd()))
 
                 run.download_results(results_type, saving_path)
 
@@ -288,81 +288,109 @@ class Gui:
             messagebox.showwarning("Cancelled", "File save operation was cancelled.")
 
     def predict(self):
-        tm = self.tm_checkbox.get() == 1
-        sm = self.sm_checkbox.get() == 1
-        asa = self.asa_checkbox.get() == 1
-        run = Main()
-
         if not self.form_validation():
             return
 
+        tm = self.tm_checkbox.get() == 1
+        sm = self.sm_checkbox.get() == 1
+        asa = self.asa_checkbox.get() == 1
+
+        base_dir = os.path.dirname(os.getcwd())
+        run = Main(base_dir)
+
         if self.switch_input_value.get() == "csv":
-            messagebox.showinfo("Predict", f"Predizione con file CSV: {self.csv_label['text']} \n")
-            # run.run_repo_mining(self.csv_label['text'])
+            if self.csv_label['text'] == "":
+                messagebox.showwarning("Errore", "Carica un file CSV per continuare.")
+                continue_exec = False
+            else:
+                messagebox.showinfo("Predict", f"Predizione con file CSV: {self.csv_label['text']} \n")
+                continue_exec = True
+                run.run_repo_mining(self.csv_label['text'])
         else:
             commit_id = self.commit_id_entry.get().strip()
             repo_url = self.repo_url_entry.get().strip()
+            if not (commit_id and repo_url):
+                messagebox.showwarning("Errore", "Inserisci commit_id e repo_url per continuare.")
+                continue_exec = False
+            else:
+                messagebox.showinfo("Predict", f"Predizione per commit_id: {commit_id}, repo_url: {repo_url}")
+                continue_exec = True
+                df = pd.DataFrame({'cve_id': [0], 'repo_url': [repo_url], 'commit_id': [commit_id]})
+                df.to_csv(os.path.join(base_dir, 'repository.csv'), index=False)
+                run.run_repo_mining("repository.csv")
 
-            messagebox.showinfo("Predict", f"Predizione per commit_id: {commit_id}, repo_url: {repo_url}")
-            df = pd.DataFrame({'cve_id': [0], 'repo_url': [repo_url], 'commit_id': [commit_id]})
-            df.to_csv('../repository.csv', index=False)
-            run.run_repo_mining("repository.csv")
+        if continue_exec:
+            if tm:
+                run.run_text_mining()
+                predict_csv(
+                    os.path.join(base_dir, "mining_results", "csv_mining_final.csv"),
+                    os.path.join(base_dir, "AI_Module", "model", "random_forest_TM.pkl"),
+                    os.path.join(base_dir, "AI_Module", "label_encoder.pkl"),
+                    os.path.join(base_dir, "AI_Module", "vocab", "original_vocab_TM.pkl"),
+                    os.path.join(base_dir, "Predict", "Predict_TM.csv")
+                )
 
-        if tm:
-            run.run_text_mining()
-            predict_csv("mining_results/csv_mining_final.csv",
-                        "AI_Module/model/random_forest_TM.pkl",
-                        "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_TM.pkl",
-                        "Predict/Predict_TM.csv")
+            if sm:
+                run.run_software_metrics()
+                predict_csv(
+                    os.path.join(base_dir, "Software_Metrics", "metrics_results_sm_final.csv"),
+                    os.path.join(base_dir, "AI_Module", "model", "random_forest_SM.pkl"),
+                    os.path.join(base_dir, "AI_Module", "label_encoder.pkl"),
+                    os.path.join(base_dir, "AI_Module", "vocab", "original_vocab_SM.pkl"),
+                    os.path.join(base_dir, "Predict", "Predict_SM.csv")
+                )
 
-        if sm:
-            run.run_software_metrics()
-            predict_csv("Software_Metrics/metrics_results_sm_final.csv",
-                        "AI_Module/model/random_forest_SM.pkl",
-                        "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_SM.pkl",
-                        "Predict/Predict_SM.csv")
+            if asa:
+                run.run_ASA(self.sonarcloud_host_entry.get(), self.sonarcloud_token_entry.get(), self.sonarcloud_path_entry.get())
+                predict_csv(
+                    os.path.join(base_dir, "mining_results_ASA", "csv_ASA_final.csv"),
+                    os.path.join(base_dir, "AI_Module", "model", "random_forest_ASA.pkl"),
+                    os.path.join(base_dir, "AI_Module", "label_encoder.pkl"),
+                    os.path.join(base_dir, "AI_Module", "vocab", "original_vocab_ASA.pkl"),
+                    os.path.join(base_dir, "Predict", "Predict_ASA.csv")
+                )
 
-        if asa:
-            run.run_ASA(self.sonarcloud_host_entry.get(), self.sonarcloud_token_entry.get(),
-                        self.sonarcloud_path_entry.get())
+            if tm and sm and asa:
+                run.total_combination()
+                predict_csv(
+                    os.path.join(base_dir, "Union", "3COMBINATION.csv"),
+                    os.path.join(base_dir, "AI_Module", "model", "random_forest_3Combination.pkl"),
+                    os.path.join(base_dir, "AI_Module", "label_encoder.pkl"),
+                    os.path.join(base_dir, "AI_Module", "vocab", "original_vocab_3Combination.pkl"),
+                    os.path.join(base_dir, "Predict", "Predict_3Combination.csv")
+                )
+            if tm and sm:
+                run.combine_tm_sm()
+                predict_csv(
+                    os.path.join(base_dir, "Union", "Union_TM_SM.csv"),
+                    os.path.join(base_dir, "AI_Module", "model", "random_forest_TMSM.pkl"),
+                    os.path.join(base_dir, "AI_Module", "label_encoder.pkl"),
+                    os.path.join(base_dir, "AI_Module", "vocab", "original_vocab_TMSM.pkl"),
+                    os.path.join(base_dir, "Predict", "Predict_TMSM.csv")
+                )
+            if tm and asa:
+                run.combine_tm_asa()
+                predict_csv(
+                    os.path.join(base_dir, "Union", "Union_TM_ASA.csv"),
+                    os.path.join(base_dir, "AI_Module", "model", "random_forest_TMASA.pkl"),
+                    os.path.join(base_dir, "AI_Module", "label_encoder.pkl"),
+                    os.path.join(base_dir, "AI_Module", "vocab", "original_vocab_TMASA.pkl"),
+                    os.path.join(base_dir, "Predict", "Predict_TMASA.csv")
+                )
+            if sm and asa:
+                run.combine_sm_asa()
+                predict_csv(
+                    os.path.join(base_dir, "Union", "Union_SM_ASA.csv"),
+                    os.path.join(base_dir, "AI_Module", "model", "random_forest_SMASA.pkl"),
+                    os.path.join(base_dir, "AI_Module", "label_encoder.pkl"),
+                    os.path.join(base_dir, "AI_Module", "vocab", "original_vocab_SMASA.pkl"),
+                    os.path.join(base_dir, "Predict", "Predict_SMASA.csv")
+                )
 
-            predict_csv("mining_results_ASA/csv_ASA_final.csv",
-                        "AI_Module/model/random_forest_ASA.pkl",
-                        "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_ASA.pkl",
-                        "Predict/Predict_ASA.csv")
-
-        if tm and sm and asa:
-            run.total_combination()
-            predict_csv("Union/3COMBINATION.csv",
-                        "AI_Module/model/random_forest_3Combination.pkl",
-                        "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_3Combination.pkl",
-                        "Predict/Predict_3Combination.csv")
-
-        if tm and sm:
-            run.combine_tm_sm()
-            predict_csv("Union/Union_TM_SM.csv",
-                        "AI_Module/model/random_forest_TMSM.pkl",
-                        "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_TMSM.pkl",
-                        "Predict/Predict_TMSM.csv")
-
-        if tm and asa:
-            run.combine_tm_asa()
-            predict_csv("Union/Union_TM_ASA.csv",
-                        "AI_Module/model/random_forest_TMASA.pkl",
-                        "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_TMASA.pkl",
-                        "Predict/Predict_TMASA.csv")
-
-        if sm and asa:
-            run.combine_sm_asa()
-            predict_csv("Union/Union_SM_ASA.csv",
-                        "AI_Module/model/random_forest_SMASA.pkl",
-                        "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_SMASA.pkl",
-                        "Predict/Predict_SMASA.csv")
         self.show_results_frame()
 
     def start(self):
         self.window.mainloop()
-
 
 if __name__ == '__main__':
     gui = Gui()

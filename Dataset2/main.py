@@ -16,16 +16,16 @@ from Dataset2.mining_results_asa.SonarAnalyzer import SonarAnalyzer
 
 
 class Main:
+    def __init__(self, base_dir):
+        self.base_dir = base_dir
+
     def run_repo_mining(self, dataset_name):
-        os.chdir('..')
-        dataset_div = DatasetDivider(os.getcwd(), dataset_name)
+        dataset_div = DatasetDivider(self.base_dir, dataset_name)
         dataset_div.divide_dataset()
 
-        os.chdir('..')
+        repo_miner = RepoMiner(self.base_dir)
 
-        repo_miner = RepoMiner(os.getcwd())
-
-        dataset_divided_path = os.path.join(os.getcwd(), "Dataset_Divided")
+        dataset_divided_path = os.path.join(self.base_dir, "Dataset_Divided")
         num_repos = len(os.listdir(dataset_divided_path))
         for count in range(1, num_repos + 1, 1):
             print("Starting file:")
@@ -37,142 +37,161 @@ class Main:
             print(" is Ready!!!")
             print("------------------")
 
-    def run_text_mining(self):
-        #os.chdir('..')
+    def run_text_mining(self, ):
         tm_dict = {}
         dict_java_files = {}
-        cwd = os.getcwd()
-        dataset_divided_path = os.path.join(cwd, "Dataset_Divided")
+
+        # Definisco i percorsi relativi in base a base_dir
+        dataset_divided_path = os.path.join(self.base_dir, "Dataset_Divided")
+        mining_results_path = os.path.join(self.base_dir, "mining_results")
+
+        # Conta il numero di repository
         num_repos = len(os.listdir(dataset_divided_path))
         repo_name = "RepositoryMining"
-        os.chdir(cwd + "/mining_results")
 
         for count in range(1, num_repos + 1, 1):
-            if count != 18:
+            if count != 18:  # Ignora il repository 18
                 repo = repo_name + str(count)
-                if repo != ".DS_Store":
-                    os.chdir(repo)
+                repo_path = os.path.join(mining_results_path, repo)
 
-                    for cvd_id in os.listdir():
-                        if cvd_id not in [".DS_Store", "CHECK.txt", "ERRORS.txt"]:
-                            print(cvd_id)
-                            os.chdir(cvd_id)
-                            print(os.listdir())
+                if os.path.isdir(repo_path):  # Controlla che sia una directory valida
+                    for cvd_id in os.listdir(repo_path):
+                        cvd_id_path = os.path.join(repo_path, cvd_id)
 
-                            for folder in os.listdir():
-                                if folder != ".DS_Store":
-                                    os.chdir(folder)
+                        if cvd_id not in [".DS_Store", "CHECK.txt", "ERRORS.txt"] and os.path.isdir(cvd_id_path):
 
-                                    for file in os.listdir():
+                            for folder in os.listdir(cvd_id_path):
+                                folder_path = os.path.join(cvd_id_path, folder)
+
+                                if folder != ".DS_Store" and os.path.isdir(folder_path):
+                                    for file in os.listdir(folder_path):
                                         if file != ".DS_Store" and file.endswith(".java"):
-                                            java_file_name = file
-                                            analyzer = JavaTextMining(java_file_name)
+                                            java_file_path = os.path.join(folder_path, file)
+                                            analyzer = JavaTextMining(java_file_path)
                                             dict = analyzer.takeJavaClass()
 
-                                            with open(java_file_name + "_text_mining.txt", "w+", encoding="utf-8") as file:
-                                                file.write(str(dict))
+                                            # Salva i risultati del text mining
+                                            text_mining_file_path = java_file_path + "_text_mining.txt"
+                                            with open(text_mining_file_path, "w+", encoding="utf-8") as java_file:
+                                                java_file.write(str(dict))
 
-                                            dict_java_files[folder + "\\" + java_file_name] = dict
+                                            dict_java_files[os.path.join(folder, file)] = dict
                                             tm_dict = JavaTextMining.mergeDict(tm_dict, dict)
 
-                                    os.chdir("..")  # Torna alla cartella principale del cvd_id
+        # Salva il dizionario finale del text mining
+        text_mining_dict_path = os.path.join(mining_results_path, "text_mining_dict.txt")
+        with open(text_mining_dict_path, "w+", encoding="utf-8") as java_file:
+            java_file.write(str(tm_dict))
 
-                            os.chdir("..")  # Torna alla cartella repo
-                    os.chdir("..")  # Torna alla cartella mining_results
-
-        with open("text_mining_dict.txt", "w+", encoding="utf-8") as file:
-            file.write(str(tm_dict))
-
+        # Divide il dizionario
         split_dict = JavaTextMining.splitDict(tm_dict)
-        with open("FilteredTextMining.txt", "w+", encoding="utf-8") as file:
-            file.write(str(split_dict))
 
-        csv_final = CSVWriter(split_dict, dict_java_files, "csv_mining_final.csv")
+        # Salva il dizionario filtrato del text mining
+        filtered_text_mining_path = os.path.join(mining_results_path, "FilteredTextMining.txt")
+        with open(filtered_text_mining_path, "w+", encoding="utf-8") as java_file:
+            java_file.write(str(split_dict))
+
+        # Scrivi il file CSV
+        csv_file_path = os.path.join(mining_results_path, "csv_mining_final.csv")
+        csv_final = CSVWriter(split_dict, dict_java_files, csv_file_path)
         csv_final.write_header()
         csv_final.write_rows()
-        os.chdir("..")  # Torna alla cartella di lavoro principale
 
     def run_software_metrics(self):
-        csv_file = os.path.abspath("Software_Metrics/metrics_results_sm_final.csv")
+        # Percorso assoluto per il file CSV
+        csv_file = os.path.join(self.base_dir, "Software_Metrics", "metrics_results_sm_final.csv")
         csv_writer = MetricsWriter(csv_file)
-        csv_writer.write_header()
-        # Crea il file CSV con l'header una volta sola, prima del ciclo for
-        cwd = os.getcwd()
-        dataset_divided_path = os.path.join(cwd, "Dataset_Divided")
+        csv_writer.write_header()  # Scrive l'header una volta sola
+
+        # Percorsi per dataset e risultati mining
+        dataset_divided_path = os.path.join(self.base_dir, "Dataset_Divided")
+        mining_results_path = os.path.join(self.base_dir, "mining_results")
+
+        # Numero di repository
         num_repos = len(os.listdir(dataset_divided_path))
         repo_name = "RepositoryMining"
-        os.chdir(cwd + "/mining_results")
+
         for count in range(1, num_repos + 1, 1):
-            if count != 18:
+            if count != 18:  # Salta il repository 18
                 repo = repo_name + str(count)
-                if repo != ".DS_Store":
-                    os.chdir(repo)
-                    for cvd_id in os.listdir():
-                        if cvd_id not in [".DS_Store", "CHECK.txt", "ERRORS.txt"]:
-                            os.chdir(cvd_id)
-                            for folder in os.listdir():
-                                if folder != ".DS_Store":
-                                    os.chdir(folder)
-                                    for file in os.listdir():
-                                        if file != ".DS_Store":
-                                            if file.endswith(".java"):
-                                                java_file_path = os.path.join(folder, file)
-                                                with open(file, "r", encoding='utf-8') as java_file:
-                                                    file_content = java_file.read()
-                                                analyzer = SoftwareMetrics(java_file_path, file_content)
-                                                metrics = analyzer.analyze()
-                                                csv_writer.write_metrics("File", java_file_path, metrics)
-                                    os.chdir("..")
-                            os.chdir("..")
-                    os.chdir("..")
-        os.chdir("..")
+                repo_path = os.path.join(mining_results_path, repo)
+
+                if os.path.isdir(repo_path):  # Verifica se è una directory valida
+                    for cvd_id in os.listdir(repo_path):
+                        cvd_id_path = os.path.join(repo_path, cvd_id)
+
+                        if cvd_id not in [".DS_Store", "CHECK.txt", "ERRORS.txt"] and os.path.isdir(cvd_id_path):
+                            for folder in os.listdir(cvd_id_path):
+                                folder_path = os.path.join(cvd_id_path, folder)
+
+                                if folder != ".DS_Store" and os.path.isdir(folder_path):
+                                    for file in os.listdir(folder_path):
+
+                                        if file != ".DS_Store" and file.endswith(".java"):
+                                            java_file_path = os.path.join(folder_path, file)
+                                            # Legge il contenuto del file .java
+                                            with open(java_file_path, "r", encoding='utf-8') as java_file:
+                                                file_content = java_file.read()
+
+                                            # Analizza le metriche
+                                            analyzer = SoftwareMetrics(java_file_path, file_content)
+                                            metrics = analyzer.analyze()
+
+                                            # Scrive i risultati delle metriche nel CSV
+                                            csv_writer.write_metrics("File", os.path.join(folder, file), metrics)
+
 
     def run_ASA(self, sonar_host, sonar_token, sonar_path):
-        # os.chdir("..")
         sonar_analyzer = SonarAnalyzer(
-            sonar_host=sonar_host,
-            sonar_token=sonar_token,
-            sonar_path=sonar_path,
-            file_name="mining_results_asa/RepositoryMining_ASAResults.csv"
+                            sonar_host=sonar_host,
+                            sonar_token=sonar_token,
+                            sonar_path=sonar_path,
+                            file_name="mining_results_asa\RepositoryMining_ASAResults.csv",
+                            base_dir = self.base_dir
         )
         sonar_analyzer.process_repositories()
-
-        generator = DictGenerator("mining_results_asa/RepositoryMining_ASAResults.csv")
+        generator = DictGenerator(os.path.join(self.base_dir, "mining_results_asa","RepositoryMining_ASAResults.csv"))
         rules = generator.generate_rules_dict()
-        vulnerability = generator.generate_vulnerability_dict()
+        print(f"Rules: {rules}")
 
-        creator = CsvCreatorForASA("mining_results_asa/csv_ASA_final.csv", rules, vulnerability)
+        vulnerability = generator.generate_vulnerability_dict()
+        print(f"Vulnerability: {vulnerability}")
+
+        creator = CsvCreatorForASA(os.path.join(self.base_dir, "mining_results_asa", "csv_ASA_final.csv"), rules, vulnerability)
         creator.create_csv()
 
     def combine_tm_sm(self):
-        combiner = DatasetCombiner("Union/Union_TM_SM.csv")
-        tm_csv = "mining_results/csv_mining_final.csv"
-        sm_csv = "Software_Metrics/metrics_results_sm_final.csv"
+        combiner = DatasetCombiner(os.path.join(self.base_dir,"Union","Union_TM_SM.csv"))
+        tm_csv = os.path.join(self.base_dir,"mining_results","csv_mining_final.csv")
+        sm_csv = os.path.join(self.base_dir,"Software_Metrics","metrics_results_sm_final.csv")
         combiner.merge(tm_csv, sm_csv)
 
+
     def combine_tm_asa(self):
-        combiner = DatasetCombiner("Union/Union_TM_ASA.csv")
-        tm_csv = "mining_results/csv_mining_final.csv"
-        asa_csv = "mining_results_asa/csv_ASA_final.csv"
+        combiner = DatasetCombiner(os.path.join(self.base_dir,"Union","Union_TM_ASA.csv"))
+        tm_csv = os.path.join(self.base_dir,"mining_results","csv_mining_final.csv")
+        asa_csv = os.path.join(self.base_dir,"mining_results_asa","csv_ASA_final.csv")
         combiner.merge(tm_csv, asa_csv)
 
+
     def combine_sm_asa(self):
-        combiner = DatasetCombiner("Union/Union_SM_ASA.csv")
-        sm_csv = "Software_Metrics/metrics_results_sm_final.csv"
-        asa_csv = "mining_results_asa/csv_ASA_final.csv"
+        combiner = DatasetCombiner(os.path.join(self.base_dir,"Union","Union_SM_ASA.csv"))
+        sm_csv = os.path.join(self.base_dir,"Software_Metrics","metrics_results_sm_final.csv")
+        asa_csv = os.path.join(self.base_dir,"mining_results_asa","csv_ASA_final.csv")
         combiner.merge(sm_csv, asa_csv)
 
+
     def total_combination(self):
-        combiner = DatasetCombiner("Union/3COMBINATION.csv")
-        tm_csv = "mining_results/csv_mining_final.csv"
-        sm_csv = "Software_Metrics/metrics_results_sm_final.csv"
-        asa_csv = "mining_results_asa/csv_ASA_final.csv"
+        combiner = DatasetCombiner(os.path.join(self.base_dir,"Union","3COMBINATION.csv"))
+        tm_csv = os.path.join(self.base_dir,"mining_results","csv_mining_final.csv")
+        sm_csv = os.path.join(self.base_dir,"Software_Metrics","metrics_results_sm_final.csv")
+        asa_csv = os.path.join(self.base_dir,"mining_results_asa","csv_ASA_final.csv")
         combiner.merge(sm_csv, tm_csv, asa_csv)
 
     def download_analysis_results(self, file_type, saving_path):
-        path_to_TM = os.path.join("mining_results", "csv_mining_final.csv")
-        path_to_SM = os.path.join("Software_Metrics", "metrics_results_sm_final.csv")
-        path_to_ASA = os.path.join("mining_results_asa", "csv_ASA_final.csv")
+        path_to_TM = os.path.join(self.base_dir, "mining_results", "csv_mining_final.csv")
+        path_to_SM = os.path.join(self.base_dir, "Software_Metrics", "metrics_results_sm_final.csv")
+        path_to_ASA = os.path.join(self.base_dir, "mining_results_asa", "csv_ASA_final.csv")
 
         file_map = {'text_mining': path_to_TM,
                     'software_metrics': path_to_SM,
@@ -183,45 +202,44 @@ class Main:
         if file_path:
             shutil.copyfile(file_path, saving_path)
 
-    @staticmethod
-    def download_results(results_type, path_to_save):
+    def download_results(self, results_type, path_to_save):
         file_paths = []
         tm = results_type['text_mining']
         sm = results_type['software_metrics']
         asa = results_type['asa']
 
         if tm:
-            path_to_results_TM = os.path.join("Predict", "Predict_TM.csv")
+            path_to_results_TM = os.path.join(self.base_dir, "Predict", "Predict_TM.csv")
             if os.path.isfile(path_to_results_TM):
                 file_paths.append(path_to_results_TM)
 
         if sm:
-            path_to_results_SM = os.path.join("Predict", "Predict_SM.csv")
+            path_to_results_SM = os.path.join(self.base_dir, "Predict", "Predict_SM.csv")
             if os.path.isfile(path_to_results_SM):
                 file_paths.append(path_to_results_SM)
 
         if asa:
-            path_to_results_ASA = os.path.join("Predict", "Predict_ASA.csv")
+            path_to_results_ASA = os.path.join(self.base_dir, "Predict", "Predict_ASA.csv")
             if os.path.isfile(path_to_results_ASA):
                 file_paths.append(path_to_results_ASA)
 
         if tm and sm and asa:
-            path_to_results_3_comb = os.path.join("Predict", "Predict_3Combination.csv")
+            path_to_results_3_comb = os.path.join(self.base_dir, "Predict", "Predict_3Combination.csv")
             if os.path.isfile(path_to_results_3_comb):
                 file_paths.append(path_to_results_3_comb)
 
         if tm and sm:
-            path_to_results_TM_SM = os.path.join("Predict", "Predict_TMSM.csv")
+            path_to_results_TM_SM = os.path.join(self.base_dir, "Predict", "Predict_TMSM.csv")
             if os.path.isfile(path_to_results_TM_SM):
                 file_paths.append(path_to_results_TM_SM)
 
         if tm and asa:
-            path_to_results_TM_ASA = os.path.join("Predict", "Predict_TMASA.csv")
+            path_to_results_TM_ASA = os.path.join(self.base_dir, "Predict", "Predict_TMASA.csv")
             if os.path.isfile(path_to_results_TM_ASA):
                 file_paths.append(path_to_results_TM_ASA)
 
         if sm and asa:
-            path_to_results_SM_ASA = os.path.join("Predict", "Predict_SMASA.csv")
+            path_to_results_SM_ASA = os.path.join(self.base_dir, "Predict", "Predict_SMASA.csv")
             if os.path.isfile(path_to_results_SM_ASA):
                 file_paths.append(path_to_results_SM_ASA)
 

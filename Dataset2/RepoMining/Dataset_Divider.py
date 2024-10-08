@@ -10,26 +10,25 @@ class DatasetDivider:
     def divide_dataset(self):
         dataset_path = os.path.join(self.base_dir, self.dataset_name)
         divide_dataset_path = os.path.join(self.base_dir, 'Dataset_Divided')
+
         csvfile = open(dataset_path, 'r').readlines()
         filename = 1
+
         if os.path.exists(divide_dataset_path):
-            shutil.rmtree(divide_dataset_path)  # Remove the directory and its contents
-
-            # Create a new, empty directory
+            shutil.rmtree(divide_dataset_path)
         os.makedirs(divide_dataset_path)
-
-        os.chdir(divide_dataset_path)
 
         header = csvfile[0]
         csvfile = csvfile[1:]
 
         if len(csvfile) == 0:
-            with open(str(filename) + '.csv', 'w+') as new_file:
+            new_file_path = os.path.join(divide_dataset_path, str(filename) + '.csv')
+            with open(new_file_path, 'w+') as new_file:
                 new_file.writelines([header])
         else:
-            for i in range(0, len(csvfile)):
-                if i % 50 == 0:
-                    with open(str(filename) + '.csv', 'w+') as new_file:
-                        new_file.write(header)
-                        new_file.writelines(csvfile[i:i + 50])
-                    filename += 1
+            for i in range(0, len(csvfile), 50):
+                new_file_path = os.path.join(divide_dataset_path, str(filename) + '.csv')
+                with open(new_file_path, 'w+') as new_file:
+                    new_file.write(header)
+                    new_file.writelines(csvfile[i:i + 50])
+                filename += 1

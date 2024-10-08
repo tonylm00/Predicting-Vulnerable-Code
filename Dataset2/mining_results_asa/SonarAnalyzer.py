@@ -17,7 +17,7 @@ class SonarAnalyzer:
         output_csv (str): The name of the output CSV file for storing issues.
     """
 
-    def __init__(self, sonar_host, sonar_token, sonar_path, file_name):
+    def __init__(self, sonar_host, sonar_token, sonar_path, file_name, base_dir):
         """
         Initializes the SonarAnalyzer class with the provided SonarQube server details.
 
@@ -34,6 +34,7 @@ class SonarAnalyzer:
         self.sonar_token = sonar_token
         self.sonar_path = sonar_path
         self.output_csv = file_name
+        self.base_dir = base_dir
 
     @staticmethod
     def create_sonar_properties(project_key, commit_dir):
@@ -219,10 +220,10 @@ class SonarAnalyzer:
             A CSV file or appends the issues to an existing CSV file.
         """
         fieldnames = ["severity", "updateDate", "line", "rule", "project", "effort", "message", "creationDate", "type",
-                      "component", "textRange", "debt", "key", "hash", "status"]
-        file_exists = os.path.isfile(self.output_csv)
+                      "component", "textRange", "debt", "key", "hash", "status", "class"]
+        file_exists = os.path.isfile(os.path.join(self.base_dir, self.output_csv))
 
-        with open(self.output_csv, mode="a", newline="\n") as file:
+        with open(os.path.join(self.base_dir, self.output_csv), mode="a", newline="\n") as file:
             writer = csv.DictWriter(file, fieldnames=fieldnames, delimiter=";")
             if not file_exists:
                 writer.writeheader()
@@ -254,20 +255,20 @@ class SonarAnalyzer:
         if the project key is not already in the CSV file.
         """
 
-        for folder in os.listdir("mining_results/"):
+        for folder in os.listdir(self.base_dir + "/mining_results"):
             if "RepositoryMining" in folder:
-                for cve_id in os.listdir("mining_results/" + folder):
+                for cve_id in os.listdir(self.base_dir + "/mining_results/" + folder):
 
                     if cve_id == "CHECK.txt" or cve_id == "ERRORS.txt" or cve_id == ".DS_Store":
                         continue
 
-                    if os.path.isdir("mining_results/" + folder + "/" + cve_id):
-                        for commit_id in os.listdir("mining_results/" + folder + "/" + cve_id):
+                    if os.path.isdir(self.base_dir + "/mining_results/" + folder + "/" + cve_id):
+                        for commit_id in os.listdir(self.base_dir + "/mining_results/" + folder + "/" + cve_id):
 
                             if commit_id == ".DS_Store":
                                 continue
 
-                            source_dir = "mining_results/" + folder + "/" + cve_id + "/" + commit_id
+                            source_dir = self.base_dir + "/mining_results/" + folder + "/" + cve_id + "/" + commit_id
 
                             # RepositoryMiningX:Directory:commit
                             sonar_project_key = ':'.join(source_dir.split('/')[-3:])
