@@ -14,7 +14,8 @@ from Dataset2.mining_results_asa.CsvCreatorForAsa import CsvCreatorForASA
 from Dataset2.mining_results_asa.DictGenerator import DictGenerator
 from Dataset2.mining_results_asa.SonarAnalyzer import SonarAnalyzer
 
-class Main():
+
+class Main:
     def run_repo_mining(self, dataset_name):
         os.chdir('..')
         dataset_div = DatasetDivider(os.getcwd(), dataset_name)
@@ -91,7 +92,6 @@ class Main():
         csv_final.write_rows()
         os.chdir("..")  # Torna alla cartella di lavoro principale
 
-
     def run_software_metrics(self):
         csv_file = os.path.abspath("Software_Metrics/metrics_results_sm_final.csv")
         csv_writer = MetricsWriter(csv_file)
@@ -127,8 +127,8 @@ class Main():
                     os.chdir("..")
         os.chdir("..")
 
-
     def run_ASA(self, sonar_host, sonar_token, sonar_path):
+        # os.chdir("..")
         sonar_analyzer = SonarAnalyzer(
             sonar_host=sonar_host,
             sonar_token=sonar_token,
@@ -139,10 +139,7 @@ class Main():
 
         generator = DictGenerator("mining_results_asa/RepositoryMining_ASAResults.csv")
         rules = generator.generate_rules_dict()
-        print(f"Rules: {rules}")
-
         vulnerability = generator.generate_vulnerability_dict()
-        print(f"Vulnerability: {vulnerability}")
 
         creator = CsvCreatorForASA("mining_results_asa/csv_ASA_final.csv", rules, vulnerability)
         creator.create_csv()
@@ -153,20 +150,17 @@ class Main():
         sm_csv = "Software_Metrics/metrics_results_sm_final.csv"
         combiner.merge(tm_csv, sm_csv)
 
-
     def combine_tm_asa(self):
         combiner = DatasetCombiner("Union/Union_TM_ASA.csv")
         tm_csv = "mining_results/csv_mining_final.csv"
         asa_csv = "mining_results_asa/csv_ASA_final.csv"
         combiner.merge(tm_csv, asa_csv)
 
-
     def combine_sm_asa(self):
         combiner = DatasetCombiner("Union/Union_SM_ASA.csv")
         sm_csv = "Software_Metrics/metrics_results_sm_final.csv"
         asa_csv = "mining_results_asa/csv_ASA_final.csv"
         combiner.merge(sm_csv, asa_csv)
-
 
     def total_combination(self):
         combiner = DatasetCombiner("Union/3COMBINATION.csv")
@@ -189,7 +183,8 @@ class Main():
         if file_path:
             shutil.copyfile(file_path, saving_path)
 
-    def download_results(self, results_type, path_to_save):
+    @staticmethod
+    def download_results(results_type, path_to_save):
         file_paths = []
         tm = results_type['text_mining']
         sm = results_type['software_metrics']
@@ -197,31 +192,68 @@ class Main():
 
         if tm:
             path_to_results_TM = os.path.join("Predict", "Predict_TM.csv")
-            file_paths.append(path_to_results_TM)
+            if os.path.isfile(path_to_results_TM):
+                file_paths.append(path_to_results_TM)
 
         if sm:
             path_to_results_SM = os.path.join("Predict", "Predict_SM.csv")
-            file_paths.append(path_to_results_SM)
+            if os.path.isfile(path_to_results_SM):
+                file_paths.append(path_to_results_SM)
 
         if asa:
             path_to_results_ASA = os.path.join("Predict", "Predict_ASA.csv")
-            file_paths.append(path_to_results_ASA)
+            if os.path.isfile(path_to_results_ASA):
+                file_paths.append(path_to_results_ASA)
 
         if tm and sm and asa:
             path_to_results_3_comb = os.path.join("Predict", "Predict_3Combination.csv")
-            file_paths.append(path_to_results_3_comb)
-        elif tm and sm:
-            path_to_results_TM_SM = os.path.join("Predict", "Predict_TMSM.csv")
-            file_paths.append(path_to_results_TM_SM)
-        elif tm and asa:
-            path_to_results_TM_ASA = os.path.join("Predict", "Predict_TMASA.csv")
-            file_paths.append(path_to_results_TM_ASA)
-        else:
-            path_to_results_SM_ASA = os.path.join("Predict", "Predict_SMASA.csv")
-            file_paths.append(path_to_results_SM_ASA)
+            if os.path.isfile(path_to_results_3_comb):
+                file_paths.append(path_to_results_3_comb)
 
+        if tm and sm:
+            path_to_results_TM_SM = os.path.join("Predict", "Predict_TMSM.csv")
+            if os.path.isfile(path_to_results_TM_SM):
+                file_paths.append(path_to_results_TM_SM)
+
+        if tm and asa:
+            path_to_results_TM_ASA = os.path.join("Predict", "Predict_TMASA.csv")
+            if os.path.isfile(path_to_results_TM_ASA):
+                file_paths.append(path_to_results_TM_ASA)
+
+        if sm and asa:
+            path_to_results_SM_ASA = os.path.join("Predict", "Predict_SMASA.csv")
+            if os.path.isfile(path_to_results_SM_ASA):
+                file_paths.append(path_to_results_SM_ASA)
 
         with zipfile.ZipFile(path_to_save, 'w') as zipf:
             for file in file_paths:
-                zipf.write(file, os.path.basename(file))  # Add each file to the zip
+                zipf.write(file, os.path.basename(file))
         print(f"ZIP file created: {path_to_save}")
+        return file_paths.__len__()
+
+    @staticmethod
+    def clean_up():
+        print("Cleaning up...")
+
+        if os.path.isdir("/mining_results"):
+            print("Removing mining_results...")
+            shutil.rmtree("../mining_results")
+
+        if os.path.isdir("../Dataset_Divided"):
+            print("Removing Dataset_Divided...")
+            shutil.rmtree("../Dataset_Divided")
+
+        if os.path.isdir("../Predict"):
+            print("Removing Predict...")
+            shutil.rmtree("../Predict")
+
+        if os.path.isfile("../mining_results_asa/RepositoryMining_ASAResults.csv"):
+            os.remove("../mining_results_asa/RepositoryMining_ASAResults.csv")
+
+        if os.path.isfile("../mining_results_asa/csv_ASA_final.csv"):
+            os.remove("../mining_results_asa/csv_ASA_final.csv")
+
+        if os.path.isfile("../repository.csv"):
+            os.remove("../repository.csv")
+
+        print("Clean up completed.")

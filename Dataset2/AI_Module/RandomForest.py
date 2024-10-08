@@ -8,6 +8,7 @@ import joblib
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
+
 def save_vocabulary(data, name_vocab):
     original_vocab = data.columns.tolist()
 
@@ -15,13 +16,16 @@ def save_vocabulary(data, name_vocab):
 
     joblib.dump(original_vocab, name_vocab)
 
+
 def train(csv_path, name_model, name_vocab):
     data = pd.read_csv(csv_path)
     data.columns = data.columns.str.strip()
 
     data = data.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
     if 'Name' in data.columns:
-        data = data[~data['Name'].str.contains('9730cd6a3bbb481ee4e400b51952b537589c469d|d934c6e7430b7b98e43a0a085a2304bd31a75c3d|0c8366cb792227d484b9ca13e537037dd0cb57dc', case=False, na=False)]
+        data = data[~data['Name'].str.contains(
+            '9730cd6a3bbb481ee4e400b51952b537589c469d|d934c6e7430b7b98e43a0a085a2304bd31a75c3d|0c8366cb792227d484b9ca13e537037dd0cb57dc',
+            case=False, na=False)]
 
     string_columns = data.select_dtypes(include='object').columns
 
@@ -53,7 +57,7 @@ def train(csv_path, name_model, name_vocab):
     rf = RandomForestClassifier(n_estimators=100, max_depth=None, random_state=1)
 
     # Addestra il modello
-    rf.fit(X_train, y_train)
+    rf.fit(X_train.values, y_train.values)
 
     os.makedirs(os.path.dirname(name_model), exist_ok=True)
 
@@ -86,6 +90,7 @@ def predict_dict(input_dict, model_path, label_encoder_path, vocab_path):
 
     return predicted_class[0]
 
+
 def predict_csv(input_csv_path, model_path, label_encoder_path, vocab_path, path_csv):
     # Converti il dizionario in DataFrame
     original_vocab = joblib.load(vocab_path)
@@ -93,6 +98,10 @@ def predict_csv(input_csv_path, model_path, label_encoder_path, vocab_path, path
     label_encoder = joblib.load(label_encoder_path)
 
     df_new = pd.read_csv(input_csv_path)
+
+    print(len(df_new))
+    if len(df_new) == 0:
+        return []
 
     aligned_data = pd.DataFrame(0, index=df_new.index, columns=original_vocab)
 
@@ -115,6 +124,7 @@ def predict_csv(input_csv_path, model_path, label_encoder_path, vocab_path, path
 
     return predicted_classes.tolist()
 
+
 if __name__ == '__main__':
     train('../mining_results_asa/csv_ASA_final.csv', 'model/random_forest_ASA.pkl', 'vocab/original_vocab_ASA.pkl')
     train('../mining_results/csv_mining_final.csv', 'model/random_forest_TM.pkl', 'vocab/original_vocab_TM.pkl')
@@ -125,5 +135,5 @@ if __name__ == '__main__':
     train('../Union/Union_TM_ASA.csv', 'model/random_forest_TMASA.pkl', 'vocab/original_vocab_TMASA.pkl')
     train('../Union/3COMBINATION.csv', 'model/random_forest_3Combination.pkl', 'vocab/original_vocab_3Combination.pkl')
 
-    #print(predict_csv('../../Dataset2/mining_results/csv_mining_final_neg.csv', 'random_forest_TM.pkl', 'label_encoder.pkl', 'original_vocab_TM.pkl'))
-    #print(predict_dict({'class':1, 'public':3, 'pasquale': 5}, 'random_forest_TM.pkl', 'label_encoder.pkl', 'original_vocab_TM.pkl'))
+    # print(predict_csv('../../Dataset2/mining_results/csv_mining_final_neg.csv', 'random_forest_TM.pkl', 'label_encoder.pkl', 'original_vocab_TM.pkl'))
+    # print(predict_dict({'class':1, 'public':3, 'pasquale': 5}, 'random_forest_TM.pkl', 'label_encoder.pkl', 'original_vocab_TM.pkl'))

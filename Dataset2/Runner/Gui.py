@@ -1,3 +1,4 @@
+import re
 import shutil
 import tkinter as tk
 from tkinter import ttk
@@ -15,8 +16,9 @@ class Gui:
         self.main_frame = Tkmt.ThemedTKinterFrame("Perseverance", "sun-valley", "dark")
         self.window = self.main_frame.root
         self.window.title("Perseverance")
-        self.window.geometry("400x700")
+        self.window.geometry("500x900")
         self.window.resizable(False, False)
+        self.set_icon()
 
         # checkboxes for options frame
         self.tm_checkbox = tk.IntVar()
@@ -58,6 +60,8 @@ class Gui:
         self.build_results_frame()
         self.build_start_frame()
 
+        Main.clean_up()
+
     def build_predict_frame(self):
         self.predict_frame = ttk.LabelFrame(self.window, text="Predict", padding=(10, 10))
         self.predict_frame.pack(padx=10, pady=10, fill="both")
@@ -74,9 +78,9 @@ class Gui:
         self.upload_csv_button.pack(pady=(0, 5))
 
         self.commit_id_label = ttk.Label(self.predict_frame, text="Commit ID:")
-        self.commit_id_entry = ttk.Entry(self.predict_frame, width=25)
+        self.commit_id_entry = ttk.Entry(self.predict_frame, width=40)
         self.repo_url_label = ttk.Label(self.predict_frame, text="Repo URL:")
-        self.repo_url_entry = ttk.Entry(self.predict_frame, width=25)
+        self.repo_url_entry = ttk.Entry(self.predict_frame, width=40)
 
         # Initially hidden
         self.commit_id_label.pack_forget()
@@ -93,14 +97,14 @@ class Gui:
         ttk.Checkbutton(self.options_frame, text="ASA", variable=self.asa_checkbox,
                         command=self.manage_asa_fields).pack(anchor="w")
 
-        self.sonarcloud_path_label = ttk.Label(self.options_frame, text="SonarCloud Path:")
-        self.sonarcloud_path_entry = ttk.Entry(self.options_frame, width=25)
+        self.sonarcloud_path_label = ttk.Label(self.options_frame, text="SonarScanner Path:")
+        self.sonarcloud_path_entry = ttk.Entry(self.options_frame, width=50)
 
         self.sonarcloud_token_label = ttk.Label(self.options_frame, text="SonarCloud UserToken:")
-        self.sonarcloud_token_entry = ttk.Entry(self.options_frame, width=25)
+        self.sonarcloud_token_entry = ttk.Entry(self.options_frame, width=50)
 
         self.sonarcloud_host_label = ttk.Label(self.options_frame, text="SonarCloud Host:")
-        self.sonarcloud_host_entry = ttk.Entry(self.options_frame, width=25)
+        self.sonarcloud_host_entry = ttk.Entry(self.options_frame, width=50)
 
         # Initially hidden
         self.sonarcloud_path_label.pack_forget()
@@ -123,8 +127,7 @@ class Gui:
                                      command=lambda: self.download_analysis_csv('asa'), state=tk.DISABLED)
 
         self.results_button = ttk.Button(self.results_frame, text="Download Predictions",
-                                     command=lambda: self.download_results_csv(), state=tk.NORMAL)
-
+                                         command=lambda: self.download_results_csv(), state=tk.NORMAL)
 
         self.tm_button.pack(pady=5, fill="x")
         self.sm_button.pack(pady=5, fill="x")
@@ -170,10 +173,13 @@ class Gui:
         if self.asa_checkbox.get() == 1:
             self.sonarcloud_path_label.pack(anchor="w", padx=10, pady=2)
             self.sonarcloud_path_entry.pack(anchor="w", padx=10, pady=2)
+            self.sonarcloud_path_entry.insert(0, r"C:\Program Files\SonarScanner\bin\sonar-scanner.bat")
             self.sonarcloud_token_label.pack(anchor="w", padx=10, pady=2)
             self.sonarcloud_token_entry.pack(anchor="w", padx=10, pady=2)
+            self.sonarcloud_token_entry.insert(0, "squ_95089cde86a31904f6f2f0191e033099beb06c27")
             self.sonarcloud_host_label.pack(anchor="w", padx=10, pady=2)
             self.sonarcloud_host_entry.pack(anchor="w", padx=10, pady=2)
+            self.sonarcloud_host_entry.insert(0, "http://localhost:9000")
         else:
             self.sonarcloud_path_label.pack_forget()
             self.sonarcloud_path_entry.pack_forget()
@@ -181,6 +187,40 @@ class Gui:
             self.sonarcloud_token_entry.pack_forget()
             self.sonarcloud_host_label.pack_forget()
             self.sonarcloud_host_entry.pack_forget()
+
+    def form_validation(self):
+        if self.switch_input_value.get() == "csv":
+            if self.csv_label['text'] == "":
+                messagebox.showwarning("Error - Predict Frame", "Carica un file CSV per continuare.")
+                return False
+        else:
+            if self.commit_id_entry.get().strip() == "" or self.repo_url_entry.get().strip() == "":
+                messagebox.showwarning("Error - Options Frame", "Inserisci commit_id e repo_url per continuare.")
+                return False
+            else:
+                if not re.match(r'^https:\/\/github\.com\/[a-zA-Z0-9-]+\/[a-zA-Z0-9-]+$',
+                                self.repo_url_entry.get().strip()):
+                    messagebox.showwarning("Error - Options Frame",
+                                           f"L'URL {self.repo_url_entry.get().strip()} non è valido")
+                    return False
+                if not re.match(r'^[a-z0-9]+$', self.commit_id_entry.get().strip()):
+                    messagebox.showwarning("Error - Options Frame",
+                                           f"Il commit {self.commit_id_entry.get().strip()} non è valido")
+                    return False
+        if self.asa_checkbox.get() == 1:
+            if self.sonarcloud_path_entry.get().strip() == "" or self.sonarcloud_token_entry.get().strip() == "" or \
+                    self.sonarcloud_host_entry.get().strip() == "":
+                messagebox.showwarning("Error - Options Frame", "Inserisci i dati di SonarCloud per continuare.")
+                return False
+
+        return True
+
+    def set_icon(self):
+        icon_path = 'icon.ico'
+        try:
+            self.window.iconbitmap(icon_path)
+        except Exception as e:
+            print(f"Impossibile caricare l'icona: {e}")
 
     def load_file(self):
         file_path = filedialog.askopenfilename(title="Load CSV", filetypes=[("CSV files", "*.csv")])
@@ -207,8 +247,8 @@ class Gui:
 
         # Ask the user where to save the zip file
         saving_path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV Files", "*.csv"),
-                                                                ("All Files", "*.*")],
-                                                     title="Save the CSV file as")
+                                                                                       ("All Files", "*.*")],
+                                                   title="Save the CSV file as")
 
         if saving_path:  # Check if user selected a file location
             try:
@@ -231,8 +271,8 @@ class Gui:
         results_type = {'text_mining': tm, 'software_metrics': sm, 'asa': asa}
 
         saving_path = filedialog.asksaveasfilename(defaultextension=".zip",
-                                                     filetypes=[("ZIP files", "*.zip")],
-                                                     title="Save ZIP file as")
+                                                   filetypes=[("ZIP files", "*.zip")],
+                                                   title="Save ZIP file as")
 
         if saving_path:  # Check if user selected a file location
             try:
@@ -247,82 +287,82 @@ class Gui:
         else:
             messagebox.showwarning("Cancelled", "File save operation was cancelled.")
 
-
-
     def predict(self):
         tm = self.tm_checkbox.get() == 1
         sm = self.sm_checkbox.get() == 1
         asa = self.asa_checkbox.get() == 1
         run = Main()
+
+        if not self.form_validation():
+            return
+
         if self.switch_input_value.get() == "csv":
-            if self.csv_label['text'] == "":
-                messagebox.showwarning("Errore", "Carica un file CSV per continuare.")
-                continue_exec = False
-            else:
-                messagebox.showinfo("Predict", f"Predizione con file CSV: {self.csv_label['text']} \n")
-                continue_exec = True
-                #run.run_repo_mining(self.csv_label['text'])
+            messagebox.showinfo("Predict", f"Predizione con file CSV: {self.csv_label['text']} \n")
+            # run.run_repo_mining(self.csv_label['text'])
         else:
             commit_id = self.commit_id_entry.get().strip()
             repo_url = self.repo_url_entry.get().strip()
-            if not (commit_id and repo_url):
-                messagebox.showwarning("Errore", "Inserisci commit_id e repo_url per continuare.")
-                continue_exec = False
-            else:
-                messagebox.showinfo("Predict", f"Predizione per commit_id: {commit_id}, repo_url: {repo_url}")
-                continue_exec = True
-                df = pd.DataFrame({'cve_id': [0], 'repo_url': [repo_url], 'commit_id': [commit_id]})
-                df.to_csv('../repository.csv', index=False)
-                run.run_repo_mining("repository.csv")
-        if continue_exec:
-            if tm:
-                run.run_text_mining()
-                predict_csv("mining_results/csv_mining_final.csv",
-                            "AI_Module/model/random_forest_TM.pkl",
-                            "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_TM.pkl",
-                            "Predict/Predict_TM.csv")
 
-            if sm:
-                run.run_software_metrics()
-                predict_csv("Software_Metrics/metrics_results_sm_final.csv",
-                            "AI_Module/model/random_forest_SM.pkl",
-                            "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_SM.pkl",
-                            "Predict/Predict_SM.csv")
+            messagebox.showinfo("Predict", f"Predizione per commit_id: {commit_id}, repo_url: {repo_url}")
+            df = pd.DataFrame({'cve_id': [0], 'repo_url': [repo_url], 'commit_id': [commit_id]})
+            df.to_csv('../repository.csv', index=False)
+            run.run_repo_mining("repository.csv")
 
-            if asa:
-                run.run_ASA(self.sonarcloud_host_entry, self.sonarcloud_token_entry, self.sonarcloud_path_entry)
-                predict_csv("mining_results_ASA/csv_ASA_final.csv",
-                            "AI_Module/model/random_forest_ASA.pkl",
-                            "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_ASA.pkl",
-                            "Predict/Predict_ASA.csv")
-            if tm and sm and asa:
-                run.total_combination()
-                predict_csv("Union/3COMBINATION.csv",
-                            "AI_Module/model/random_forest_3Combination.pkl",
-                            "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_3Combination.pkl",
-                            "Predict/Predict_3Combination.csv")
-            elif tm and sm:
-                run.combine_tm_sm()
-                predict_csv("Union/Union_TM_SM.csv",
-                            "AI_Module/model/random_forest_TMSM.pkl",
-                            "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_TMSM.pkl",
-                            "Predict/Predict_TMSM.csv")
-            elif tm and asa:
-                run.combine_tm_asa()
-                predict_csv("Union/Union_TM_ASA.csv",
-                            "AI_Module/model/random_forest_TMASA.pkl",
-                            "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_TMASA.pkl",
-                            "Predict/Predict_TMASA.csv")
-            elif sm and asa:
-                run.combine_sm_asa()
-                predict_csv("Union/Union_SM_ASA.csv",
-                            "AI_Module/model/random_forest_SMASA.pkl",
-                            "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_SMASA.pkl",
-                            "Predict/Predict_SMASA.csv")
+        if tm:
+            run.run_text_mining()
+            predict_csv("mining_results/csv_mining_final.csv",
+                        "AI_Module/model/random_forest_TM.pkl",
+                        "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_TM.pkl",
+                        "Predict/Predict_TM.csv")
+
+        if sm:
+            run.run_software_metrics()
+            predict_csv("Software_Metrics/metrics_results_sm_final.csv",
+                        "AI_Module/model/random_forest_SM.pkl",
+                        "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_SM.pkl",
+                        "Predict/Predict_SM.csv")
+
+        if asa:
+            run.run_ASA(self.sonarcloud_host_entry.get(), self.sonarcloud_token_entry.get(),
+                        self.sonarcloud_path_entry.get())
+
+            predict_csv("mining_results_ASA/csv_ASA_final.csv",
+                        "AI_Module/model/random_forest_ASA.pkl",
+                        "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_ASA.pkl",
+                        "Predict/Predict_ASA.csv")
+
+        if tm and sm and asa:
+            run.total_combination()
+            predict_csv("Union/3COMBINATION.csv",
+                        "AI_Module/model/random_forest_3Combination.pkl",
+                        "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_3Combination.pkl",
+                        "Predict/Predict_3Combination.csv")
+
+        if tm and sm:
+            run.combine_tm_sm()
+            predict_csv("Union/Union_TM_SM.csv",
+                        "AI_Module/model/random_forest_TMSM.pkl",
+                        "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_TMSM.pkl",
+                        "Predict/Predict_TMSM.csv")
+
+        if tm and asa:
+            run.combine_tm_asa()
+            predict_csv("Union/Union_TM_ASA.csv",
+                        "AI_Module/model/random_forest_TMASA.pkl",
+                        "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_TMASA.pkl",
+                        "Predict/Predict_TMASA.csv")
+
+        if sm and asa:
+            run.combine_sm_asa()
+            predict_csv("Union/Union_SM_ASA.csv",
+                        "AI_Module/model/random_forest_SMASA.pkl",
+                        "AI_Module/label_encoder.pkl", "AI_Module/vocab/original_vocab_SMASA.pkl",
+                        "Predict/Predict_SMASA.csv")
         self.show_results_frame()
 
     def start(self):
         self.window.mainloop()
+
 
 if __name__ == '__main__':
     gui = Gui()

@@ -219,7 +219,7 @@ class SonarAnalyzer:
             A CSV file or appends the issues to an existing CSV file.
         """
         fieldnames = ["severity", "updateDate", "line", "rule", "project", "effort", "message", "creationDate", "type",
-                      "component", "textRange", "debt", "key", "hash", "status", "class"]
+                      "component", "textRange", "debt", "key", "hash", "status"]
         file_exists = os.path.isfile(self.output_csv)
 
         with open(self.output_csv, mode="a", newline="\n") as file:
@@ -254,20 +254,20 @@ class SonarAnalyzer:
         if the project key is not already in the CSV file.
         """
 
-        for folder in os.listdir("../mining_results"):
+        for folder in os.listdir("mining_results/"):
             if "RepositoryMining" in folder:
-                for cve_id in os.listdir("../mining_results/" + folder):
+                for cve_id in os.listdir("mining_results/" + folder):
 
                     if cve_id == "CHECK.txt" or cve_id == "ERRORS.txt" or cve_id == ".DS_Store":
                         continue
 
-                    if os.path.isdir("../mining_results/" + folder + "/" + cve_id):
-                        for commit_id in os.listdir("../mining_results/" + folder + "/" + cve_id):
+                    if os.path.isdir("mining_results/" + folder + "/" + cve_id):
+                        for commit_id in os.listdir("mining_results/" + folder + "/" + cve_id):
 
                             if commit_id == ".DS_Store":
                                 continue
 
-                            source_dir = "../mining_results/" + folder + "/" + cve_id + "/" + commit_id
+                            source_dir = "mining_results/" + folder + "/" + cve_id + "/" + commit_id
 
                             # RepositoryMiningX:Directory:commit
                             sonar_project_key = ':'.join(source_dir.split('/')[-3:])
