@@ -31,4 +31,11 @@ class DictGenerator:
                         "component": "/".join(value_list[9].split(":")[-2:])
                     }
                     self.vulnerabilities.append(dict_app)
+                elif value_list[8] == "NO_ISSUES_FOUND":
+                    dict_app = {
+                        "type": value_list[8],
+                        "rule": "N/A",
+                        "component": "/".join(value_list[9].split(":")[-2:])
+                    }
+                    self.vulnerabilities.append(dict_app)
         return self.vulnerabilities

@@ -1,6 +1,3 @@
-from Dataset2.mining_results_asa.DictGenerator import DictGenerator
-
-
 class CsvCreatorForASA:
     def __init__(self, final_csv_name, rules_dict, vulnerabilities):
         self.final_csv_name = final_csv_name
@@ -33,9 +30,6 @@ class CsvCreatorForASA:
             final_csv.write("\n")
 
             for java_class_key, java_class_dict in self.big_dict.items():
-                print(f"Java class: {java_class_key}")
-                print(f"Java class dict: {java_class_dict}")
-                print(f"Big dict: {self.big_dict}")
                 final_csv.write(java_class_key)
                 for rule in self.rules_dict:
                     final_csv.write("," + str(java_class_dict.get(rule, 0)))

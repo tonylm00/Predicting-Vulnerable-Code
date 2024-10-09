@@ -209,7 +209,7 @@ class SonarAnalyzer:
 
         return response.json().get("issues", [])
 
-    def save_issues_to_csv(self, issues):
+    def save_issues_to_csv(self, issues, project):
         """
         Saves the list of issues to a CSV file. If no issues are found, records a placeholder entry.
 
@@ -220,7 +220,7 @@ class SonarAnalyzer:
             A CSV file or appends the issues to an existing CSV file.
         """
         fieldnames = ["severity", "updateDate", "line", "rule", "project", "effort", "message", "creationDate", "type",
-                      "component", "textRange", "debt", "key", "hash", "status", "class"]
+                      "component", "textRange", "debt", "key", "hash", "status"]
         file_exists = os.path.isfile(os.path.join(self.base_dir, self.output_csv))
 
         with open(os.path.join(self.base_dir, self.output_csv), mode="a", newline="\n") as file:
@@ -245,8 +245,29 @@ class SonarAnalyzer:
                         "debt": issue.get("debt", ""),
                         "key": issue.get("key", ""),
                         "hash": issue.get("hash", ""),
-                        "status": issue.get("status", ""),
+                        "status": issue.get("status", "")
                     })
+            else:
+                for file in os.listdir(project):
+                    if file.endswith(".java"):
+                        component = ':'.join(os.path.join(project, file).replace("\\", "/").split('/')[-4:])
+                        writer.writerow({
+                            "severity": "N/A",
+                            "updateDate": "N/A",
+                            "line": "N/A",
+                            "rule": "N/A",
+                            "project": "N/A",
+                            "effort": "N/A",
+                            "message": "N/A",
+                            "creationDate": "N/A",
+                            "type": "NO_ISSUES_FOUND",
+                            "component": component,
+                            "textRange": "N/A",
+                            "debt": "N/A",
+                            "key": "N/A",
+                            "hash": "N/A",
+                            "status": "N/A"
+                        })
 
     def process_repositories(self):
         """
@@ -276,5 +297,4 @@ class SonarAnalyzer:
                             self.create_sonar_properties(sonar_project_key, source_dir)
                             self.run_sonar_scanner(sonar_project_key, source_dir)
                             issues = self.get_project_issues(sonar_project_key)
-                            print(f"Progetto: {sonar_project_key} - Trovate {len(issues)} issue(s).")
-                            self.save_issues_to_csv(issues)
+                            self.save_issues_to_csv(issues, source_dir)
