@@ -43,16 +43,18 @@ class Gui:
         self.csv_label = None
         self.upload_csv_button = None
 
+        # GUI components for start frame
+        self.progress_bar = None
+
         # frames
         self.predict_frame = None
         self.options_frame = None
         self.results_frame = None
         self.start_frame = None
 
+
         # buttons for results frame
-        self.tm_button = None
-        self.sm_button = None
-        self.asa_button = None
+        self.analysis_button = None
         self.results_button = None
 
         self.build_predict_frame()
@@ -119,35 +121,32 @@ class Gui:
         self.results_frame.pack(padx=10, pady=10, fill="both")
         self.results_frame.pack_forget()
 
-        self.tm_button = ttk.Button(self.results_frame, text="Download Text Mining Results",
-                                    command=lambda: self.download_analysis_csv('text_mining'), state=tk.DISABLED)
-        self.sm_button = ttk.Button(self.results_frame, text="Download Software Metrics Results",
-                                    command=lambda: self.download_analysis_csv('software_metrics'), state=tk.DISABLED)
-        self.asa_button = ttk.Button(self.results_frame, text="Download ASA Results",
-                                     command=lambda: self.download_analysis_csv('asa'), state=tk.DISABLED)
+        self.analysis_button = ttk.Button(self.results_frame, text="Download Analysis Results",
+                                          command=lambda: self.download_results_csv('analysis'), state=tk.DISABLED)
 
         self.results_button = ttk.Button(self.results_frame, text="Download Predictions",
-                                         command=lambda: self.download_results_csv(), state=tk.NORMAL)
+                                         command=lambda: self.download_results_csv('prediction'), state=tk.DISABLED)
 
-        self.tm_button.pack(pady=5, fill="x")
-        self.sm_button.pack(pady=5, fill="x")
-        self.asa_button.pack(pady=5, fill="x")
+        self.analysis_button.pack(pady=5, fill="x")
         self.results_button.pack(pady=5, fill="x")
 
     def build_start_frame(self):
         start_frame = tk.LabelFrame(self.window, bd=0)
         start_frame.pack(padx=10, pady=10)
+
+        self.progress_bar = ttk.Progressbar(start_frame, orient="horizontal", mode="indeterminate", length=280)
+        self.progress_bar.grid(row=6, column=1, columnspan=2, padx=10, pady=20)
+
         predict_button = ttk.Button(start_frame, text="Start", style="Accent.TButton", command=self.predict)
         predict_button.grid(row=5, column=1, pady=10, columnspan=2)
 
+
+
     def show_results_frame(self):
         self.results_frame.pack(padx=10, pady=10, fill="both")
-        if self.tm_checkbox.get():
-            self.tm_button.config(state=tk.NORMAL)
-        if self.sm_checkbox.get():
-            self.sm_button.config(state=tk.NORMAL)
-        if self.asa_checkbox.get():
-            self.asa_button.config(state=tk.NORMAL)
+        if self.tm_checkbox.get() or self.sm_checkbox.get() or self.asa_checkbox.get():
+            self.analysis_button.config(state=tk.NORMAL)
+            self.results_button.config(state=tk.NORMAL)
 
     def manage_switch(self):
         if self.switch_input_value.get() == "commit":
@@ -242,28 +241,7 @@ class Gui:
         }
         return options
 
-    @staticmethod
-    def download_analysis_csv(file_type):
-
-        # Ask the user where to save the zip file
-        saving_path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV Files", "*.csv"),
-                                                                                       ("All Files", "*.*")],
-                                                   title="Save the CSV file as")
-
-        if saving_path:  # Check if user selected a file location
-            try:
-                run = Main()
-
-                run.download_analysis_results(file_type, saving_path)
-
-                # Display a success message
-                messagebox.showinfo("Success", f"File saved successfully at {saving_path}")
-            except Exception as e:
-                messagebox.showerror("Error", f"Failed to save the file: {e}")
-        else:
-            messagebox.showwarning("Cancelled", "File save operation was cancelled.")
-
-    def download_results_csv(self):
+    def download_results_csv(self, result_kind):
         tm = self.tm_checkbox.get() == 1
         sm = self.sm_checkbox.get() == 1
         asa = self.asa_checkbox.get() == 1
@@ -278,7 +256,7 @@ class Gui:
             try:
                 run = Main(os.path.dirname(os.getcwd()))
 
-                run.download_results(results_type, saving_path)
+                run.download_results(result_kind, results_type, saving_path)
 
                 # Display a success message
                 messagebox.showinfo("Success", f"File saved successfully at {saving_path}")
@@ -294,6 +272,11 @@ class Gui:
         tm = self.tm_checkbox.get() == 1
         sm = self.sm_checkbox.get() == 1
         asa = self.asa_checkbox.get() == 1
+
+        if not (tm or sm or asa):
+            messagebox.showwarning("Errore", "Bro qualcosa devi fa")
+            return
+
 
         base_dir = os.path.dirname(os.getcwd())
         run = Main(base_dir)
@@ -320,6 +303,15 @@ class Gui:
                 run.run_repo_mining("repository.csv")
 
         if continue_exec:
+            # Reset progress bar before starting
+            self.progress_bar.step(0)
+            self.progress_bar.grid()  # Show the progress bar
+            task_completed = 0
+
+            # Set the progress bar max value based on the number of tasks
+            num_tasks = tm + sm + asa + (tm+sm) + (tm+asa) + (sm+asa) + (tm+sm+asa) # Calculate how many tasks are selected
+            self.progress_bar.configure(maximum=num_tasks)
+
             if tm:
                 run.run_text_mining()
                 predict_csv(
@@ -329,6 +321,8 @@ class Gui:
                     os.path.join(base_dir, "AI_Module", "vocab", "original_vocab_TM.pkl"),
                     os.path.join(base_dir, "Predict", "Predict_TM.csv")
                 )
+                task_completed += 1
+                self.progress_bar.step(task_completed)
 
             if sm:
                 run.run_software_metrics()
@@ -339,6 +333,8 @@ class Gui:
                     os.path.join(base_dir, "AI_Module", "vocab", "original_vocab_SM.pkl"),
                     os.path.join(base_dir, "Predict", "Predict_SM.csv")
                 )
+                task_completed += 1
+                self.progress_bar.step(task_completed)
 
             if asa:
                 run.run_ASA(self.sonarcloud_host_entry.get(), self.sonarcloud_token_entry.get(), self.sonarcloud_path_entry.get())
@@ -349,6 +345,8 @@ class Gui:
                     os.path.join(base_dir, "AI_Module", "vocab", "original_vocab_ASA.pkl"),
                     os.path.join(base_dir, "Predict", "Predict_ASA.csv")
                 )
+                task_completed += 1
+                self.progress_bar.step(task_completed)
 
             if tm and sm and asa:
                 run.total_combination()
@@ -359,6 +357,9 @@ class Gui:
                     os.path.join(base_dir, "AI_Module", "vocab", "original_vocab_3Combination.pkl"),
                     os.path.join(base_dir, "Predict", "Predict_3Combination.csv")
                 )
+                task_completed += 1
+                self.progress_bar.step(task_completed)
+
             if tm and sm:
                 run.combine_tm_sm()
                 predict_csv(
@@ -368,6 +369,9 @@ class Gui:
                     os.path.join(base_dir, "AI_Module", "vocab", "original_vocab_TMSM.pkl"),
                     os.path.join(base_dir, "Predict", "Predict_TMSM.csv")
                 )
+                task_completed += 1
+                self.progress_bar.step(task_completed)
+
             if tm and asa:
                 run.combine_tm_asa()
                 predict_csv(
@@ -377,6 +381,9 @@ class Gui:
                     os.path.join(base_dir, "AI_Module", "vocab", "original_vocab_TMASA.pkl"),
                     os.path.join(base_dir, "Predict", "Predict_TMASA.csv")
                 )
+                task_completed += 1
+                self.progress_bar.step(task_completed)
+
             if sm and asa:
                 run.combine_sm_asa()
                 predict_csv(
@@ -386,8 +393,11 @@ class Gui:
                     os.path.join(base_dir, "AI_Module", "vocab", "original_vocab_SMASA.pkl"),
                     os.path.join(base_dir, "Predict", "Predict_SMASA.csv")
                 )
+                task_completed += 1
+                self.progress_bar.step(task_completed)
 
-        self.show_results_frame()
+            self.progress_bar.grid_remove()
+            self.show_results_frame()
 
     def start(self):
         self.window.mainloop()

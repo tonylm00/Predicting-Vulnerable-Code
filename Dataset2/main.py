@@ -202,44 +202,57 @@ class Main:
         if file_path:
             shutil.copyfile(file_path, saving_path)
 
-    def download_results(self, results_type, path_to_save):
+    def download_results(self, result_kind, results_type, path_to_save):
         file_paths = []
         tm = results_type['text_mining']
         sm = results_type['software_metrics']
         asa = results_type['asa']
 
-        if tm:
+        is_prediction = result_kind == 'prediction'
+
+        if is_prediction:
             path_to_results_TM = os.path.join(self.base_dir, "Predict", "Predict_TM.csv")
+            path_to_results_SM = os.path.join(self.base_dir, "Predict", "Predict_SM.csv")
+            path_to_results_ASA = os.path.join(self.base_dir, "Predict", "Predict_ASA.csv")
+            path_to_results_3_comb = os.path.join(self.base_dir, "Predict", "Predict_3Combination.csv")
+            path_to_results_TM_SM = os.path.join(self.base_dir, "Predict", "Predict_TMSM.csv")
+            path_to_results_TM_ASA = os.path.join(self.base_dir, "Predict", "Predict_TMASA.csv")
+            path_to_results_SM_ASA = os.path.join(self.base_dir, "Predict", "Predict_SMASA.csv")
+        else:
+            path_to_results_TM = os.path.join(self.base_dir, "mining_results", "csv_mining_final.csv")
+            path_to_results_SM = os.path.join(self.base_dir, "Software_Metrics", "metrics_results_sm_final.csv")
+            path_to_results_ASA = os.path.join(self.base_dir, "mining_results_asa", "csv_ASA_final.csv")
+            path_to_results_3_comb = os.path.join(self.base_dir, "Union", "3Combination.csv")
+            path_to_results_TM_SM = os.path.join(self.base_dir, "Union", "Union_TM_SM.csv")
+            path_to_results_TM_ASA = os.path.join(self.base_dir, "Union", "Union_TM_ASA.csv")
+            path_to_results_SM_ASA = os.path.join(self.base_dir, "Union", "Union_SM_ASA.csv")
+
+
+        if tm:
             if os.path.isfile(path_to_results_TM):
                 file_paths.append(path_to_results_TM)
 
         if sm:
-            path_to_results_SM = os.path.join(self.base_dir, "Predict", "Predict_SM.csv")
             if os.path.isfile(path_to_results_SM):
                 file_paths.append(path_to_results_SM)
 
         if asa:
-            path_to_results_ASA = os.path.join(self.base_dir, "Predict", "Predict_ASA.csv")
             if os.path.isfile(path_to_results_ASA):
                 file_paths.append(path_to_results_ASA)
 
         if tm and sm and asa:
-            path_to_results_3_comb = os.path.join(self.base_dir, "Predict", "Predict_3Combination.csv")
             if os.path.isfile(path_to_results_3_comb):
                 file_paths.append(path_to_results_3_comb)
 
         if tm and sm:
-            path_to_results_TM_SM = os.path.join(self.base_dir, "Predict", "Predict_TMSM.csv")
             if os.path.isfile(path_to_results_TM_SM):
                 file_paths.append(path_to_results_TM_SM)
 
         if tm and asa:
-            path_to_results_TM_ASA = os.path.join(self.base_dir, "Predict", "Predict_TMASA.csv")
             if os.path.isfile(path_to_results_TM_ASA):
                 file_paths.append(path_to_results_TM_ASA)
 
         if sm and asa:
-            path_to_results_SM_ASA = os.path.join(self.base_dir, "Predict", "Predict_SMASA.csv")
             if os.path.isfile(path_to_results_SM_ASA):
                 file_paths.append(path_to_results_SM_ASA)
 
