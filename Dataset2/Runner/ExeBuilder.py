@@ -12,16 +12,19 @@ class ExeBuilder:
         self.dist_dir = os.path.join('dist')
         self.build_dir = os.path.join(os.getcwd(), 'build')
         self.spec_file = f"{self.name_exe}.spec"
+        self.exe_file = os.path.join(self.dist_dir, f"{self.name_exe}.exe")
 
     def build(self):
         command = [
             sys.executable,
             "-m", "PyInstaller",
             "--onefile",
-            "--noconsole",
+            # "--noconsole",
             "--collect-data", "TKinterModernThemes",
+            "--hidden-import", "scipy.special._cdflib",
+            "--hidden-import", "numpy.core.multiarray",
             f"--name={self.name_exe}",
-            f"{self.script_path}"
+            f"{self.script_path}",
         ]
 
         if self.icon_path and os.path.exists(self.icon_path):
@@ -29,8 +32,16 @@ class ExeBuilder:
 
         subprocess.run(command, check=True)
 
-        if os.path.exists(self.dist_dir):
+        if os.path.exists(self.exe_file):
             print("L'eseguibile è stato creato con successo!")
+
+            # Sposta l'eseguibile nella directory corrente
+            shutil.move(self.exe_file, os.getcwd())
+            print(f"Eseguibile spostato nella cartella: {os.getcwd()}")
+
+            # Elimina la cartella dist
+            shutil.rmtree(self.dist_dir)
+            print(f"Cartella {self.dist_dir} eliminata.")
 
         self.cleanup()
 
