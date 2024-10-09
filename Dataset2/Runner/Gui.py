@@ -1,5 +1,7 @@
 import re
 import shutil
+import threading
+import time
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox, filedialog
@@ -24,6 +26,9 @@ class Gui:
         self.tm_checkbox = tk.IntVar()
         self.sm_checkbox = tk.IntVar()
         self.asa_checkbox = tk.IntVar()
+        self.tm_checkbox_button = None
+        self.sm_checkbox_button = None
+        self.asa_checkbox_button = None
         self.switch_input_value = tk.StringVar(value='csv')
 
         # GUI components for asa option
@@ -62,6 +67,11 @@ class Gui:
         self.build_results_frame()
         self.build_start_frame()
 
+        #values for analysis
+        self.tm_value = 0
+        self.sm_value = 0
+        self.asa_value = 0
+
         Main.clean_up()
 
     def build_predict_frame(self):
@@ -84,6 +94,9 @@ class Gui:
         self.repo_url_label = ttk.Label(self.predict_frame, text="Repo URL:")
         self.repo_url_entry = ttk.Entry(self.predict_frame, width=40)
 
+        self.commit_id_entry.insert(0, "57f2ccb66946943fbf3b3f2165eac1c8eb6b1523")
+        self.repo_url_entry.insert(0, "https://github.com/spring-projects/spring-webflow")
+
         # Initially hidden
         self.commit_id_label.pack_forget()
         self.commit_id_entry.pack_forget()
@@ -94,10 +107,13 @@ class Gui:
         self.options_frame = ttk.LabelFrame(self.window, text="Options", padding=(10, 10))
         self.options_frame.pack(padx=10, pady=10, fill="both")
 
-        ttk.Checkbutton(self.options_frame, text="Text Mining", variable=self.tm_checkbox).pack(anchor="w")
-        ttk.Checkbutton(self.options_frame, text="Software Metrics", variable=self.sm_checkbox).pack(anchor="w")
-        ttk.Checkbutton(self.options_frame, text="ASA", variable=self.asa_checkbox,
-                        command=self.manage_asa_fields).pack(anchor="w")
+        self.tm_checkbox_button = ttk.Checkbutton(self.options_frame, text="Text Mining", variable=self.tm_checkbox)
+        self.tm_checkbox_button.pack(anchor="w")
+        self.sm_checkbox_button = ttk.Checkbutton(self.options_frame, text="Software Metrics", variable=self.sm_checkbox)
+        self.sm_checkbox_button.pack(anchor="w")
+        self.asa_checkbox_button = ttk.Checkbutton(self.options_frame, text="ASA", variable=self.asa_checkbox,
+                        command=self.manage_asa_fields)
+        self.asa_checkbox_button.pack(anchor="w")
 
         self.sonarcloud_path_label = ttk.Label(self.options_frame, text="SonarScanner Path:")
         self.sonarcloud_path_entry = ttk.Entry(self.options_frame, width=50)
@@ -134,19 +150,35 @@ class Gui:
         start_frame = tk.LabelFrame(self.window, bd=0)
         start_frame.pack(padx=10, pady=10)
 
-        self.progress_bar = ttk.Progressbar(start_frame, orient="horizontal", mode="indeterminate", length=280)
+        self.progress_bar = ttk.Progressbar(start_frame, orient="horizontal", mode="determinate", length=280)
         self.progress_bar.grid(row=6, column=1, columnspan=2, padx=10, pady=20)
 
-        predict_button = ttk.Button(start_frame, text="Start", style="Accent.TButton", command=self.predict)
+        self.progress_label = ttk.Label(start_frame, text="")
+        self.progress_label.grid(row=7, column=1, columnspan=2, padx=10, pady=20)
+
+
+        predict_button = ttk.Button(start_frame, text="Start", style="Accent.TButton", command=self.start_predict)
         predict_button.grid(row=5, column=1, pady=10, columnspan=2)
-
-
 
     def show_results_frame(self):
         self.results_frame.pack(padx=10, pady=10, fill="both")
         if self.tm_checkbox.get() or self.sm_checkbox.get() or self.asa_checkbox.get():
             self.analysis_button.config(state=tk.NORMAL)
             self.results_button.config(state=tk.NORMAL)
+
+    def change_state_options(self, enable=True):
+        if enable:
+            self.tm_checkbox_button.config(state=tk.NORMAL)
+            self.sm_checkbox_button.config(state=tk.NORMAL)
+            self.asa_checkbox_button.config(state=tk.NORMAL)
+        else:
+            print("SEGNALE DI FUNGO")
+            self.tm_checkbox_button.config(state=tk.DISABLED)
+            print(self.tm_checkbox_button['state'])
+            self.sm_checkbox_button.config(state=tk.DISABLED)
+            self.asa_checkbox_button.config(state=tk.DISABLED)
+
+
 
     def manage_switch(self):
         if self.switch_input_value.get() == "commit":
@@ -186,6 +218,19 @@ class Gui:
             self.sonarcloud_token_entry.pack_forget()
             self.sonarcloud_host_label.pack_forget()
             self.sonarcloud_host_entry.pack_forget()
+
+    def set_max_progress(self, value):
+        self.progress_bar.config(maximum=value)
+
+    def update_progress_label(self, text):
+        self.progress_label.config(text=text)
+
+
+    def start_progress(self):
+        self.progress_bar.start()
+
+    def stop_progress(self):
+        self.progress_bar.stop()
 
     def form_validation(self):
         if self.switch_input_value.get() == "csv":
@@ -242,11 +287,8 @@ class Gui:
         return options
 
     def download_results_csv(self, result_kind):
-        tm = self.tm_checkbox.get() == 1
-        sm = self.sm_checkbox.get() == 1
-        asa = self.asa_checkbox.get() == 1
 
-        results_type = {'text_mining': tm, 'software_metrics': sm, 'asa': asa}
+        results_type = {'text_mining': self.tm, 'software_metrics': self.sm, 'asa': self.asa}
 
         saving_path = filedialog.asksaveasfilename(defaultextension=".zip",
                                                    filetypes=[("ZIP files", "*.zip")],
@@ -265,54 +307,81 @@ class Gui:
         else:
             messagebox.showwarning("Cancelled", "File save operation was cancelled.")
 
+    def start_predict(self):
+        predict = threading.Thread(target=self.predict)
+        predict.start()
+
+
     def predict(self):
         if not self.form_validation():
             return
 
-        tm = self.tm_checkbox.get() == 1
-        sm = self.sm_checkbox.get() == 1
-        asa = self.asa_checkbox.get() == 1
+
+        self.tm = self.tm_checkbox.get() == 1
+        self.sm = self.sm_checkbox.get() == 1
+        self.asa = self.asa_checkbox.get() == 1
+
+        tm, sm, asa = self.tm, self.sm, self.asa
 
         if not (tm or sm or asa):
-            messagebox.showwarning("Errore", "Bro qualcosa devi fa")
+            self.window.after(0, lambda: messagebox.showwarning("Errore", "Bro qualcosa devi fa"))
             return
+
+        self.window.after(0, lambda: self.change_state_options(False))
 
 
         base_dir = os.path.dirname(os.getcwd())
         run = Main(base_dir)
 
+        # Set the progress bar max value based on the number of tasks
+        num_tasks = tm + sm + asa + (tm * sm) + (tm * asa) + (sm * asa) + (
+                    tm * sm * asa) + 1  # Calculate how many tasks are selected
+        self.window.after(0, lambda: self.set_max_progress(num_tasks))
+
         if self.switch_input_value.get() == "csv":
             if self.csv_label['text'] == "":
-                messagebox.showwarning("Errore", "Carica un file CSV per continuare.")
+                self.window.after(0,
+                                  lambda:
+                                  messagebox.showwarning("Errore", "Carica un file CSV per continuare."))
                 continue_exec = False
             else:
-                messagebox.showinfo("Predict", f"Predizione con file CSV: {self.csv_label['text']} \n")
+                self.window.after(0,
+                                  lambda:
+                                  messagebox.showinfo("Predict", f"Predizione con file CSV: {self.csv_label['text']} \n"))
                 continue_exec = True
+
+                self.window.after(0, self.progress_bar.step, 0.5)
+                self.window.after(0, lambda: self.update_progress_label("Mining repositories..."))
+
                 run.run_repo_mining(self.csv_label['text'])
         else:
             commit_id = self.commit_id_entry.get().strip()
             repo_url = self.repo_url_entry.get().strip()
             if not (commit_id and repo_url):
-                messagebox.showwarning("Errore", "Inserisci commit_id e repo_url per continuare.")
+                self.window.after(0,
+                                  lambda: messagebox.showwarning("Error", "Enter commit_id and repo_url to continue."))
                 continue_exec = False
             else:
-                messagebox.showinfo("Predict", f"Predizione per commit_id: {commit_id}, repo_url: {repo_url}")
+                self.window.after(0,
+                                  lambda:
+                                  messagebox.showinfo("Predict", f"Predizione per commit_id: {commit_id}, repo_url: {repo_url}"))
                 continue_exec = True
                 df = pd.DataFrame({'cve_id': [0], 'repo_url': [repo_url], 'commit_id': [commit_id]})
                 df.to_csv(os.path.join(base_dir, 'repository.csv'), index=False)
+
+                self.window.after(0, self.progress_bar.step, 0.5)
+                self.window.after(0, lambda: self.update_progress_label("Mining repositories..."))
+
                 run.run_repo_mining("repository.csv")
 
         if continue_exec:
-            # Reset progress bar before starting
-            self.progress_bar.step(0)
-            self.progress_bar.grid()  # Show the progress bar
-            task_completed = 0
 
-            # Set the progress bar max value based on the number of tasks
-            num_tasks = tm + sm + asa + (tm+sm) + (tm+asa) + (sm+asa) + (tm+sm+asa) # Calculate how many tasks are selected
-            self.progress_bar.configure(maximum=num_tasks)
+            self.window.after(0, self.progress_bar.step, 0.5)
+            self.window.after(0, lambda: self.update_progress_label("Mining Repositories completed..."))
+
 
             if tm:
+                self.window.after(0, lambda: self.update_progress_label("Text Mining running..."))
                 run.run_text_mining()
                 predict_csv(
                     os.path.join(base_dir, "mining_results", "csv_mining_final.csv"),
@@ -321,10 +390,12 @@ class Gui:
                     os.path.join(base_dir, "AI_Module", "vocab", "original_vocab_TM.pkl"),
                     os.path.join(base_dir, "Predict", "Predict_TM.csv")
                 )
-                task_completed += 1
-                self.progress_bar.step(task_completed)
+                self.window.after(0, self.progress_bar.step, 1)
+
+
 
             if sm:
+                self.window.after(0, lambda: self.update_progress_label("Metrics computation running..."))
                 run.run_software_metrics()
                 predict_csv(
                     os.path.join(base_dir, "Software_Metrics", "metrics_results_sm_final.csv"),
@@ -333,10 +404,11 @@ class Gui:
                     os.path.join(base_dir, "AI_Module", "vocab", "original_vocab_SM.pkl"),
                     os.path.join(base_dir, "Predict", "Predict_SM.csv")
                 )
-                task_completed += 1
-                self.progress_bar.step(task_completed)
+                self.window.after(0, self.progress_bar.step, 1)
+
 
             if asa:
+                self.window.after(0, lambda: self.update_progress_label("Static Analysis running..."))
                 run.run_ASA(self.sonarcloud_host_entry.get(), self.sonarcloud_token_entry.get(), self.sonarcloud_path_entry.get())
                 predict_csv(
                     os.path.join(base_dir, "mining_results_ASA", "csv_ASA_final.csv"),
@@ -345,10 +417,11 @@ class Gui:
                     os.path.join(base_dir, "AI_Module", "vocab", "original_vocab_ASA.pkl"),
                     os.path.join(base_dir, "Predict", "Predict_ASA.csv")
                 )
-                task_completed += 1
-                self.progress_bar.step(task_completed)
+                self.window.after(0, self.progress_bar.step, 1)
+
 
             if tm and sm and asa:
+                self.window.after(0, lambda: self.update_progress_label("Combining results..."))
                 run.total_combination()
                 predict_csv(
                     os.path.join(base_dir, "Union", "3COMBINATION.csv"),
@@ -357,10 +430,11 @@ class Gui:
                     os.path.join(base_dir, "AI_Module", "vocab", "original_vocab_3Combination.pkl"),
                     os.path.join(base_dir, "Predict", "Predict_3Combination.csv")
                 )
-                task_completed += 1
-                self.progress_bar.step(task_completed)
+                self.window.after(0, self.progress_bar.step, 1)
+
 
             if tm and sm:
+                self.window.after(0, lambda: self.update_progress_label("Combining results..."))
                 run.combine_tm_sm()
                 predict_csv(
                     os.path.join(base_dir, "Union", "Union_TM_SM.csv"),
@@ -369,10 +443,10 @@ class Gui:
                     os.path.join(base_dir, "AI_Module", "vocab", "original_vocab_TMSM.pkl"),
                     os.path.join(base_dir, "Predict", "Predict_TMSM.csv")
                 )
-                task_completed += 1
-                self.progress_bar.step(task_completed)
+                self.window.after(0, self.progress_bar.step, 1)
 
             if tm and asa:
+                self.window.after(0, lambda: self.update_progress_label("Combining results..."))
                 run.combine_tm_asa()
                 predict_csv(
                     os.path.join(base_dir, "Union", "Union_TM_ASA.csv"),
@@ -381,10 +455,10 @@ class Gui:
                     os.path.join(base_dir, "AI_Module", "vocab", "original_vocab_TMASA.pkl"),
                     os.path.join(base_dir, "Predict", "Predict_TMASA.csv")
                 )
-                task_completed += 1
-                self.progress_bar.step(task_completed)
+                self.window.after(0, self.progress_bar.step, 1)
 
             if sm and asa:
+                self.window.after(0, lambda: self.update_progress_label("Combining results..."))
                 run.combine_sm_asa()
                 predict_csv(
                     os.path.join(base_dir, "Union", "Union_SM_ASA.csv"),
@@ -393,11 +467,16 @@ class Gui:
                     os.path.join(base_dir, "AI_Module", "vocab", "original_vocab_SMASA.pkl"),
                     os.path.join(base_dir, "Predict", "Predict_SMASA.csv")
                 )
-                task_completed += 1
-                self.progress_bar.step(task_completed)
+                self.window.after(0, self.progress_bar.step, 1)
 
-            self.progress_bar.grid_remove()
-            self.show_results_frame()
+            self.window.after(0, lambda: self.update_progress_label("Execution Completed"))
+
+            # Reset progress bar before starting
+            self.window.after(0, self.stop_progress)
+            self.window.after(0, self.show_results_frame)
+            self.window.after(0, lambda: self.change_state_options(True))
+
+
 
     def start(self):
         self.window.mainloop()
