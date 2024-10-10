@@ -22,10 +22,6 @@ def train(csv_path, name_model, name_vocab):
     data.columns = data.columns.str.strip()
 
     data = data.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
-    if 'Name' in data.columns:
-        data = data[~data['Name'].str.contains(
-            '9730cd6a3bbb481ee4e400b51952b537589c469d|d934c6e7430b7b98e43a0a085a2304bd31a75c3d|0c8366cb792227d484b9ca13e537037dd0cb57dc',
-            case=False, na=False)]
 
     string_columns = data.select_dtypes(include='object').columns
 
@@ -40,6 +36,8 @@ def train(csv_path, name_model, name_vocab):
     if (data.columns == 'CLS').sum() > 1:
         # Rimuovi le colonne duplicate chiamate 'CLS', mantenendo solo la prima occorrenza
         data = data.loc[:, ~data.columns.duplicated()]
+
+    print(data['CLS'].unique())
 
     label_encoder = LabelEncoder()
     data['CLS'] = label_encoder.fit_transform(data['CLS'])
@@ -126,14 +124,14 @@ def predict_csv(input_csv_path, model_path, label_encoder_path, vocab_path, path
 
 
 if __name__ == '__main__':
-    train('../mining_results_asa/csv_ASA_final.csv', 'model/random_forest_ASA.pkl', 'vocab/original_vocab_ASA.pkl')
-    train('../mining_results/csv_mining_final.csv', 'model/random_forest_TM.pkl', 'vocab/original_vocab_TM.pkl')
-    train('../Software_Metrics/mining_results_sm_final.csv', 'model/random_forest_SM.pkl',
-          'vocab/original_vocab_SM.pkl')
-    train('../Union/Union_TM_SM.csv', 'model/random_forest_TMSM.pkl', 'vocab/original_vocab_TMSM.pkl')
-    train('../Union/Union_SM_ASA.csv', 'model/random_forest_SMASA.pkl', 'vocab/original_vocab_SMASA.pkl')
-    train('../Union/Union_TM_ASA.csv', 'model/random_forest_TMASA.pkl', 'vocab/original_vocab_TMASA.pkl')
-    train('../Union/3COMBINATION.csv', 'model/random_forest_3Combination.pkl', 'vocab/original_vocab_3Combination.pkl')
+    #train('../mining_results_asa/csv_ASA_final.csv', 'model/random_forest_ASA.pkl', 'vocab/original_vocab_ASA.pkl')
+    #train('../mining_results/csv_mining_final.csv', 'model/random_forest_TM.pkl', 'vocab/original_vocab_TM.pkl')
+    #train('../Software_Metrics/mining_results_sm_final.csv', 'model/random_forest_SM.pkl',
+      #    'vocab/original_vocab_SM.pkl')
+    #train('../Union/Union_TM_SM.csv', 'model/random_forest_TMSM.pkl', 'vocab/original_vocab_TMSM.pkl')
+    #train('../Union/Union_SM_ASA.csv', 'model/random_forest_SMASA.pkl', 'vocab/original_vocab_SMASA.pkl')
+    #train('../Union/Union_TM_ASA.csv', 'model/random_forest_TMASA.pkl', 'vocab/original_vocab_TMASA.pkl')
+    #train('../Union/3COMBINATION.csv', 'model/random_forest_3Combination.pkl', 'vocab/original_vocab_3Combination.pkl')
 
     # print(predict_csv('../../Dataset2/mining_results/csv_mining_final_neg.csv', 'random_forest_TM.pkl', 'label_encoder.pkl', 'original_vocab_TM.pkl'))
-    # print(predict_dict({'class':1, 'public':3, 'pasquale': 5}, 'random_forest_TM.pkl', 'label_encoder.pkl', 'original_vocab_TM.pkl'))
+    print(predict_dict({'class':1, 'public':3, 'pasquale': 5}, 'model/random_forest_TM.pkl', 'label_encoder.pkl', 'vocab/original_vocab_TM.pkl'))

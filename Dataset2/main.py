@@ -99,7 +99,7 @@ class Main:
 
     def run_software_metrics(self):
         # Percorso assoluto per il file CSV
-        csv_file = os.path.join(self.base_dir, "Software_Metrics", "metrics_results_sm_final.csv")
+        csv_file = os.path.join(self.base_dir, "Software_Metrics", "mining_results_sm_final.csv")
         csv_writer = MetricsWriter(csv_file)
         csv_writer.write_header()  # Scrive l'header una volta sola
 
@@ -176,7 +176,7 @@ class Main:
 
     def combine_sm_asa(self):
         combiner = DatasetCombiner(os.path.join(self.base_dir,"Union","Union_SM_ASA.csv"))
-        sm_csv = os.path.join(self.base_dir,"Software_Metrics","metrics_results_sm_final.csv")
+        sm_csv = os.path.join(self.base_dir,"Software_Metrics","mining_results_sm_final.csv")
         asa_csv = os.path.join(self.base_dir,"mining_results_asa","csv_ASA_final.csv")
         combiner.merge(sm_csv, asa_csv)
 
@@ -184,13 +184,13 @@ class Main:
     def total_combination(self):
         combiner = DatasetCombiner(os.path.join(self.base_dir,"Union","3COMBINATION.csv"))
         tm_csv = os.path.join(self.base_dir,"mining_results","csv_mining_final.csv")
-        sm_csv = os.path.join(self.base_dir,"Software_Metrics","metrics_results_sm_final.csv")
+        sm_csv = os.path.join(self.base_dir,"Software_Metrics","mining_results_sm_final.csv")
         asa_csv = os.path.join(self.base_dir,"mining_results_asa","csv_ASA_final.csv")
         combiner.merge(sm_csv, tm_csv, asa_csv)
 
     def download_analysis_results(self, file_type, saving_path):
         path_to_TM = os.path.join(self.base_dir, "mining_results", "csv_mining_final.csv")
-        path_to_SM = os.path.join(self.base_dir, "Software_Metrics", "metrics_results_sm_final.csv")
+        path_to_SM = os.path.join(self.base_dir, "Software_Metrics", "mining_results_sm_final.csv")
         path_to_ASA = os.path.join(self.base_dir, "mining_results_asa", "csv_ASA_final.csv")
 
         file_map = {'text_mining': path_to_TM,
@@ -227,7 +227,6 @@ class Main:
             path_to_results_TM_ASA = os.path.join(self.base_dir, "Union", "Union_TM_ASA.csv")
             path_to_results_SM_ASA = os.path.join(self.base_dir, "Union", "Union_SM_ASA.csv")
 
-
         if tm:
             if os.path.isfile(path_to_results_TM):
                 file_paths.append(path_to_results_TM)
@@ -262,29 +261,50 @@ class Main:
         print(f"ZIP file created: {path_to_save}")
         return file_paths.__len__()
 
-    @staticmethod
-    def clean_up():
+    def clean_up(self):
         print("Cleaning up...")
 
-        if os.path.isdir("/mining_results"):
+        if os.path.isdir(os.path.join(self.base_dir,"mining_results")):
             print("Removing mining_results...")
-            shutil.rmtree("../mining_results")
+            shutil.rmtree(os.path.join(self.base_dir,"mining_results"))
 
-        if os.path.isdir("../Dataset_Divided"):
+        if os.path.isdir(os.path.join(self.base_dir,"Dataset_Divided")):
             print("Removing Dataset_Divided...")
-            shutil.rmtree("../Dataset_Divided")
+            shutil.rmtree(os.path.join(self.base_dir,"Dataset_Divided"))
 
-        if os.path.isdir("../Predict"):
+        if os.path.isdir(os.path.join(self.base_dir,"Predict")):
             print("Removing Predict...")
-            shutil.rmtree("../Predict")
+            shutil.rmtree(os.path.join(self.base_dir,"Predict"))
 
-        if os.path.isfile("../mining_results_asa/RepositoryMining_ASAResults.csv"):
-            os.remove("../mining_results_asa/RepositoryMining_ASAResults.csv")
+        if os.path.isfile(os.path.join(self.base_dir,"mining_results_asa","RepositoryMining_ASAResults.csv")):
+            print("Removing ASA...")
+            os.remove(os.path.join(self.base_dir,"mining_results_asa","RepositoryMining_ASAResults.csv"))
 
-        if os.path.isfile("../mining_results_asa/csv_ASA_final.csv"):
-            os.remove("../mining_results_asa/csv_ASA_final.csv")
+        if os.path.isfile(os.path.join(self.base_dir,"mining_results_asa","csv_ASA_final.csv")):
+            print("Removing ASA...")
+            os.remove(os.path.join(self.base_dir,"mining_results_asa","csv_ASA_final.csv"))
 
-        if os.path.isfile("../repository.csv"):
-            os.remove("../repository.csv")
+        if os.path.isfile(os.path.join(self.base_dir,"Software_Metrics","mining_results_sm_final.csv")):
+            print("Removing SM...")
+            os.remove(os.path.join(self.base_dir,"Software_Metrics","mining_results_sm_final.csv"))
+
+        if os.path.isfile(os.path.join(self.base_dir, "Union", "3Combination.csv")):
+            print("Removing 3Combination.csv...")
+            os.remove(os.path.join(self.base_dir,"Software_Metrics","mining_results_sm_final.csv"))
+
+        if os.path.isfile(os.path.join(self.base_dir, "Union", "Union_TM_SM.csv")):
+            print("Removing Union_TM_SM.csv...")
+            os.remove(os.path.join(self.base_dir,"Software_Metrics","mining_results_sm_final.csv"))
+
+        if os.path.isfile(os.path.join(self.base_dir, "Union", "Union_TM_ASA.csv")):
+            print("Removing Union_TM_ASA.csv...")
+            os.remove(os.path.join(self.base_dir,"Software_Metrics","mining_results_sm_final.csv"))
+
+        if os.path.isfile(os.path.join(self.base_dir, "Union", "Union_SM_ASA.csv")):
+            print("Removing Union_SM_ASA.csv...")
+            os.remove(os.path.join(self.base_dir,"Software_Metrics","mining_results_sm_final.csv"))
+
+        if os.path.isfile(os.path.join(self.base_dir,"repository.csv")):
+            os.remove(os.path.join(self.base_dir,"repository.csv"))
 
         print("Clean up completed.")
