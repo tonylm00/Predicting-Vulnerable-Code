@@ -386,7 +386,7 @@ class Gui:
                 self.window.after(0, lambda: self.update_progress_label("Metrics computation running..."))
                 self.run.run_software_metrics()
                 predict_csv(
-                    os.path.join(self.base_dir, "Software_Metrics", "metrics_results_sm_final.csv"),
+                    os.path.join(self.base_dir, "Software_Metrics", "mining_results_sm_final.csv"),
                     os.path.join(self.base_dir, "AI_Module", "model", "random_forest_SM.pkl"),
                     os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),
                     os.path.join(self.base_dir, "AI_Module", "vocab", "original_vocab_SM.pkl"),

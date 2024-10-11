@@ -163,7 +163,7 @@ class Main:
     def combine_tm_sm(self):
         combiner = DatasetCombiner(os.path.join(self.base_dir,"Union","Union_TM_SM.csv"))
         tm_csv = os.path.join(self.base_dir,"mining_results","csv_mining_final.csv")
-        sm_csv = os.path.join(self.base_dir,"Software_Metrics","metrics_results_sm_final.csv")
+        sm_csv = os.path.join(self.base_dir,"Software_Metrics","mining_results_sm_final.csv")
         combiner.merge(tm_csv, sm_csv)
 
 
