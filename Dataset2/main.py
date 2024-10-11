@@ -290,19 +290,19 @@ class Main:
 
         if os.path.isfile(os.path.join(self.base_dir, "Union", "3Combination.csv")):
             print("Removing 3Combination.csv...")
-            os.remove(os.path.join(self.base_dir,"Software_Metrics","mining_results_sm_final.csv"))
+            os.remove(os.path.join(self.base_dir,"Union","3Combination.csv"))
 
         if os.path.isfile(os.path.join(self.base_dir, "Union", "Union_TM_SM.csv")):
             print("Removing Union_TM_SM.csv...")
-            os.remove(os.path.join(self.base_dir,"Software_Metrics","mining_results_sm_final.csv"))
+            os.remove(os.path.join(self.base_dir,"Union","Union_TM_SM.csv"))
 
         if os.path.isfile(os.path.join(self.base_dir, "Union", "Union_TM_ASA.csv")):
             print("Removing Union_TM_ASA.csv...")
-            os.remove(os.path.join(self.base_dir,"Software_Metrics","mining_results_sm_final.csv"))
+            os.remove(os.path.join(self.base_dir,"Union","Union_TM_ASA.csv"))
 
         if os.path.isfile(os.path.join(self.base_dir, "Union", "Union_SM_ASA.csv")):
             print("Removing Union_SM_ASA.csv...")
-            os.remove(os.path.join(self.base_dir,"Software_Metrics","mining_results_sm_final.csv"))
+            os.remove(os.path.join(self.base_dir,"Union","Union_SM_ASA.csv"))
 
         if os.path.isfile(os.path.join(self.base_dir,"repository.csv")):
             os.remove(os.path.join(self.base_dir,"repository.csv"))
