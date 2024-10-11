@@ -3,7 +3,7 @@ import shutil
 import zipfile
 
 from Dataset2.AI_Module.RandomForest import predict_dict
-from Dataset2.RepoMining.Dataset_Divider import DatasetDivider
+from Dataset2.RepoMining.DatasetDivider import DatasetDivider
 from Dataset2.RepoMining.RepoMiner import RepoMiner
 from Dataset2.Software_Metrics.MetricsWriter import MetricsWriter
 from Dataset2.Software_Metrics.SoftwareMetrics import SoftwareMetrics
