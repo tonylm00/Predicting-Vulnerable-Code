@@ -9,7 +9,7 @@ import os
 import TKinterModernThemes as Tkmt
 import pandas as pd
 from Dataset2.AI_Module.RandomForest import predict_csv
-from Dataset2.main import Main
+from Dataset2.Main import Main
 
 
 class Gui:
