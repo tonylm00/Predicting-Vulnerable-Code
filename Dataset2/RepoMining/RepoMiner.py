@@ -2,7 +2,7 @@ import os
 import shutil
 import csv
 import requests
-from pydriller import RepositoryMining  # Assumo tu stia usando Pydriller per il mining dei repository
+from pydriller import RepositoryMining
 
 
 class RepoMiner:
@@ -66,23 +66,9 @@ class RepoMiner:
                 if response1.ok:
                     try:
                         for commit in RepositoryMining(link, commit_id).traverse_commits():
-                            for mod in commit.modifications:
-                                print("MOD:", mod.filename)
-                                if ".java" in mod.filename:
-                                    cve_path = os.path.join(repo_path, cve_id)
-                                    commit_path = os.path.join(cve_path, commit_id)
-
-                                    # Creazione directory CVE e commit
-                                    if not os.path.exists(cve_path):
-                                        os.mkdir(cve_path)
-                                    if not os.path.exists(commit_path):
-                                        os.mkdir(commit_path)
-
-                                    # Scrive il file Java se esiste il codice sorgente prima del commit
-                                    if mod.source_code_before is not None:
-                                        java_file_path = os.path.join(commit_path, mod.filename)
-                                        with open(java_file_path, "w+", encoding='utf-8') as javafile:
-                                            javafile.write(mod.source_code_before)
+                            cve_path = os.path.join(repo_path, cve_id)
+                            commit_path = os.path.join(cve_path, commit_id)
+                            self.analyze_commit(commit, cve_path, commit_path)
 
                         status = statusOK
                         toWrite += status
@@ -107,3 +93,21 @@ class RepoMiner:
 
         file1.close()
         file2.close()
+
+    def analyze_commit(self, commit, cve_path, commit_path):
+        for mod in commit.modifications:
+            print("MOD:", mod.filename)
+            if ".java" in mod.filename:
+
+                # Creazione directory CVE e commit
+                if not os.path.exists(cve_path):
+                    os.mkdir(cve_path)
+                if not os.path.exists(commit_path):
+                    os.mkdir(commit_path)
+
+                # Scrive il file Java se esiste il codice sorgente prima del commit
+                if mod.source_code_before is not None:
+                    java_file_path = os.path.join(commit_path, mod.filename)
+                    with open(java_file_path, "w+", encoding='utf-8') as javafile:
+                        javafile.write(mod.source_code_before)
+
