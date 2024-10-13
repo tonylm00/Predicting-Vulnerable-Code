@@ -396,14 +396,24 @@ class Gui:
 
             if asa:
                 self.window.after(0, lambda: self.update_progress_label("Static Analysis running..."))
-                self.run.run_ASA(self.sonarcloud_host_entry.get(), self.sonarcloud_token_entry.get(), self.sonarcloud_path_entry.get())
-                self.run.run_prediction(
-                    os.path.join(self.base_dir, "mining_results_ASA", "csv_ASA_final.csv"),
-                    os.path.join(self.base_dir, "AI_Module", "model", "random_forest_ASA.pkl"),
-                    os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),
-                    os.path.join(self.base_dir, "AI_Module", "vocab", "original_vocab_ASA.pkl"),
-                    os.path.join(self.base_dir, "Predict", "Predict_ASA.csv")
-                )
+
+                try:
+                    self.run.run_ASA(self.sonarcloud_host_entry.get(), self.sonarcloud_token_entry.get(), self.sonarcloud_path_entry.get())
+
+                    self.run.run_prediction(
+                        os.path.join(self.base_dir, "mining_results_ASA", "csv_ASA_final.csv"),
+                        os.path.join(self.base_dir, "AI_Module", "model", "random_forest_ASA.pkl"),
+                        os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),
+                        os.path.join(self.base_dir, "AI_Module", "vocab", "original_vocab_ASA.pkl"),
+                        os.path.join(self.base_dir, "Predict", "Predict_ASA.csv")
+                    )
+
+                except Exception:
+                    self.window.after(0, lambda: messagebox.showwarning("Error", f"Error in static analysis, check "
+                                                                                 f"the logs!"))
+                    self.asa_checkbox.set(0)
+                    asa = False
+
                 self.window.after(0, self.progress_bar.step, 1)
 
             if tm and sm and asa:

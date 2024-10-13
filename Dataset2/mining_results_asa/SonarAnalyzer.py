@@ -1,4 +1,5 @@
 import csv
+import logging
 import os
 import subprocess
 import time
@@ -35,6 +36,13 @@ class SonarAnalyzer:
         self.sonar_path = sonar_path
         self.output_csv = file_name
         self.base_dir = base_dir
+
+        logging.basicConfig(
+            filename=os.path.join(base_dir, 'mining_results_asa', 'asa.log'),
+            level=logging.ERROR,
+            format='%(levelname)s - %(message)s',
+            filemode='w'
+        )
 
     @staticmethod
     def create_sonar_properties(project_key, commit_dir):
@@ -80,9 +88,6 @@ class SonarAnalyzer:
             FileNotFoundError: If the SonarScanner executable is not found.
         """
         sources_dir = os.path.abspath(commit_dir)
-        if not os.path.exists(sources_dir):
-            print(f"Errore: la directory {sources_dir} non esiste.")
-            return
 
         command = [
             f"{self.sonar_path}",  # Path to SonarScanner
@@ -97,16 +102,15 @@ class SonarAnalyzer:
 
         try:
             result = subprocess.run(command, cwd=commit_dir, capture_output=True, text=True)
-            if result.stderr:
-                print(f"Errore di SonarScanner: {result.returncode} - {result.stderr}")
 
-        except subprocess.CalledProcessError as e:
-            print(f"Errore durante l'esecuzione di SonarScanner: {e}")
-            print(f"Output di errore: {e.stderr}")
-        except FileNotFoundError as e:
-            print(f"Errore: comando sonar-scanner non trovato: {e}")
-        except Exception as e:
-            print(f"Errore generico: {e}")
+            if result.stderr:
+                if result.stderr.__contains__("Unable to parse"):
+                    logging.error(f"Project with CommitID: {commit_dir.split('/')[-1]} contains parsing errors.")
+                    pass
+
+        except FileNotFoundError:
+            logging.error("SonarScanner not found.")
+            raise Exception("SonarScanner not found.")
 
     def get_analysis_id(self, project_key):
         """
@@ -120,11 +124,19 @@ class SonarAnalyzer:
         """
         url = f"{self.sonar_host}/api/ce/component?component={project_key}"
         headers = {"Authorization": f"Bearer {self.sonar_token}"}
-        response = requests.get(url, headers=headers)
 
-        if response.status_code != 200:
-            print(f"Errore nel recuperare il task di analisi per il progetto: {response.status_code}")
-            return None
+        try:
+            response = requests.get(url, headers=headers)
+
+            if response.status_code != 200:
+                logging_message = f"SonarQube API. Make sure {self.sonar_host} is the correct host and " \
+                                  f"{self.sonar_token} is the correct UserToken."
+                logging.error(logging_message)
+                raise Exception(logging_message)
+
+        except ConnectionRefusedError:
+            logging.error(f"Host unreachable: {self.sonar_host}")
+            raise Exception("Host unreachable")
 
         tasks = response.json().get("queue", [])
         if tasks:
@@ -151,7 +163,6 @@ class SonarAnalyzer:
         response = requests.get(url, headers=headers)
 
         if response.status_code != 200:
-            print(f"Errore nel recuperare lo stato dell'analisi: {response.status_code}")
             return None
 
         return response.json().get("task", {}).get("status", None)
@@ -196,7 +207,7 @@ class SonarAnalyzer:
         if analysis_id:
             success = self.wait_for_analysis_completion(analysis_id)
             if not success:
-                print("L'analisi non è riuscita o non è stata completata nei tempi previsti.")
+                logging.error(f"SonarQube error: Timeout reached for project analysis {project_key}.")
                 return []
 
         url = f"{self.sonar_host}/api/issues/search?components={project_key}"
@@ -296,5 +307,10 @@ class SonarAnalyzer:
 
                             self.create_sonar_properties(sonar_project_key, source_dir)
                             self.run_sonar_scanner(sonar_project_key, source_dir)
-                            issues = self.get_project_issues(sonar_project_key)
+                            try:
+                                issues = self.get_project_issues(sonar_project_key)
+                            except ConnectionError:
+                                logging.error(f"Host unreachable: {self.sonar_host}")
+                                raise Exception("Host unreachable")
+
                             self.save_issues_to_csv(issues, source_dir)
