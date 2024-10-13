@@ -373,7 +373,7 @@ class Gui:
             if tm:
                 self.window.after(0, lambda: self.update_progress_label("Text Mining running..."))
                 self.run.run_text_mining()
-                predict_csv(
+                self.run.run_prediction(
                     os.path.join(self.base_dir, "mining_results", "csv_mining_final.csv"),
                     os.path.join(self.base_dir, "AI_Module", "model", "random_forest_TM.pkl"),
                     os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),
@@ -385,7 +385,7 @@ class Gui:
             if sm:
                 self.window.after(0, lambda: self.update_progress_label("Metrics computation running..."))
                 self.run.run_software_metrics()
-                predict_csv(
+                self.run.run_prediction(
                     os.path.join(self.base_dir, "Software_Metrics", "mining_results_sm_final.csv"),
                     os.path.join(self.base_dir, "AI_Module", "model", "random_forest_SM.pkl"),
                     os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),
@@ -397,7 +397,7 @@ class Gui:
             if asa:
                 self.window.after(0, lambda: self.update_progress_label("Static Analysis running..."))
                 self.run.run_ASA(self.sonarcloud_host_entry.get(), self.sonarcloud_token_entry.get(), self.sonarcloud_path_entry.get())
-                predict_csv(
+                self.run.run_prediction(
                     os.path.join(self.base_dir, "mining_results_ASA", "csv_ASA_final.csv"),
                     os.path.join(self.base_dir, "AI_Module", "model", "random_forest_ASA.pkl"),
                     os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),
@@ -409,7 +409,7 @@ class Gui:
             if tm and sm and asa:
                 self.window.after(0, lambda: self.update_progress_label("Combining results..."))
                 self.run.total_combination()
-                predict_csv(
+                self.run.run_prediction(
                     os.path.join(self.base_dir, "Union", "3COMBINATION.csv"),
                     os.path.join(self.base_dir, "AI_Module", "model", "random_forest_3Combination.pkl"),
                     os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),
@@ -421,7 +421,7 @@ class Gui:
             if tm and sm:
                 self.window.after(0, lambda: self.update_progress_label("Combining results..."))
                 self.run.combine_tm_sm()
-                predict_csv(
+                self.run.run_prediction(
                     os.path.join(self.base_dir, "Union", "Union_TM_SM.csv"),
                     os.path.join(self.base_dir, "AI_Module", "model", "random_forest_TMSM.pkl"),
                     os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),
@@ -433,7 +433,7 @@ class Gui:
             if tm and asa:
                 self.window.after(0, lambda: self.update_progress_label("Combining results..."))
                 self.run.combine_tm_asa()
-                predict_csv(
+                self.run.run_prediction(
                     os.path.join(self.base_dir, "Union", "Union_TM_ASA.csv"),
                     os.path.join(self.base_dir, "AI_Module", "model", "random_forest_TMASA.pkl"),
                     os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),
@@ -445,7 +445,7 @@ class Gui:
             if sm and asa:
                 self.window.after(0, lambda: self.update_progress_label("Combining results..."))
                 self.run.combine_sm_asa()
-                predict_csv(
+                self.run.run_prediction(
                     os.path.join(self.base_dir, "Union", "Union_SM_ASA.csv"),
                     os.path.join(self.base_dir, "AI_Module", "model", "random_forest_SMASA.pkl"),
                     os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),

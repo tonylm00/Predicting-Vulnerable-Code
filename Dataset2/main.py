@@ -2,6 +2,9 @@ import os
 import shutil
 import zipfile
 
+import joblib
+import pandas as pd
+
 from Dataset2.AI_Module.RandomForest import predict_dict
 from Dataset2.RepoMining.DatasetDivider import DatasetDivider
 from Dataset2.RepoMining.RepoMiner import RepoMiner
@@ -50,33 +53,32 @@ class Main:
         repo_name = "RepositoryMining"
 
         for count in range(1, num_repos + 1, 1):
-            if count != 18:  # Ignora il repository 18
-                repo = repo_name + str(count)
-                repo_path = os.path.join(mining_results_path, repo)
+            repo = repo_name + str(count)
+            repo_path = os.path.join(mining_results_path, repo)
 
-                if os.path.isdir(repo_path):  # Controlla che sia una directory valida
-                    for cvd_id in os.listdir(repo_path):
-                        cvd_id_path = os.path.join(repo_path, cvd_id)
+            if os.path.isdir(repo_path):  # Controlla che sia una directory valida
+                for cvd_id in os.listdir(repo_path):
+                    cvd_id_path = os.path.join(repo_path, cvd_id)
 
-                        if cvd_id not in [".DS_Store", "CHECK.txt", "ERRORS.txt"] and os.path.isdir(cvd_id_path):
+                    if cvd_id not in [".DS_Store", "CHECK.txt", "ERRORS.txt"] and os.path.isdir(cvd_id_path):
 
-                            for folder in os.listdir(cvd_id_path):
-                                folder_path = os.path.join(cvd_id_path, folder)
+                        for folder in os.listdir(cvd_id_path):
+                            folder_path = os.path.join(cvd_id_path, folder)
 
-                                if folder != ".DS_Store" and os.path.isdir(folder_path):
-                                    for file in os.listdir(folder_path):
-                                        if file != ".DS_Store" and file.endswith(".java"):
-                                            java_file_path = os.path.join(folder_path, file)
-                                            analyzer = JavaTextMining(java_file_path)
-                                            dict = analyzer.takeJavaClass()
+                            if folder != ".DS_Store" and os.path.isdir(folder_path):
+                                for file in os.listdir(folder_path):
+                                    if file != ".DS_Store" and file.endswith(".java"):
+                                        java_file_path = os.path.join(folder_path, file)
+                                        analyzer = JavaTextMining(java_file_path)
+                                        dict = analyzer.takeJavaClass()
 
-                                            # Salva i risultati del text mining
-                                            text_mining_file_path = java_file_path + "_text_mining.txt"
-                                            with open(text_mining_file_path, "w+", encoding="utf-8") as java_file:
-                                                java_file.write(str(dict))
+                                        # Salva i risultati del text mining
+                                        text_mining_file_path = java_file_path + "_text_mining.txt"
+                                        with open(text_mining_file_path, "w+", encoding="utf-8") as java_file:
+                                            java_file.write(str(dict))
 
-                                            dict_java_files[os.path.join(folder, file)] = dict
-                                            tm_dict = JavaTextMining.mergeDict(tm_dict, dict)
+                                        dict_java_files[os.path.join(folder, file)] = dict
+                                        tm_dict = JavaTextMining.mergeDict(tm_dict, dict)
 
         # Salva il dizionario finale del text mining
         text_mining_dict_path = os.path.join(mining_results_path, "text_mining_dict.txt")
@@ -112,33 +114,32 @@ class Main:
         repo_name = "RepositoryMining"
 
         for count in range(1, num_repos + 1, 1):
-            if count != 18:  # Salta il repository 18
-                repo = repo_name + str(count)
-                repo_path = os.path.join(mining_results_path, repo)
+            repo = repo_name + str(count)
+            repo_path = os.path.join(mining_results_path, repo)
 
-                if os.path.isdir(repo_path):  # Verifica se è una directory valida
-                    for cvd_id in os.listdir(repo_path):
-                        cvd_id_path = os.path.join(repo_path, cvd_id)
+            if os.path.isdir(repo_path):  # Verifica se è una directory valida
+                for cvd_id in os.listdir(repo_path):
+                    cvd_id_path = os.path.join(repo_path, cvd_id)
 
-                        if cvd_id not in [".DS_Store", "CHECK.txt", "ERRORS.txt"] and os.path.isdir(cvd_id_path):
-                            for folder in os.listdir(cvd_id_path):
-                                folder_path = os.path.join(cvd_id_path, folder)
+                    if cvd_id not in [".DS_Store", "CHECK.txt", "ERRORS.txt"] and os.path.isdir(cvd_id_path):
+                        for folder in os.listdir(cvd_id_path):
+                            folder_path = os.path.join(cvd_id_path, folder)
 
-                                if folder != ".DS_Store" and os.path.isdir(folder_path):
-                                    for file in os.listdir(folder_path):
+                            if folder != ".DS_Store" and os.path.isdir(folder_path):
+                                for file in os.listdir(folder_path):
 
-                                        if file != ".DS_Store" and file.endswith(".java"):
-                                            java_file_path = os.path.join(folder_path, file)
-                                            # Legge il contenuto del file .java
-                                            with open(java_file_path, "r", encoding='utf-8') as java_file:
-                                                file_content = java_file.read()
+                                    if file != ".DS_Store" and file.endswith(".java"):
+                                        java_file_path = os.path.join(folder_path, file)
+                                        # Legge il contenuto del file .java
+                                        with open(java_file_path, "r", encoding='utf-8') as java_file:
+                                            file_content = java_file.read()
 
-                                            # Analizza le metriche
-                                            analyzer = SoftwareMetrics(java_file_path, file_content)
-                                            metrics = analyzer.analyze()
+                                        # Analizza le metriche
+                                        analyzer = SoftwareMetrics(java_file_path, file_content)
+                                        metrics = analyzer.analyze()
 
-                                            # Scrive i risultati delle metriche nel CSV
-                                            csv_writer.write_metrics("File", os.path.join(folder, file), metrics)
+                                        # Scrive i risultati delle metriche nel CSV
+                                        csv_writer.write_metrics("File", os.path.join(folder, file), metrics)
 
 
     def run_ASA(self, sonar_host, sonar_token, sonar_path):
@@ -187,6 +188,37 @@ class Main:
         sm_csv = os.path.join(self.base_dir,"Software_Metrics","mining_results_sm_final.csv")
         asa_csv = os.path.join(self.base_dir,"mining_results_asa","csv_ASA_final.csv")
         combiner.merge(sm_csv, tm_csv, asa_csv)
+
+    def run_prediction(self, input_csv_path, model_path, label_encoder_path, vocab_path, path_csv):
+        original_vocab = joblib.load(vocab_path)
+        model = joblib.load(model_path)
+        label_encoder = joblib.load(label_encoder_path)
+
+        df_new = pd.read_csv(input_csv_path)
+
+        if len(df_new) == 0:
+            return []
+
+        aligned_data = pd.DataFrame(0, index=df_new.index, columns=original_vocab)
+
+        # Fill the aligned DataFrame with the values from df_new where the column names match
+        for column in df_new.columns:
+            if column in original_vocab:
+                aligned_data[column] = df_new[column]
+
+        X_new = aligned_data.to_numpy()
+
+        # Make predictions for all rows
+        predictions = model.predict(X_new)
+
+        # Riconverti la predizione in pos o neg
+        predicted_classes = label_encoder.inverse_transform(predictions)
+
+        df = pd.DataFrame({'Name': df_new['Name'], 'CLS': predicted_classes})
+        os.makedirs(os.path.dirname(path_csv), exist_ok=True)
+        df.to_csv(path_csv, index=False)
+
+        return predicted_classes.tolist()
 
     def download_analysis_results(self, file_type, saving_path):
         path_to_TM = os.path.join(self.base_dir, "mining_results", "csv_mining_final.csv")
