@@ -336,15 +336,22 @@ class Gui:
                                   messagebox.showwarning("Errore", "Carica un file CSV per continuare."))
                 continue_exec = False
             else:
-                self.window.after(0,
-                                  lambda:
-                                  messagebox.showinfo("Predict", f"Predizione con file CSV: {self.csv_label['text']} \n"))
                 continue_exec = True
 
                 self.window.after(0, self.progress_bar.step, 0.5)
                 self.window.after(0, lambda: self.update_progress_label("Mining repositories..."))
 
-                self.run.run_repo_mining(self.csv_label['text'])
+                try:
+                    self.run.run_repo_mining(self.csv_label['text'])
+                except ValueError as e:
+                    self.window.after(0,
+                                      lambda:
+                                      messagebox.showwarning("Errore", "Dataset header non valido."))
+                    continue_exec = False
+                    self.window.after(0, self.stop_progress)
+                    self.window.after(0, lambda: self.update_progress_label("Execution error"))
+
+
         else:
             commit_id = self.commit_id_entry.get().strip()
             repo_url = self.repo_url_entry.get().strip()
@@ -353,9 +360,6 @@ class Gui:
                                   lambda: messagebox.showwarning("Error", "Enter commit_id and repo_url to continue."))
                 continue_exec = False
             else:
-                self.window.after(0,
-                                  lambda:
-                                  messagebox.showinfo("Predict", f"Predizione per commit_id: {commit_id}, repo_url: {repo_url}"))
                 continue_exec = True
                 df = pd.DataFrame({'cve_id': [0], 'repo_url': [repo_url], 'commit_id': [commit_id]})
                 df.to_csv(os.path.join(self.base_dir, 'repository.csv'), index=False)
