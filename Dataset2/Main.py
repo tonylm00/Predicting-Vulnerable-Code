@@ -1,11 +1,8 @@
 import os
 import shutil
 import zipfile
-
 import joblib
 import pandas as pd
-
-from Dataset2.AI_Module.RandomForest import predict_dict
 from Dataset2.RepoMining.DatasetDivider import DatasetDivider
 from Dataset2.RepoMining.RepoMiner import RepoMiner
 from Dataset2.Software_Metrics.MetricsWriter import MetricsWriter
@@ -113,7 +110,7 @@ class Main:
         num_repos = len(os.listdir(dataset_divided_path))
         repo_name = "RepositoryMining"
 
-        for count in range(1, num_repos + 1, 1):
+        for count in range(1, 35 + 1, 1):
             repo = repo_name + str(count)
             repo_path = os.path.join(mining_results_path, repo)
 
@@ -135,7 +132,7 @@ class Main:
                                             file_content = java_file.read()
 
                                         # Analizza le metriche
-                                        analyzer = SoftwareMetrics(java_file_path, file_content)
+                                        analyzer = SoftwareMetrics(self.base_dir, os.path.join(folder, file), file_content)
                                         metrics = analyzer.analyze()
 
                                         # Scrive i risultati delle metriche nel CSV
@@ -220,20 +217,6 @@ class Main:
 
         return predicted_classes.tolist()
 
-    def download_analysis_results(self, file_type, saving_path):
-        path_to_TM = os.path.join(self.base_dir, "mining_results", "csv_mining_final.csv")
-        path_to_SM = os.path.join(self.base_dir, "Software_Metrics", "mining_results_sm_final.csv")
-        path_to_ASA = os.path.join(self.base_dir, "mining_results_asa", "csv_ASA_final.csv")
-
-        file_map = {'text_mining': path_to_TM,
-                    'software_metrics': path_to_SM,
-                    'asa': path_to_ASA}
-
-        file_path = file_map[file_type]
-
-        if file_path:
-            shutil.copyfile(file_path, saving_path)
-
     def download_results(self, result_kind, results_type, path_to_save):
         file_paths = []
         tm = results_type['text_mining']
@@ -258,6 +241,17 @@ class Main:
             path_to_results_TM_SM = os.path.join(self.base_dir, "Union", "Union_TM_SM.csv")
             path_to_results_TM_ASA = os.path.join(self.base_dir, "Union", "Union_TM_ASA.csv")
             path_to_results_SM_ASA = os.path.join(self.base_dir, "Union", "Union_SM_ASA.csv")
+            path_to_log_SM = os.path.join(self.base_dir, "Software_Metrics", "software_metrics.log")
+            path_to_log_ASA = os.path.join(self.base_dir, "mining_results_asa", "asa.log")
+            path_to_log_repo = os.path.join(self.base_dir, "Software_Metrics", "repo_mining.log")
+            if os.path.isfile(path_to_log_SM):
+                file_paths.append(path_to_log_SM)
+
+            if os.path.isfile(path_to_log_ASA):
+                file_paths.append(path_to_log_ASA)
+
+            if os.path.isfile(path_to_log_repo):
+                file_paths.append(path_to_log_repo)
 
         if tm:
             if os.path.isfile(path_to_results_TM):
@@ -339,4 +333,17 @@ class Main:
         if os.path.isfile(os.path.join(self.base_dir,"repository.csv")):
             os.remove(os.path.join(self.base_dir,"repository.csv"))
 
+        if os.path.isfile(os.path.join(self.base_dir, "Software_Metrics", "software_metrics.log")):
+            os.remove(os.path.join(self.base_dir, "Software_Metrics", "software_metrics.log"))
+
+        if os.path.isfile(os.path.join(self.base_dir, "mining_results_asa", "asa.log")):
+            os.remove(os.path.join(self.base_dir, "mining_results_asa", "asa.log"))
+
+        if os.path.isfile(os.path.join(self.base_dir, "Software_Metrics", "repo_mining.log")):
+            os.remove(os.path.join(self.base_dir, "Software_Metrics", "repo_mining.log"))
+
         print("Clean up completed.")
+
+if __name__=="__main__":
+    run = Main(os.getcwd())
+    run.run_software_metrics()

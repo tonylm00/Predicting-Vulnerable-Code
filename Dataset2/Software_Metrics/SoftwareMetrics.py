@@ -1,14 +1,18 @@
+import logging
+import os
 import re
-
 import lizard
 import javalang
+from javalang.parser import JavaSyntaxError
+from javalang.tokenizer import LexerError
 from tree_sitter import Language, Parser
 import tree_sitter_java as tjava
 
 JAVA_LANGUAGE = Language(tjava.language())
 
 class SoftwareMetrics:
-    def __init__(self, file_path, file_content):
+    def __init__(self, base_dir, file_path, file_content):
+        self.base_dir = base_dir
         self.file_path = file_path
         #non sono utili al conteggio delle metriche, potrebbero anche compromettere il conteggio
         self.file_content = self.__remove_comments(file_content)
@@ -23,6 +27,12 @@ class SoftwareMetrics:
             "MaxCyclomaticStrict": 0,
             "MaxNesting": 0
         }
+        logging.basicConfig(
+            filename=os.path.join(self.base_dir, "Software_Metrics", 'software_metrics.log'),
+            level=logging.ERROR,
+            format='%(levelname)s - %(message)s',
+            filemode='w'
+        )
 
     def __remove_comments(self, text):
         # Pattern per stringhe (sia con virgolette doppie che singole)
@@ -469,6 +479,7 @@ class SoftwareMetrics:
 
     def analyze(self):
         lizard_analysis = lizard.analyze_file.analyze_source_code(self.file_path, self.file_content)
+
         try:
             for lizard_function in lizard_analysis.function_list:
                 self.metrics["SumCyclomaticStrict"] += lizard_function.cyclomatic_complexity
@@ -481,10 +492,21 @@ class SoftwareMetrics:
             self.metrics["CountDeclFunction"] = self.count_method_declarations()
             self.metrics["CountLineCode"] = self.count_lines_of_code()
 
-            self.metrics["MaxEssential"], self.metrics["SumEssential"] = self.compute_essential_complexity_metrics(self.file_content)
+            self.metrics["MaxEssential"], self.metrics["SumEssential"] = self.compute_essential_complexity_metrics(
+                self.file_content)
+
+        except JavaSyntaxError:
+            logging.error(f"Errore nell'analisi del file {self.file_path}: Il file non presenta una sintassi java valida.")
+            print(f"Errore salvato nel log per il file: {self.file_path}")
+
+        except LexerError:
+            logging.error(
+                f"Errore nell'analisi del file {self.file_path}: Il file presenta un carattere o una sequenza di caratteri non valida.")
+            print(f"Errore salvato nel log per il file: {self.file_path}")
 
         except Exception as e:
-            print(self.file_path, e)
+            logging.error(f"Errore nell'analisi del file {self.file_path}: {type(e)}")
+            print(f"Errore salvato nel log per il file: {self.file_path}")
 
         return self.metrics
 
