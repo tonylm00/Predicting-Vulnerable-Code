@@ -16,7 +16,7 @@ class Gui:
         self.main_frame = Tkmt.ThemedTKinterFrame("Perseverance", "sun-valley", "dark")
         self.window = self.main_frame.root
         self.window.title("Perseverance")
-        self.window.geometry("700x900")
+        self.window.geometry("500x750")
         self.window.resizable(False, False)
         self.set_icon()
 
@@ -90,9 +90,9 @@ class Gui:
         self.upload_csv_button.pack(pady=(0, 5))
 
         self.commit_id_label = ttk.Label(self.predict_frame, text="Commit ID:")
-        self.commit_id_entry = ttk.Entry(self.predict_frame, width=40)
+        self.commit_id_entry = ttk.Entry(self.predict_frame, width=50)
         self.repo_url_label = ttk.Label(self.predict_frame, text="Repo URL:")
-        self.repo_url_entry = ttk.Entry(self.predict_frame, width=40)
+        self.repo_url_entry = ttk.Entry(self.predict_frame, width=50)
 
         self.commit_id_entry.insert(0, "57f2ccb66946943fbf3b3f2165eac1c8eb6b1523")
         self.repo_url_entry.insert(0, "https://github.com/spring-projects/spring-webflow")
@@ -108,7 +108,7 @@ class Gui:
         self.options_frame.pack(padx=10, pady=10, fill="x")
 
         buttons_frame = ttk.Frame(self.options_frame, padding=(10, 10))
-        buttons_frame.pack(padx=10, pady=10, fill="x")
+        buttons_frame.pack(fill="x")
 
         self.tm_checkbox_button = ttk.Checkbutton(buttons_frame, text="Text Mining", variable=self.tm_checkbox)
         self.tm_checkbox_button.pack(side='left')
@@ -155,18 +155,21 @@ class Gui:
         self.results_button = ttk.Button(self.results_frame, text="Download Predictions",
                                          command=lambda: self.download_results_csv('prediction'), state=tk.DISABLED)
 
-        self.analysis_button.pack(pady=5, fill="x")
-        self.results_button.pack(pady=5, fill="x")
+        self.results_frame.grid_columnconfigure(0, weight=1)  # Colonna sinistra
+        self.results_frame.grid_columnconfigure(1, weight=1)  # Colonna destra
+
+        self.analysis_button.grid(row=0, column=0, padx=5, pady=5, sticky="e")
+        self.results_button.grid(row=0, column=1, padx=5, pady=5, sticky="w")
 
     def build_start_frame(self):
         start_frame = tk.LabelFrame(self.window, bd=0)
         start_frame.pack(padx=10, pady=10)
 
         self.progress_bar = ttk.Progressbar(start_frame, orient="horizontal", mode="determinate", length=280)
-        self.progress_bar.grid(row=6, column=1, columnspan=2, padx=10, pady=20)
+        self.progress_bar.grid(row=6, column=1, columnspan=2, padx=10, pady=10)
 
         self.progress_label = ttk.Label(start_frame, text="")
-        self.progress_label.grid(row=7, column=1, columnspan=2, padx=10, pady=10)
+        self.progress_label.grid(row=7, column=1, columnspan=2, padx=10, pady=0)
 
         predict_button = ttk.Button(start_frame, text="Start", style="Accent.TButton", command=self.start_predict)
         predict_button.grid(row=5, column=1, pady=10, columnspan=2)
