@@ -16,7 +16,7 @@ class Gui:
         self.main_frame = Tkmt.ThemedTKinterFrame("Perseverance", "sun-valley", "dark")
         self.window = self.main_frame.root
         self.window.title("Perseverance")
-        self.window.geometry("500x900")
+        self.window.geometry("700x900")
         self.window.resizable(False, False)
         self.set_icon()
 
@@ -54,6 +54,7 @@ class Gui:
         self.options_frame = None
         self.results_frame = None
         self.start_frame = None
+        self.asa_opt_frame = None
 
         # buttons for results frame
         self.analysis_button = None
@@ -104,33 +105,44 @@ class Gui:
 
     def build_options_frame(self):
         self.options_frame = ttk.LabelFrame(self.window, text="Options", padding=(10, 10))
-        self.options_frame.pack(padx=10, pady=10, fill="both")
+        self.options_frame.pack(padx=10, pady=10, fill="x")
 
-        self.tm_checkbox_button = ttk.Checkbutton(self.options_frame, text="Text Mining", variable=self.tm_checkbox)
-        self.tm_checkbox_button.pack(anchor="w")
-        self.sm_checkbox_button = ttk.Checkbutton(self.options_frame, text="Software Metrics",
+        buttons_frame = ttk.Frame(self.options_frame, padding=(10, 10))
+        buttons_frame.pack(padx=10, pady=10, fill="x")
+
+        self.tm_checkbox_button = ttk.Checkbutton(buttons_frame, text="Text Mining", variable=self.tm_checkbox)
+        self.tm_checkbox_button.pack(side='left')
+        self.sm_checkbox_button = ttk.Checkbutton(buttons_frame, text="Software Metrics",
                                                   variable=self.sm_checkbox)
-        self.sm_checkbox_button.pack(anchor="w")
-        self.asa_checkbox_button = ttk.Checkbutton(self.options_frame, text="ASA", variable=self.asa_checkbox,
+        self.sm_checkbox_button.pack(side='left', expand=True)
+        self.asa_checkbox_button = ttk.Checkbutton(buttons_frame, text="ASA", variable=self.asa_checkbox,
                                                    command=self.manage_asa_fields)
-        self.asa_checkbox_button.pack(anchor="w")
+        self.asa_checkbox_button.pack(side='right')
 
-        self.sonarcloud_path_label = ttk.Label(self.options_frame, text="SonarScanner Path:")
-        self.sonarcloud_path_entry = ttk.Entry(self.options_frame, width=50)
+        self.asa_opt_frame = ttk.Frame(self.options_frame, padding=(5,5))
+        self.asa_opt_frame.pack(padx=10, pady=10, fill="x")
 
-        self.sonarcloud_token_label = ttk.Label(self.options_frame, text="SonarCloud UserToken:")
-        self.sonarcloud_token_entry = ttk.Entry(self.options_frame, width=50)
+        self.sonarcloud_path_label = ttk.Label(self.asa_opt_frame, text="SonarScanner Path:")
+        self.sonarcloud_path_entry = ttk.Entry(self.asa_opt_frame, width=50)
 
-        self.sonarcloud_host_label = ttk.Label(self.options_frame, text="SonarCloud Host:")
-        self.sonarcloud_host_entry = ttk.Entry(self.options_frame, width=50)
+        self.sonarcloud_token_label = ttk.Label(self.asa_opt_frame, text="SonarCloud UserToken:")
+        self.sonarcloud_token_entry = ttk.Entry(self.asa_opt_frame, width=50)
+
+        self.sonarcloud_host_label = ttk.Label(self.asa_opt_frame, text="SonarCloud Host:")
+        self.sonarcloud_host_entry = ttk.Entry(self.asa_opt_frame, width=50)
+
+        self.sonarcloud_path_label.pack(anchor='w', padx=5, pady=2)
+        self.sonarcloud_path_entry.pack(anchor='w', padx=5, pady=2)
+        self.sonarcloud_path_entry.insert(0, r"C:\Program Files\SonarScanner\bin\sonar-scanner.bat")
+        self.sonarcloud_token_label.pack(anchor='w', padx=5, pady=2)
+        self.sonarcloud_token_entry.pack(anchor='w', padx=5, pady=2)
+        self.sonarcloud_token_entry.insert(0, "squ_95089cde86a31904f6f2f0191e033099beb06c27")
+        self.sonarcloud_host_label.pack(anchor='w', padx=5, pady=2)
+        self.sonarcloud_host_entry.pack(anchor='w', padx=5, pady=2)
+        self.sonarcloud_host_entry.insert(0, "http://localhost:9000")
 
         # Initially hidden
-        self.sonarcloud_path_label.pack_forget()
-        self.sonarcloud_path_entry.pack_forget()
-        self.sonarcloud_token_label.pack_forget()
-        self.sonarcloud_token_entry.pack_forget()
-        self.sonarcloud_host_label.pack_forget()
-        self.sonarcloud_host_entry.pack_forget()
+        self.asa_opt_frame.pack_forget()
 
     def build_results_frame(self):
         self.results_frame = ttk.LabelFrame(self.window, text="Results", padding=(10, 10))
@@ -154,7 +166,7 @@ class Gui:
         self.progress_bar.grid(row=6, column=1, columnspan=2, padx=10, pady=20)
 
         self.progress_label = ttk.Label(start_frame, text="")
-        self.progress_label.grid(row=7, column=1, columnspan=2, padx=10, pady=20)
+        self.progress_label.grid(row=7, column=1, columnspan=2, padx=10, pady=10)
 
         predict_button = ttk.Button(start_frame, text="Start", style="Accent.TButton", command=self.start_predict)
         predict_button.grid(row=5, column=1, pady=10, columnspan=2)
@@ -199,22 +211,9 @@ class Gui:
 
     def manage_asa_fields(self):
         if self.asa_checkbox.get() == 1:
-            self.sonarcloud_path_label.pack(anchor="w", padx=10, pady=2)
-            self.sonarcloud_path_entry.pack(anchor="w", padx=10, pady=2)
-            self.sonarcloud_path_entry.insert(0, r"C:\Program Files\SonarScanner\bin\sonar-scanner.bat")
-            self.sonarcloud_token_label.pack(anchor="w", padx=10, pady=2)
-            self.sonarcloud_token_entry.pack(anchor="w", padx=10, pady=2)
-            self.sonarcloud_token_entry.insert(0, "squ_95089cde86a31904f6f2f0191e033099beb06c27")
-            self.sonarcloud_host_label.pack(anchor="w", padx=10, pady=2)
-            self.sonarcloud_host_entry.pack(anchor="w", padx=10, pady=2)
-            self.sonarcloud_host_entry.insert(0, "http://localhost:9000")
+            self.asa_opt_frame.pack()
         else:
-            self.sonarcloud_path_label.pack_forget()
-            self.sonarcloud_path_entry.pack_forget()
-            self.sonarcloud_token_label.pack_forget()
-            self.sonarcloud_token_entry.pack_forget()
-            self.sonarcloud_host_label.pack_forget()
-            self.sonarcloud_host_entry.pack_forget()
+            self.asa_opt_frame.pack_forget()
 
     def set_max_progress(self, value):
         self.progress_bar.config(maximum=value)
