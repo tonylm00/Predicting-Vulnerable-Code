@@ -1,14 +1,12 @@
 import re
 import shutil
 import threading
-import time
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox, filedialog
 import os
 import TKinterModernThemes as Tkmt
 import pandas as pd
-from Dataset2.AI_Module.RandomForest import predict_csv
 from Dataset2.Main import Main
 
 
@@ -66,7 +64,7 @@ class Gui:
         self.build_results_frame()
         self.build_start_frame()
 
-        #values for analysis
+        # values for analysis
         self.tm_value = 0
         self.sm_value = 0
         self.asa_value = 0
@@ -110,10 +108,11 @@ class Gui:
 
         self.tm_checkbox_button = ttk.Checkbutton(self.options_frame, text="Text Mining", variable=self.tm_checkbox)
         self.tm_checkbox_button.pack(anchor="w")
-        self.sm_checkbox_button = ttk.Checkbutton(self.options_frame, text="Software Metrics", variable=self.sm_checkbox)
+        self.sm_checkbox_button = ttk.Checkbutton(self.options_frame, text="Software Metrics",
+                                                  variable=self.sm_checkbox)
         self.sm_checkbox_button.pack(anchor="w")
         self.asa_checkbox_button = ttk.Checkbutton(self.options_frame, text="ASA", variable=self.asa_checkbox,
-                        command=self.manage_asa_fields)
+                                                   command=self.manage_asa_fields)
         self.asa_checkbox_button.pack(anchor="w")
 
         self.sonarcloud_path_label = ttk.Label(self.options_frame, text="SonarScanner Path:")
@@ -156,7 +155,6 @@ class Gui:
 
         self.progress_label = ttk.Label(start_frame, text="")
         self.progress_label.grid(row=7, column=1, columnspan=2, padx=10, pady=20)
-
 
         predict_button = ttk.Button(start_frame, text="Start", style="Accent.TButton", command=self.start_predict)
         predict_button.grid(row=5, column=1, pady=10, columnspan=2)
@@ -233,27 +231,36 @@ class Gui:
     def form_validation(self):
         if self.switch_input_value.get() == "csv":
             if self.csv_label['text'] == "":
-                messagebox.showwarning("Error - Predict Frame", "Carica un file CSV per continuare.")
+                messagebox.showerror("Error", "You must upload a CSV to continue")
                 return False
         else:
             if self.commit_id_entry.get().strip() == "" or self.repo_url_entry.get().strip() == "":
-                messagebox.showwarning("Error - Options Frame", "Inserisci commit_id e repo_url per continuare.")
+                messagebox.showerror("Error", "You must enter Commit ID and GIT Repository URL to continue")
                 return False
             else:
-                if not re.match(r'^https:\/\/github\.com\/[a-zA-Z0-9-]+\/[a-zA-Z0-9-]+$',
-                                self.repo_url_entry.get().strip()):
-                    messagebox.showwarning("Error - Options Frame",
-                                           f"L'URL {self.repo_url_entry.get().strip()} non è valido")
+                # Regex to check valid  GIT Repository
+                git_regex = r"((http|git|ssh|http(s)|file|\/?)|(git@[\w\.]+))(:(\/\/)?)([\w\.@\:/\-~]+)(\.git)?(\/)?"
+
+                if not re.match(git_regex, self.repo_url_entry.get().strip()):
+                    messagebox.showerror("Error - Options Frame",
+                                         f"{self.repo_url_entry.get().strip()} is not valid Repository URL")
                     return False
+
                 if not re.match(r'^[a-z0-9]+$', self.commit_id_entry.get().strip()):
-                    messagebox.showwarning("Error - Options Frame",
-                                           f"Il commit {self.commit_id_entry.get().strip()} non è valido")
+                    messagebox.showerror("Error", f"{self.commit_id_entry.get().strip()} is not valid commit ID")
                     return False
+
         if self.asa_checkbox.get() == 1:
             if self.sonarcloud_path_entry.get().strip() == "" or self.sonarcloud_token_entry.get().strip() == "" or \
                     self.sonarcloud_host_entry.get().strip() == "":
-                messagebox.showwarning("Error - Options Frame", "Inserisci i dati di SonarCloud per continuare.")
+                messagebox.showerror("Error", "You must enter Sonar data to continue.")
                 return False
+            else:
+                sonarscanner_path_regex = r"([a-zA-Z]:\\)([\\\w\s]+\\)*sonar-scanner\.bat"
+                if not re.match(sonarscanner_path_regex, self.sonarcloud_path_entry.get().strip()):
+                    messagebox.showerror("Error", f"{self.sonarcloud_path_entry.get().strip()}"
+                                                  f" is not valid SonarScanner path")
+                    return False
 
         return True
 
@@ -307,7 +314,6 @@ class Gui:
         predict = threading.Thread(target=self.predict)
         predict.start()
 
-
     def predict(self):
         if not self.form_validation():
             return
@@ -319,164 +325,148 @@ class Gui:
         tm, sm, asa = self.tm, self.sm, self.asa
 
         if not (tm or sm or asa):
-            self.window.after(0, lambda: messagebox.showwarning("Errore", "Bro qualcosa devi fa"))
+            self.window.after(0, lambda: messagebox.showerror("Error", "You must select at least one option"))
             return
 
         self.window.after(0, lambda: self.change_state_options(False))
 
         # Set the progress bar max value based on the number of tasks
         num_tasks = tm + sm + asa + (tm * sm) + (tm * asa) + (sm * asa) + (
-                    tm * sm * asa) + 1  # Calculate how many tasks are selected
+                tm * sm * asa) + 1  # Calculate how many tasks are selected
         self.window.after(0, lambda: self.set_max_progress(num_tasks))
 
         if self.switch_input_value.get() == "csv":
-            if self.csv_label['text'] == "":
-                self.window.after(0,
-                                  lambda:
-                                  messagebox.showwarning("Errore", "Carica un file CSV per continuare."))
-                continue_exec = False
-            else:
-                continue_exec = True
 
-                self.window.after(0, self.progress_bar.step, 0.5)
-                self.window.after(0, lambda: self.update_progress_label("Mining repositories..."))
+            self.window.after(0, self.progress_bar.step, 0.5)
+            self.window.after(0, lambda: self.update_progress_label("Mining repositories..."))
 
-                try:
-                    self.run.run_repo_mining(self.csv_label['text'])
-                except ValueError as e:
-                    self.window.after(0,
-                                      lambda:
-                                      messagebox.showwarning("Errore", "Dataset header non valido."))
-                    continue_exec = False
-                    self.window.after(0, self.stop_progress)
-                    self.window.after(0, lambda: self.update_progress_label("Execution error"))
-
+            try:
+                self.run.run_repo_mining(self.csv_label['text'])
+            except ValueError as e:
+                self.window.after(0, lambda: messagebox.showerror("Error", "Invalid header dataset"))
+                self.window.after(0, self.stop_progress)
+                self.window.after(0, lambda: self.update_progress_label("Execution error"))
 
         else:
             commit_id = self.commit_id_entry.get().strip()
             repo_url = self.repo_url_entry.get().strip()
-            if not (commit_id and repo_url):
-                self.window.after(0,
-                                  lambda: messagebox.showwarning("Error", "Enter commit_id and repo_url to continue."))
-                continue_exec = False
-            else:
-                continue_exec = True
-                df = pd.DataFrame({'cve_id': [0], 'repo_url': [repo_url], 'commit_id': [commit_id]})
-                df.to_csv(os.path.join(self.base_dir, 'repository.csv'), index=False)
 
-                self.window.after(0, self.progress_bar.step, 0.5)
-                self.window.after(0, lambda: self.update_progress_label("Mining repositories..."))
-
-                self.run.run_repo_mining("repository.csv")
-
-        if continue_exec:
+            df = pd.DataFrame({'cve_id': [0], 'repo_url': [repo_url], 'commit_id': [commit_id]})
+            df.to_csv(os.path.join(self.base_dir, 'repository.csv'), index=False)
 
             self.window.after(0, self.progress_bar.step, 0.5)
-            self.window.after(0, lambda: self.update_progress_label("Mining Repositories completed..."))
+            self.window.after(0, lambda: self.update_progress_label("Mining repositories..."))
 
-            if tm:
-                self.window.after(0, lambda: self.update_progress_label("Text Mining running..."))
-                self.run.run_text_mining()
+            self.run.run_repo_mining("repository.csv")
+
+        self.window.after(0, self.progress_bar.step, 0.5)
+        self.window.after(0, lambda: self.update_progress_label("Mining Repositories completed..."))
+
+        if tm:
+            self.window.after(0, lambda: self.update_progress_label("Text Mining running..."))
+            self.run.run_text_mining()
+            self.run.run_prediction(
+                os.path.join(self.base_dir, "mining_results", "csv_mining_final.csv"),
+                os.path.join(self.base_dir, "AI_Module", "model", "random_forest_TM.pkl"),
+                os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),
+                os.path.join(self.base_dir, "AI_Module", "vocab", "original_vocab_TM.pkl"),
+                os.path.join(self.base_dir, "Predict", "Predict_TM.csv")
+            )
+            self.window.after(0, self.progress_bar.step, 1)
+
+        if sm:
+            self.window.after(0, lambda: self.update_progress_label("Metrics computation running..."))
+            self.run.run_software_metrics()
+            self.run.run_prediction(
+                os.path.join(self.base_dir, "Software_Metrics", "mining_results_sm_final.csv"),
+                os.path.join(self.base_dir, "AI_Module", "model", "random_forest_SM.pkl"),
+                os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),
+                os.path.join(self.base_dir, "AI_Module", "vocab", "original_vocab_SM.pkl"),
+                os.path.join(self.base_dir, "Predict", "Predict_SM.csv")
+            )
+            self.window.after(0, self.progress_bar.step, 1)
+
+        if asa:
+            self.window.after(0, lambda: self.update_progress_label("Static Analysis running..."))
+
+            try:
+                self.run.run_ASA(self.sonarcloud_host_entry.get(), self.sonarcloud_token_entry.get(),
+                                 self.sonarcloud_path_entry.get())
+
                 self.run.run_prediction(
-                    os.path.join(self.base_dir, "mining_results", "csv_mining_final.csv"),
-                    os.path.join(self.base_dir, "AI_Module", "model", "random_forest_TM.pkl"),
+                    os.path.join(self.base_dir, "mining_results_ASA", "csv_ASA_final.csv"),
+                    os.path.join(self.base_dir, "AI_Module", "model", "random_forest_ASA.pkl"),
                     os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),
-                    os.path.join(self.base_dir, "AI_Module", "vocab", "original_vocab_TM.pkl"),
-                    os.path.join(self.base_dir, "Predict", "Predict_TM.csv")
+                    os.path.join(self.base_dir, "AI_Module", "vocab", "original_vocab_ASA.pkl"),
+                    os.path.join(self.base_dir, "Predict", "Predict_ASA.csv")
                 )
-                self.window.after(0, self.progress_bar.step, 1)
 
-            if sm:
-                self.window.after(0, lambda: self.update_progress_label("Metrics computation running..."))
-                self.run.run_software_metrics()
-                self.run.run_prediction(
-                    os.path.join(self.base_dir, "Software_Metrics", "mining_results_sm_final.csv"),
-                    os.path.join(self.base_dir, "AI_Module", "model", "random_forest_SM.pkl"),
-                    os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),
-                    os.path.join(self.base_dir, "AI_Module", "vocab", "original_vocab_SM.pkl"),
-                    os.path.join(self.base_dir, "Predict", "Predict_SM.csv")
-                )
-                self.window.after(0, self.progress_bar.step, 1)
+            except Exception:
+                self.window.after(0, lambda: messagebox.showwarning("Error", f"Error in static analysis, check "
+                                                                             f"the logs!"))
+                self.asa_checkbox.set(0)
+                asa = False
 
-            if asa:
-                self.window.after(0, lambda: self.update_progress_label("Static Analysis running..."))
+            self.window.after(0, self.progress_bar.step, 1)
 
-                try:
-                    self.run.run_ASA(self.sonarcloud_host_entry.get(), self.sonarcloud_token_entry.get(), self.sonarcloud_path_entry.get())
+        if tm and sm and asa:
+            self.window.after(0, lambda: self.update_progress_label("Combining results..."))
+            self.run.total_combination()
+            self.run.run_prediction(
+                os.path.join(self.base_dir, "Union", "3COMBINATION.csv"),
+                os.path.join(self.base_dir, "AI_Module", "model", "random_forest_3Combination.pkl"),
+                os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),
+                os.path.join(self.base_dir, "AI_Module", "vocab", "original_vocab_3Combination.pkl"),
+                os.path.join(self.base_dir, "Predict", "Predict_3Combination.csv")
+            )
+            self.window.after(0, self.progress_bar.step, 1)
 
-                    self.run.run_prediction(
-                        os.path.join(self.base_dir, "mining_results_ASA", "csv_ASA_final.csv"),
-                        os.path.join(self.base_dir, "AI_Module", "model", "random_forest_ASA.pkl"),
-                        os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),
-                        os.path.join(self.base_dir, "AI_Module", "vocab", "original_vocab_ASA.pkl"),
-                        os.path.join(self.base_dir, "Predict", "Predict_ASA.csv")
-                    )
+        if tm and sm:
+            self.window.after(0, lambda: self.update_progress_label("Combining results..."))
+            self.run.combine_tm_sm()
+            self.run.run_prediction(
+                os.path.join(self.base_dir, "Union", "Union_TM_SM.csv"),
+                os.path.join(self.base_dir, "AI_Module", "model", "random_forest_TMSM.pkl"),
+                os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),
+                os.path.join(self.base_dir, "AI_Module", "vocab", "original_vocab_TMSM.pkl"),
+                os.path.join(self.base_dir, "Predict", "Predict_TMSM.csv")
+            )
+            self.window.after(0, self.progress_bar.step, 1)
 
-                except Exception:
-                    self.window.after(0, lambda: messagebox.showwarning("Error", f"Error in static analysis, check "
-                                                                                 f"the logs!"))
-                    self.asa_checkbox.set(0)
-                    asa = False
+        if tm and asa:
+            self.window.after(0, lambda: self.update_progress_label("Combining results..."))
+            self.run.combine_tm_asa()
+            self.run.run_prediction(
+                os.path.join(self.base_dir, "Union", "Union_TM_ASA.csv"),
+                os.path.join(self.base_dir, "AI_Module", "model", "random_forest_TMASA.pkl"),
+                os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),
+                os.path.join(self.base_dir, "AI_Module", "vocab", "original_vocab_TMASA.pkl"),
+                os.path.join(self.base_dir, "Predict", "Predict_TMASA.csv")
+            )
+            self.window.after(0, self.progress_bar.step, 1)
 
-                self.window.after(0, self.progress_bar.step, 1)
+        if sm and asa:
+            self.window.after(0, lambda: self.update_progress_label("Combining results..."))
+            self.run.combine_sm_asa()
+            self.run.run_prediction(
+                os.path.join(self.base_dir, "Union", "Union_SM_ASA.csv"),
+                os.path.join(self.base_dir, "AI_Module", "model", "random_forest_SMASA.pkl"),
+                os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),
+                os.path.join(self.base_dir, "AI_Module", "vocab", "original_vocab_SMASA.pkl"),
+                os.path.join(self.base_dir, "Predict", "Predict_SMASA.csv")
+            )
+            self.window.after(0, self.progress_bar.step, 1)
 
-            if tm and sm and asa:
-                self.window.after(0, lambda: self.update_progress_label("Combining results..."))
-                self.run.total_combination()
-                self.run.run_prediction(
-                    os.path.join(self.base_dir, "Union", "3COMBINATION.csv"),
-                    os.path.join(self.base_dir, "AI_Module", "model", "random_forest_3Combination.pkl"),
-                    os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),
-                    os.path.join(self.base_dir, "AI_Module", "vocab", "original_vocab_3Combination.pkl"),
-                    os.path.join(self.base_dir, "Predict", "Predict_3Combination.csv")
-                )
-                self.window.after(0, self.progress_bar.step, 1)
+        self.window.after(0, lambda: self.update_progress_label("Execution Completed"))
 
-            if tm and sm:
-                self.window.after(0, lambda: self.update_progress_label("Combining results..."))
-                self.run.combine_tm_sm()
-                self.run.run_prediction(
-                    os.path.join(self.base_dir, "Union", "Union_TM_SM.csv"),
-                    os.path.join(self.base_dir, "AI_Module", "model", "random_forest_TMSM.pkl"),
-                    os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),
-                    os.path.join(self.base_dir, "AI_Module", "vocab", "original_vocab_TMSM.pkl"),
-                    os.path.join(self.base_dir, "Predict", "Predict_TMSM.csv")
-                )
-                self.window.after(0, self.progress_bar.step, 1)
-
-            if tm and asa:
-                self.window.after(0, lambda: self.update_progress_label("Combining results..."))
-                self.run.combine_tm_asa()
-                self.run.run_prediction(
-                    os.path.join(self.base_dir, "Union", "Union_TM_ASA.csv"),
-                    os.path.join(self.base_dir, "AI_Module", "model", "random_forest_TMASA.pkl"),
-                    os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),
-                    os.path.join(self.base_dir, "AI_Module", "vocab", "original_vocab_TMASA.pkl"),
-                    os.path.join(self.base_dir, "Predict", "Predict_TMASA.csv")
-                )
-                self.window.after(0, self.progress_bar.step, 1)
-
-            if sm and asa:
-                self.window.after(0, lambda: self.update_progress_label("Combining results..."))
-                self.run.combine_sm_asa()
-                self.run.run_prediction(
-                    os.path.join(self.base_dir, "Union", "Union_SM_ASA.csv"),
-                    os.path.join(self.base_dir, "AI_Module", "model", "random_forest_SMASA.pkl"),
-                    os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),
-                    os.path.join(self.base_dir, "AI_Module", "vocab", "original_vocab_SMASA.pkl"),
-                    os.path.join(self.base_dir, "Predict", "Predict_SMASA.csv")
-                )
-                self.window.after(0, self.progress_bar.step, 1)
-
-            self.window.after(0, lambda: self.update_progress_label("Execution Completed"))
-
-            # Reset progress bar before starting
-            self.window.after(0, self.stop_progress)
-            self.window.after(0, self.show_results_frame)
-            self.window.after(0, lambda: self.change_state_options(True))
+        # Reset progress bar before starting
+        self.window.after(0, self.stop_progress)
+        self.window.after(0, self.show_results_frame)
+        self.window.after(0, lambda: self.change_state_options(True))
 
     def start(self):
         self.window.mainloop()
+
 
 if __name__ == '__main__':
     gui = Gui()
