@@ -235,7 +235,7 @@ class Main:
             path_to_results_SM_ASA = os.path.join(self.base_dir, "Predict", "Predict_SMASA.csv")
         else:
             path_to_results_TM = os.path.join(self.base_dir, "mining_results", "csv_mining_final.csv")
-            path_to_results_SM = os.path.join(self.base_dir, "Software_Metrics", "metrics_results_sm_final.csv")
+            path_to_results_SM = os.path.join(self.base_dir, "Software_Metrics", "mining_results_sm_final.csv")
             path_to_results_ASA = os.path.join(self.base_dir, "mining_results_asa", "csv_ASA_final.csv")
             path_to_results_3_comb = os.path.join(self.base_dir, "Union", "3Combination.csv")
             path_to_results_TM_SM = os.path.join(self.base_dir, "Union", "Union_TM_SM.csv")
@@ -243,7 +243,7 @@ class Main:
             path_to_results_SM_ASA = os.path.join(self.base_dir, "Union", "Union_SM_ASA.csv")
             path_to_log_SM = os.path.join(self.base_dir, "Software_Metrics", "software_metrics.log")
             path_to_log_ASA = os.path.join(self.base_dir, "mining_results_asa", "asa.log")
-            path_to_log_repo = os.path.join(self.base_dir, "Software_Metrics", "repo_mining.log")
+            path_to_log_repo = os.path.join(self.base_dir, "mining_results", "repo_mining.log")
             if os.path.isfile(path_to_log_SM):
                 file_paths.append(path_to_log_SM)
 
@@ -339,11 +339,7 @@ class Main:
         if os.path.isfile(os.path.join(self.base_dir, "mining_results_asa", "asa.log")):
             os.remove(os.path.join(self.base_dir, "mining_results_asa", "asa.log"))
 
-        if os.path.isfile(os.path.join(self.base_dir, "Software_Metrics", "repo_mining.log")):
-            os.remove(os.path.join(self.base_dir, "Software_Metrics", "repo_mining.log"))
+        if os.path.isfile(os.path.join(self.base_dir, "mining_results", "repo_mining.log")):
+            os.remove(os.path.join(self.base_dir, "mining_results", "repo_mining.log"))
 
         print("Clean up completed.")
-
-if __name__=="__main__":
-    run = Main(os.getcwd())
-    run.run_software_metrics()
