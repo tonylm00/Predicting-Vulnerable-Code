@@ -37,12 +37,16 @@ class SonarAnalyzer:
         self.output_csv = file_name
         self.base_dir = base_dir
 
-        logging.basicConfig(
-            filename=os.path.join(base_dir, 'mining_results_asa', 'asa.log'),
-            level=logging.ERROR,
-            format='%(levelname)s - %(message)s',
-            filemode='w'
-        )
+        # logger separato per questa classe
+        self.logger = logging.getLogger('SonarAnalyzerLogger')
+        self.logger.setLevel(logging.ERROR)
+
+        # handler per scrivere i log su file
+        file_handler = logging.FileHandler(os.path.join(self.base_dir, "mining_results_asa", 'asa.log'))
+        file_handler.setLevel(logging.ERROR)
+        formatter = logging.Formatter('%(levelname)s - %(message)s')
+        file_handler.setFormatter(formatter)
+        self.logger.addHandler(file_handler)
 
     @staticmethod
     def create_sonar_properties(project_key, commit_dir):
@@ -104,12 +108,22 @@ class SonarAnalyzer:
             result = subprocess.run(command, cwd=commit_dir, capture_output=True, text=True)
 
             if result.stderr:
-                if result.stderr.__contains__("Unable to parse"):
-                    logging.error(f"Project with CommitID: {commit_dir.split('/')[-1]} contains parsing errors.")
+                print(result.stderr)
+                if "Unable to parse" in result.stderr:
+                    self.logger.error(f"Project with CommitID: {commit_dir.split('/')[-1]} contains parsing errors.")
                     pass
+                if "Connection refused" in result.stderr:
+                    message = "SonarQube is not reported to be active. " \
+                              "Remember to activate it and check if the host is correct."
+                    self.logger.error(message)
+                    raise Exception(message)
+                if "Error status returned by url" in result.stderr:
+                    message = "SonarQube Error. Check if the token entered is correct."
+                    self.logger.error(message)
+                    raise Exception(message)
 
         except FileNotFoundError:
-            logging.error("SonarScanner not found.")
+            self.logger.error("SonarScanner not found.")
             raise Exception("SonarScanner not found.")
 
     def get_analysis_id(self, project_key):
@@ -124,19 +138,7 @@ class SonarAnalyzer:
         """
         url = f"{self.sonar_host}/api/ce/component?component={project_key}"
         headers = {"Authorization": f"Bearer {self.sonar_token}"}
-
-        try:
-            response = requests.get(url, headers=headers)
-
-            if response.status_code != 200:
-                logging_message = f"SonarQube API. Make sure {self.sonar_host} is the correct host and " \
-                                  f"{self.sonar_token} is the correct UserToken."
-                logging.error(logging_message)
-                raise Exception(logging_message)
-
-        except ConnectionRefusedError:
-            logging.error(f"Host unreachable: {self.sonar_host}")
-            raise Exception("Host unreachable")
+        response = requests.get(url, headers=headers)
 
         tasks = response.json().get("queue", [])
         if tasks:
@@ -207,7 +209,7 @@ class SonarAnalyzer:
         if analysis_id:
             success = self.wait_for_analysis_completion(analysis_id)
             if not success:
-                logging.error(f"SonarQube error: Timeout reached for project analysis {project_key}.")
+                self.logger.error(f"SonarQube error: Timeout reached for project analysis {project_key}.")
                 return []
 
         url = f"{self.sonar_host}/api/issues/search?components={project_key}"
@@ -215,7 +217,7 @@ class SonarAnalyzer:
         response = requests.get(url, headers=headers)
 
         if response.status_code != 200:
-            print(f"Errore nell'ottenere le issue del progetto: {response.status_code}")
+            self.logger.error(f"SonarQube error {response.status_code} for project {project_key}.")
             return []
 
         return response.json().get("issues", [])
@@ -310,7 +312,7 @@ class SonarAnalyzer:
                             try:
                                 issues = self.get_project_issues(sonar_project_key)
                             except ConnectionError:
-                                logging.error(f"Host unreachable: {self.sonar_host}")
+                                self.logger.error(f"Host unreachable: {self.sonar_host}")
                                 raise Exception("Host unreachable")
 
                             self.save_issues_to_csv(issues, source_dir)
