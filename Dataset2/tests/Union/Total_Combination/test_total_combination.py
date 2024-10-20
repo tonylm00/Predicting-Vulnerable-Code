@@ -1,35 +1,40 @@
-from Dataset2.Union.Total_Combination.TotalCombination import initialize, getClass, another_option
+from Union.Total_Combination.TotalCombination import initialize, getClass, another_option
 import pytest
 
 
 class TestGetClass:
 
-    def test_case_1(self):
-        assert getClass("") == ""
+    @pytest.mark.parametrize("line, expected, property_l, property_c",
+                             [("", "", "emptyString", None)])
+    def test_case_1(self, line, expected, property_l, property_c):
+        assert getClass(line) == expected
 
-    def test_case_2(self):
-        assert getClass("1,2,3,4,pos") == "pos"
+    @pytest.mark.parametrize("line, expected, property_l, property_c",
+                             [("1,2,3,4,pos", "pos", "notEmptyString", "classElement")])
+    def test_case_2(self, line, expected, property_l, property_c):
+        assert getClass(line) == expected
 
-    def test_case_3(self):
-        assert getClass("a,b,c") == "c"
+    @pytest.mark.parametrize("line, expected, property_l, property_c",
+                             [("a,b,c", "c", "notEmptyString", "noClassElement")])
+    def test_case_3(self, line, expected, property_l, property_c):
+        assert getClass(line) == expected
 
 
 class TestAnotherOption:
 
     def test_case_1(self):
-        with pytest.raises(AttributeError):
-            assert another_option(line_sm=None, line_tm=None, class_element=None) is None
+        with pytest.raises(ValueError):
+            assert another_option(line_sm=None, line_tm="", class_element=None)
 
     def test_case_2(self):
-        assert another_option(line_sm="", line_tm="", class_element="") is None
+        with pytest.raises(ValueError):
+            assert another_option(line_sm=None, line_tm="a,b,c,pos", class_element=None)
 
     def test_case_3(self):
-        with pytest.raises(ValueError):
-            assert another_option(line_sm=None, line_tm="", class_element=None) is None
+        assert another_option(line_sm="a,b", line_tm=None, class_element=None) == ""
 
     def test_case_4(self):
-        with pytest.raises(ValueError):
-            assert another_option(line_sm=None, line_tm="a,b,c,pos", class_element=None) is None
+        assert another_option(line_sm="a,b,c,d,e", line_tm=None, class_element=None) == "c,d,e,"
 
     def test_case_5(self):
         with pytest.raises(ValueError):
@@ -42,11 +47,17 @@ class TestAnotherOption:
     def test_case_7(self):
         assert another_option(line_sm=None, line_tm="a,b,c,pos", class_element="pos") == "a,b,c,"
 
-    def test_case_8(self):
-        assert another_option(line_sm="", line_tm=None, class_element=None) == ""
+    def test_case_x(self):
+        with pytest.raises(AttributeError):
+            assert another_option(line_sm=None, line_tm=None, class_element=None) is None
 
-    def test_case_9(self):
-        assert another_option(line_sm="a,b,c,d,e", line_tm=None, class_element=None) == "c,d,e,"
+    def test_case_y(self):
+        assert another_option(line_sm="", line_tm="", class_element="") is None
+
+
+
+
+
 
 
 # valutare se inserire assert o meno.

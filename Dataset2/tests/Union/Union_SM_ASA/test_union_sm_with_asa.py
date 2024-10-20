@@ -1,17 +1,23 @@
-from Dataset2.Union.Union_SM_ASA.Union_SMwithASA import initialize, getClass, another_option
+from Union.Union_SM_ASA.Union_SMwithASA import initialize, getClass, another_option
 import pytest
 
 
 class TestGetClass:
 
-    def test_case_1(self):
-        assert getClass("") == ""
+    @pytest.mark.parametrize("line, expected, property_l, property_c",
+                             [("", "", "emptyString", None)])
+    def test_case_1(self, line, expected, property_l, property_c):
+        assert getClass(line) == expected
 
-    def test_case_2(self):
-        assert getClass("1,2,3,4,pos") == "pos"
+    @pytest.mark.parametrize("line, expected, property_l, property_c",
+                             [("1,2,3,4,pos", "pos", "notEmptyString", "classElement")])
+    def test_case_2(self, line, expected, property_l, property_c):
+        assert getClass(line) == expected
 
-    def test_case_3(self):
-        assert getClass("a,b,c") == "c"
+    @pytest.mark.parametrize("line, expected, property_l, property_c",
+                             [("a,b,c", "c", "notEmptyString", "noClassElement")])
+    def test_case_3(self, line, expected, property_l, property_c):
+        assert getClass(line) == expected
 
 
 class TestAnotherOption:
@@ -25,41 +31,24 @@ class TestAnotherOption:
 
     def test_case_3(self):
         with pytest.raises(AttributeError):
-            assert another_option(line_asa="", line_sm=None, class_element=None)
+            assert another_option(line_asa=None, line_sm=None, class_element="x")
 
     def test_case_4(self):
-        with pytest.raises(AttributeError):
-            assert another_option(line_asa="a,b,c", line_sm=None, class_element=None)
-
-    def test_case_5(self):
-        with pytest.raises(ValueError):
-            assert another_option(line_asa="a,b,c", line_sm=None, class_element="")
-
-    def test_case_6(self):
-        with pytest.raises(ValueError):
-            assert another_option(line_asa="a,b,c", line_sm=None, class_element="pos")
-
-    def test_case_7(self):
-        assert another_option(line_asa="a,b,c,pos", line_sm=None, class_element="pos") == "b,c,"
-
-    def test_case_8(self):
-        with pytest.raises(ValueError):
-            assert another_option(line_asa=None, line_sm="", class_element=None)
-
-    def test_case_9(self):
-        with pytest.raises(ValueError):
-            assert another_option(line_asa=None, line_sm="a,b,c", class_element=None)
-
-    def test_case_10(self):
-        with pytest.raises(ValueError):
-            assert another_option(line_asa=None, line_sm="a,b,c", class_element="")
-
-    def test_case_11(self):
         with pytest.raises(ValueError):
             assert another_option(line_asa=None, line_sm="a,b,c", class_element="pos")
 
-    def test_case_12(self):
+    def test_case_5(self):
         assert another_option(line_asa=None, line_sm="a,b,c,pos", class_element="pos") == "a,b,c,"
+
+    def test_case_6(self):
+        with pytest.raises(ValueError):
+            assert another_option(line_sm=None, line_asa="a,b,c,pos", class_element="neg")
+
+    def test_case_7(self):
+        assert another_option(line_sm=None, line_asa="a,b,c,pos", class_element="pos") == "b,c,"
+
+    def test_case_8(self):
+        assert another_option(line_sm="a,b,c,d,pos", line_asa="a,b,c,pos", class_element="pos") is None
 
 
 class TestInitialize:
@@ -132,6 +121,9 @@ class TestInitialize:
         with pytest.raises(FileNotFoundError):
             with output_file_path.open("w") as output:
                 initialize("mining_results_sm_final.csv", "csv_ASA_final.csv", output)
+
+
+
 
     def test_case_7(self, fixture_only_sm, base_fixture):
         _, _, output_dir_path = base_fixture

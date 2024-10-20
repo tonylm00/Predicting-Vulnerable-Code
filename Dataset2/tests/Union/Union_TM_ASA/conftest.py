@@ -168,6 +168,46 @@ def fixture_header_asa(base_fixture):
 
 
 @pytest.fixture
+def fixture_both_csv_empty(base_fixture):
+    tm_dir, asa_dir, _ = base_fixture
+
+    csv_tm_content = ""
+
+    csv_asa_content = ""
+
+    tm_csv_path = tm_dir / "csv_mining_final.csv"
+    asa_csv_path = asa_dir / "csv_ASA_final.csv"
+
+    tm_csv_path.write_text(csv_tm_content)
+    asa_csv_path.write_text(csv_asa_content)
+
+    yield
+
+
+@pytest.fixture
+def fixture_header_csv(base_fixture):
+    tm_dir, asa_dir, _ = base_fixture
+
+    csv_tm_content = (
+        'NameClass,a,aa,aaa,aaaa,b,bb,bbb,bbbb,c,cc,ccc,cccc,d,dd,ddd,dddd,e,ee,eee,eeee,class\n'
+    )
+
+    csv_asa_content = (
+        'Name,java:asa1,java:asa2,java:asa3,java:asa4,java:asa5,java:asa6,java:asa7,java:asa8,'
+        'java:asa9,java:asa10,java:asa11,java:asa12,java:asa13,java:asa14,java:asa15,java:asa16,'
+        'java:asa17,java:asa18,java:asa19,java:asa20,java:asa21,class\n'
+    )
+
+    tm_csv_path = tm_dir / "csv_mining_final.csv"
+    asa_csv_path = asa_dir / "csv_ASA_final.csv"
+
+    tm_csv_path.write_text(csv_tm_content)
+    asa_csv_path.write_text(csv_asa_content)
+
+    yield
+
+
+@pytest.fixture
 def fixture_both_csv(base_fixture):
     tm_dir, asa_dir, _ = base_fixture
 
