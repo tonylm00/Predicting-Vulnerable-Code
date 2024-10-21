@@ -145,8 +145,7 @@ def mock_file_system(request):
     fs['/Predicting-Vulnerable-Code/Dataset2'] = {'mining_results'}
 
     for i in range(1, 36):
-        if i == 18:
-            continue  # RepositoryMining18 non esiste nel file system originale
+        # RepositoryMining18 non esiste nel file system originale
         repo = f'RepositoryMining{i}'
         fs['/Predicting-Vulnerable-Code/Dataset2/mining_results'].add(repo)
 
@@ -263,6 +262,7 @@ def setup_environment(request):
     base_dir = request.param.get('base_dir', os.getcwd())
     files = request.param.get('files', {})
 
+    dataset_divided_dir = os.path.join(base_dir, "Dataset_Divided")
     mining_results_dir = os.path.join(base_dir, "mining_results")
     old_cwd = os.getcwd()
     if files:
@@ -270,13 +270,16 @@ def setup_environment(request):
 
     try:
         # Crea la directory principale
-        os.makedirs(mining_results_dir, mode=0o777, exist_ok=True)
+        if levels != 0:
+            os.makedirs(mining_results_dir, mode=0o777, exist_ok=True)
+        os.makedirs(dataset_divided_dir, mode=0o777, exist_ok=True)
 
         # Crea la struttura di directory in base ai livelli richiesti
         for i in range(1, 36):
-            if i == 18:
-                continue  # Salta RepositoryMining18
-
+            csv = str(i) + ".csv"
+            csv_path = os.path.join(dataset_divided_dir, csv)
+            with open(csv_path, 'w', encoding='utf-8') as f:
+                f.write("")
             if levels > 1:
                 repo_name = f"RepositoryMining{i}"
                 repo_dir = os.path.join(mining_results_dir, repo_name)
@@ -299,14 +302,16 @@ def setup_environment(request):
                                 f.write(content)  # Contenuto di esempio, puoi personalizzarlo
 
         # Cambia la directory di lavoro corrente
-        os.chdir(mining_results_dir)
+        #os.chdir(mining_results_dir)
 
         yield mining_results_dir
 
     finally:
-        os.chdir(old_cwd)
+        #os.chdir(old_cwd)
         if os.path.exists(mining_results_dir):
             shutil.rmtree(mining_results_dir, ignore_errors=True)
+        if os.path.exists(dataset_divided_dir):
+            shutil.rmtree(dataset_divided_dir, ignore_errors=True)
 
 
 @pytest.fixture

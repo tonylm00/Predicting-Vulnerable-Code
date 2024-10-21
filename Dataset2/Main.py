@@ -37,13 +37,13 @@ class Main:
             print(" is Ready!!!")
             print("------------------")
 
-    def run_text_mining(self, ):
+    def run_text_mining(self):
         tm_dict = {}
         dict_java_files = {}
 
         # Definisco i percorsi relativi in base a base_dir
-        dataset_divided_path = os.path.join(self.base_dir, "Dataset_Divided")
-        mining_results_path = os.path.join(self.base_dir, "mining_results")
+        dataset_divided_path = os.path.join(self.base_dir,"Dataset_Divided")
+        mining_results_path = os.path.join(self.base_dir,"mining_results")
 
         # Conta il numero di repository
         num_repos = len(os.listdir(dataset_divided_path))
@@ -68,7 +68,6 @@ class Main:
                                         java_file_path = os.path.join(folder_path, file)
                                         analyzer = JavaTextMining(java_file_path)
                                         dict = analyzer.takeJavaClass()
-
                                         # Salva i risultati del text mining
                                         text_mining_file_path = java_file_path + "_text_mining.txt"
                                         with open(text_mining_file_path, "w+", encoding="utf-8") as java_file:
@@ -103,14 +102,14 @@ class Main:
         csv_writer.write_header()  # Scrive l'header una volta sola
 
         # Percorsi per dataset e risultati mining
-        dataset_divided_path = os.path.join(self.base_dir, "Dataset_Divided")
-        mining_results_path = os.path.join(self.base_dir, "mining_results")
+        dataset_divided_path = os.path.join(self.base_dir,"Dataset_Divided")
+        mining_results_path = os.path.join(self.base_dir,"mining_results")
 
         # Numero di repository
         num_repos = len(os.listdir(dataset_divided_path))
         repo_name = "RepositoryMining"
 
-        for count in range(1, 35 + 1, 1):
+        for count in range(1, num_repos + 1, 1):
             repo = repo_name + str(count)
             repo_path = os.path.join(mining_results_path, repo)
 
