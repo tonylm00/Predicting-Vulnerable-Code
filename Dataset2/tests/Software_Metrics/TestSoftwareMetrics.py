@@ -104,8 +104,8 @@ class TestSoftwareMetrics:
 
         def test_case_2(self):
             base_dir = os.path.dirname(os.getcwd())
-            file_content = "if { "
-            expected_output = 0
+            file_content = "if () { "
+            expected_output = 1
 
             sm = SoftwareMetrics(base_dir, "path_file", file_content)
             max_nesting = sm.calculate_max_nesting()
