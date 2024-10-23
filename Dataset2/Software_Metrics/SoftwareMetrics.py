@@ -27,12 +27,15 @@ class SoftwareMetrics:
             "MaxCyclomaticStrict": 0,
             "MaxNesting": 0
         }
-        logging.basicConfig(
-            filename=os.path.join(self.base_dir, "Software_Metrics", 'software_metrics.log'),
-            level=logging.ERROR,
-            format='%(levelname)s - %(message)s',
-            filemode='w'
-        )
+        self.logger = logging.getLogger('Dataset2.Software_Metrics.SoftwareMetrics')
+        self.logger.setLevel(logging.ERROR)
+        self.logger.propagate = False
+        if self.logger.hasHandlers():
+            self.logger.handlers.clear()
+        file_handler = logging.FileHandler(os.path.join(self.base_dir, "Software_Metrics", 'software_metrics.log'))
+        formatter = logging.Formatter('%(levelname)s - %(message)s')
+        file_handler.setFormatter(formatter)
+        self.logger.addHandler(file_handler)
 
     def __remove_comments(self, text):
         # Pattern per stringhe (sia con virgolette doppie che singole)
@@ -250,35 +253,44 @@ class SoftwareMetrics:
         parser = Parser()
         parser.language = JAVA_LANGUAGE
 
-        # Parsing del sorgente Java
         tree = parser.parse(bytes(self.file_content, "utf8"))
         root_node = tree.root_node
         count = 0
-        stack = [root_node]  # Inizia dal nodo radice
+        stack = [root_node]
         while stack:
             current_node = stack.pop()
 
-            # Controlla se il nodo è una dichiarazione di metodo, costruttore o lambda
             if current_node.type == 'method_declaration' or \
                     current_node.type == 'constructor_declaration' or \
                     current_node.type == 'lambda_expression':
                 count += 1
 
-            # Aggiungi i figli del nodo alla pila per continuare la ricerca
             stack.extend(current_node.children)
 
         return count
 
     def count_class_declarations(self):
-        tree = javalang.parse.parse(self.file_content)
+        parser = Parser()
+        parser.language = JAVA_LANGUAGE
+
+        tree = parser.parse(bytes(self.file_content, "utf8"))
+        root_node = tree.root_node
         count = 0
-        # Conta il numero di classi e linee di codice
-        for _, node in tree:
-            if isinstance(node, javalang.tree.ClassDeclaration) or isinstance(node, javalang.tree.InterfaceDeclaration):
+        stack = [root_node]
+        while stack:
+            node = stack.pop()
+
+            if node.type == "class_declaration" or node.type == "interface_declaration":
                 count += 1
-            elif isinstance(node, javalang.tree.ClassCreator):
-                if node.body is not None:
-                    count += 1
+
+            if node.type == "object_creation_expression":
+                for child in node.children:
+                    if child.type == "class_body":
+                        count += 1
+                        break
+
+            stack.extend(node.children)
+
         return count
 
     def compute_essential_complexity_metrics(self, file_content):
@@ -488,24 +500,24 @@ class SoftwareMetrics:
 
             self.metrics["CountLineCodeDecl"] = self.count_declarative_lines()
             self.metrics["MaxNesting"] = max(self.metrics["MaxNesting"], self.calculate_max_nesting())
-            self.metrics["CountDeclClass"] = self.count_class_declarations()
             self.metrics["CountDeclFunction"] = self.count_method_declarations()
             self.metrics["CountLineCode"] = self.count_lines_of_code()
+            self.metrics["CountDeclClass"] = self.count_class_declarations()
 
             self.metrics["MaxEssential"], self.metrics["SumEssential"] = self.compute_essential_complexity_metrics(
                 self.file_content)
 
         except JavaSyntaxError:
-            logging.error(f"Errore nell'analisi del file {self.file_path}: Il file non presenta una sintassi java valida.")
+            self.logger.error(f"Errore nell'analisi del file {self.file_path}: Il file non presenta una sintassi java valida.")
             print(f"Errore salvato nel log per il file: {self.file_path}")
 
         except LexerError:
-            logging.error(
+            self.logger.error(
                 f"Errore nell'analisi del file {self.file_path}: Il file presenta un carattere o una sequenza di caratteri non valida.")
             print(f"Errore salvato nel log per il file: {self.file_path}")
 
         except Exception as e:
-            logging.error(f"Errore nell'analisi del file {self.file_path}: {type(e)}")
+            self.logger.error(f"Errore nell'analisi del file {self.file_path}: {type(e)}")
             print(f"Errore salvato nel log per il file: {self.file_path}")
 
         return self.metrics
