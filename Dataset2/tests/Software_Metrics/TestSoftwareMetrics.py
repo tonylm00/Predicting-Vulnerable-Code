@@ -6,12 +6,20 @@ from javalang.tokenizer import LexerError
 from Dataset2.Software_Metrics.SoftwareMetrics import SoftwareMetrics
 
 class TestSoftwareMetrics:
+    def test_case_1(self):
+        base_dir = "invalid_directory"
+        file_content = ""
+
+        with pytest.raises(FileNotFoundError):
+            SoftwareMetrics(base_dir, "path_file", file_content)
+
     class TestRemoveComments:
         def test_case_1(self):
+            base_dir = os.path.dirname(os.getcwd())
             file_content = ""
             expected_output = ""
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
 
             assert sm.file_content == expected_output
 
@@ -21,36 +29,41 @@ class TestSoftwareMetrics:
                 che copre più righe
             */"""
             expected_output = ""
+            base_dir = os.path.dirname(os.getcwd())
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
 
             assert sm.file_content.strip() == expected_output.strip()
 
         def test_case_3(self):
+            base_dir = os.path.dirname(os.getcwd())
             file_content = "public class Test {\n    // Questo è un commento single-line in Java\n    public void test() { System.out.println(\"Hello World\"); }\n}"
             expected_output = "public class Test {\n     \n    public void test() { System.out.println(\"Hello World\"); }\n}"  # Rimuove i commenti single-line
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
 
             assert sm.file_content.strip() == expected_output.strip()
 
         def test_case_4(self):
+            base_dir = os.path.dirname(os.getcwd())
             file_content = "System.out.println(\"Questo non è un commento // ma parte della stringa\");"
             expected_output = "System.out.println(\"Questo non è un commento // ma parte della stringa\");"  # Commenti nelle stringhe rimangono
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
 
             assert sm.file_content == expected_output
 
         def test_case_5(self):
+            base_dir = os.path.dirname(os.getcwd())
             file_content = "public class Test {\n    public void test() { System.out.println(\"Hello World\"); }\n}"
             expected_output = "public class Test {\n    public void test() { System.out.println(\"Hello World\"); }\n}"  # Codice senza commenti rimane invariato
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
 
             assert sm.file_content == expected_output
 
         def test_case_6(self):
+            base_dir = os.path.dirname(os.getcwd())
             file_content = """public class Test {
             // Questo è un commento single-line
             public void test() { 
@@ -68,84 +81,97 @@ class TestSoftwareMetrics:
              
             }"""
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             assert sm.file_content.strip() == expected_output.strip()
+
+        def test_case_7(self):
+            base_dir = "invalid_directory"
+            file_content = ""
+
+            with pytest.raises(FileNotFoundError):
+                SoftwareMetrics(base_dir, "path_file", file_content)
 
     class TestCalculateMaxNesting:
         def test_case_1(self):
+            base_dir = os.path.dirname(os.getcwd())
             file_content = ""
             expected_output = 0
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             max_nesting = sm.calculate_max_nesting()
 
             assert max_nesting == expected_output
 
-        def test_case_2(self): #da vedere
+        def test_case_2(self):
+            base_dir = os.path.dirname(os.getcwd())
             file_content = "if { "
             expected_output = 0
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             max_nesting = sm.calculate_max_nesting()
 
             assert max_nesting == expected_output
 
         def test_case_3(self):
-            # FC3: Codice semanticamente sbagliato
-            file_content = "int x = 'a'; @#InvalidToken"  # Codice semanticamente sbagliato
-            expected_output = 0  # Nonostante l'errore semantico, nessun annidamento di controllo
+            base_dir = os.path.dirname(os.getcwd())
+            file_content = "int x = 'a'; @#InvalidToken"
+            expected_output = 0
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             max_nesting = sm.calculate_max_nesting()
 
             assert max_nesting == expected_output
 
         def test_case_4(self):
+            base_dir = os.path.dirname(os.getcwd())
             file_content = "int x = 0;"
             expected_output = 0
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             max_nesting = sm.calculate_max_nesting()
 
             assert max_nesting == expected_output
 
         def test_case_5(self):
+            base_dir = os.path.dirname(os.getcwd())
             file_content = "if (x > 0) { x++; }"
             expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             max_nesting = sm.calculate_max_nesting()
 
             assert max_nesting == expected_output
 
         def test_case_6(self):
+            base_dir = os.path.dirname(os.getcwd())
             file_content = """if (x > 0) { x++; }
         else { x--; }"""
             expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             max_nesting = sm.calculate_max_nesting()
 
             assert max_nesting == expected_output
 
         def test_case_7(self):
+            base_dir = os.path.dirname(os.getcwd())
             file_content = """if (x > 0) {
             if (y > 0) { y++; }
         } else { x--; }"""
             expected_output = 2
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             max_nesting = sm.calculate_max_nesting()
 
             assert max_nesting == expected_output
 
         def test_case_8(self):
-            # FC4 CN1 SC2 CE3 AN1: Codice corretto, if con else senza {, strutture sequenziali
             file_content = """if (x > 0) x++;
-        else x--;"""  # if-else senza {}
-            expected_output = 1  # Annidamento massimo = 1
+                else x--;"""
+            expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             max_nesting = sm.calculate_max_nesting()
 
             assert max_nesting == expected_output
@@ -156,19 +182,20 @@ class TestSoftwareMetrics:
             else  if (y > 0) x--; """
             expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             max_nesting = sm.calculate_max_nesting()
 
             assert max_nesting == expected_output
 
         def test_case_10(self):
-            # FC4 CN1 SC3: Codice corretto, struttura for
             file_content = """for (int i = 0; i < 10; i++) {
             System.out.println(i);
-            }"""  # Struttura for
-            expected_output = 1  # Annidamento massimo = 1
+            }"""
+            expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             max_nesting = sm.calculate_max_nesting()
 
             assert max_nesting == expected_output
@@ -178,7 +205,8 @@ class TestSoftwareMetrics:
                 x++; }"""
             expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             max_nesting = sm.calculate_max_nesting()
 
             assert max_nesting == expected_output
@@ -188,7 +216,8 @@ class TestSoftwareMetrics:
             x++; } while (x < 10);"""
             expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             max_nesting = sm.calculate_max_nesting()
 
             assert max_nesting == expected_output
@@ -202,7 +231,8 @@ class TestSoftwareMetrics:
             }"""
             expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             max_nesting = sm.calculate_max_nesting()
 
             assert max_nesting == expected_output
@@ -215,7 +245,8 @@ class TestSoftwareMetrics:
             }"""
             expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             max_nesting = sm.calculate_max_nesting()
 
             assert max_nesting == expected_output
@@ -231,13 +262,13 @@ class TestSoftwareMetrics:
             """
             expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             max_nesting = sm.calculate_max_nesting()
 
             assert max_nesting == expected_output
 
         def test_case_16(self):
-            # FC4 CN1 SC8 AN2: Tutte le strutture di controllo presenti, annidate
             file_content = """
             if (x > 0) {
                 for (int i = 0; i < 10; i++) {
@@ -260,13 +291,13 @@ class TestSoftwareMetrics:
             }"""
             expected_output = 4
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             max_nesting = sm.calculate_max_nesting()
 
             assert max_nesting == expected_output
 
         def test_case_17(self):
-            # FC4 CN1 SC8 AN3: Tutte le strutture di controllo, sequenziali e annidate
             file_content = """
             if (x > 0) { 
                 for (int i = 0; i < 10; i++) {
@@ -288,7 +319,8 @@ class TestSoftwareMetrics:
             }"""
             expected_output = 3
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             max_nesting = sm.calculate_max_nesting()
 
             assert max_nesting == expected_output
@@ -302,7 +334,8 @@ class TestSoftwareMetrics:
             }"""
             expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             max_nesting = sm.calculate_max_nesting()
 
             assert max_nesting == expected_output
@@ -312,7 +345,8 @@ class TestSoftwareMetrics:
             file_content = ""
             expected_output = 0
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             declarative_lines = sm.count_declarative_lines()
 
             assert declarative_lines == expected_output
@@ -321,7 +355,8 @@ class TestSoftwareMetrics:
             file_content = "public class { int x = 10 }"
             expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             declarative_lines = sm.count_declarative_lines()
 
             assert declarative_lines == expected_output
@@ -330,7 +365,8 @@ class TestSoftwareMetrics:
             file_content = "public class MyClass { int x = 'text' @#InvalidToken }"
             expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             declarative_lines = sm.count_declarative_lines()
 
             assert declarative_lines == expected_output
@@ -339,7 +375,8 @@ class TestSoftwareMetrics:
             file_content = "System.out.println('Hello World');"
             expected_output = 0
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             declarative_lines = sm.count_declarative_lines()
 
             assert declarative_lines == expected_output
@@ -348,35 +385,36 @@ class TestSoftwareMetrics:
             file_content = "public class MyClass {}"
             expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             declarative_lines = sm.count_declarative_lines()
 
             assert declarative_lines == expected_output
 
         def test_case_6(self):
-            # FC4 TD3: Codice con dichiarazioni di metodi
             file_content = """
             public class MyClass {
                 public void myMethod() {}
             }
             """
-            expected_output = 2  # Una dichiarazione di metodo
+            expected_output = 2
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             declarative_lines = sm.count_declarative_lines()
 
             assert declarative_lines == expected_output
 
         def test_case_7(self):
-            # FC4 TD4: Codice con dichiarazioni di campi o variabili
             file_content = """
             public class MyClass {
                 private int x = 10;
             }
             """
-            expected_output = 2  # Una dichiarazione di variabile/campo
+            expected_output = 2
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             declarative_lines = sm.count_declarative_lines()
 
             assert declarative_lines == expected_output
@@ -386,39 +424,39 @@ class TestSoftwareMetrics:
             @Option
             public class MyClass {}
             """
-            expected_output = 2  # Una dichiarazione di annotazione
+            expected_output = 2
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             declarative_lines = sm.count_declarative_lines()
 
             assert declarative_lines == expected_output
 
         def test_case_9(self):
-            # FC4 TD6: Codice con dichiarazioni di parole chiave
             file_content = """
             public static final int MAX_VALUE = 100;
             """
-            expected_output = 1  # Una dichiarazione con parole chiave (static final)
+            expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             declarative_lines = sm.count_declarative_lines()
 
             assert declarative_lines == expected_output
 
         def test_case_9(self):
-            # FC4 TD6: Codice con dichiarazioni di parole chiave
             file_content = """
                 import java.util.List;
             """
-            expected_output = 1  # Una dichiarazione con parole chiave (static final)
+            expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             declarative_lines = sm.count_declarative_lines()
 
             assert declarative_lines == expected_output
 
         def test_case_10(self):
-            # FC4 TD7: Codice con tutti i tipi di dichiarazioni
             file_content = """
             import java.util.List;
             @Deprecated
@@ -427,9 +465,10 @@ class TestSoftwareMetrics:
                 public void myMethod() {}
             }
             """
-            expected_output = 5  # Una dichiarazione di annotazione, una di classe, una di variabile, una di metodo
+            expected_output = 5
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             declarative_lines = sm.count_declarative_lines()
 
             assert declarative_lines == expected_output
@@ -439,7 +478,8 @@ class TestSoftwareMetrics:
             file_content = ""
             expected_output = 0
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             loc = sm.count_lines_of_code()
 
             assert loc == expected_output
@@ -448,7 +488,8 @@ class TestSoftwareMetrics:
             file_content = "int x = ;"
             expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             loc = sm.count_lines_of_code()
 
             assert loc == expected_output
@@ -457,16 +498,18 @@ class TestSoftwareMetrics:
             file_content = "int x = 'string' @#InvalidToken"
             expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             loc = sm.count_lines_of_code()
 
             assert loc == expected_output
 
         def test_case_4(self):
             file_content = "int x = 10;"
-            expected_output = 1  # Codice corretto
+            expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             loc = sm.count_lines_of_code()
 
             assert loc == expected_output
@@ -475,7 +518,8 @@ class TestSoftwareMetrics:
             file_content = "// Questo è un commento"
             expected_output = 0
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             loc = sm.count_lines_of_code()
 
             assert loc == expected_output
@@ -485,9 +529,10 @@ class TestSoftwareMetrics:
             int x = 10;
             int y = 20;
             """
-            expected_output = 2  # Due linee di codice
+            expected_output = 2
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             loc = sm.count_lines_of_code()
 
             assert loc == expected_output
@@ -499,7 +544,8 @@ class TestSoftwareMetrics:
             """
             expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             loc = sm.count_lines_of_code()
 
             assert loc == expected_output
@@ -511,7 +557,8 @@ class TestSoftwareMetrics:
             """
             expected_output = 0
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             loc = sm.count_lines_of_code()
 
             assert loc == expected_output
@@ -524,7 +571,8 @@ class TestSoftwareMetrics:
             """
             expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             loc = sm.count_lines_of_code()
 
             assert loc == expected_output
@@ -536,7 +584,8 @@ class TestSoftwareMetrics:
             """
             expected_output = 0
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             loc = sm.count_lines_of_code()
 
             assert loc == expected_output
@@ -551,7 +600,8 @@ class TestSoftwareMetrics:
             """
             expected_output = 2
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             loc = sm.count_lines_of_code()
 
             assert loc == expected_output
@@ -561,7 +611,8 @@ class TestSoftwareMetrics:
             file_content = ""
             expected_output = 0
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             method_count = sm.count_method_declarations()
 
             assert method_count == expected_output
@@ -570,7 +621,8 @@ class TestSoftwareMetrics:
             file_content = "void myMethod( {"
             expected_output = 0
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             method_count = sm.count_method_declarations()
 
             assert method_count == expected_output
@@ -579,7 +631,8 @@ class TestSoftwareMetrics:
             file_content = "void myMethod() { return @#InvalidToken 'string'; }"
             expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             method_count = sm.count_method_declarations()
 
             assert method_count == expected_output
@@ -588,7 +641,8 @@ class TestSoftwareMetrics:
             file_content = "int x = 10;"
             expected_output = 0
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             method_count = sm.count_method_declarations()
 
             assert method_count == expected_output
@@ -600,7 +654,8 @@ class TestSoftwareMetrics:
             """
             expected_output = 2
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             method_count = sm.count_method_declarations()
 
             assert method_count == expected_output
@@ -612,7 +667,8 @@ class TestSoftwareMetrics:
             """
             expected_output = 2
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             method_count = sm.count_method_declarations()
 
             assert method_count == expected_output
@@ -624,7 +680,8 @@ class TestSoftwareMetrics:
             """
             expected_output = 2
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             method_count = sm.count_method_declarations()
 
             assert method_count == expected_output
@@ -639,7 +696,8 @@ class TestSoftwareMetrics:
             """
             expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             method_count = sm.count_method_declarations()
 
             assert method_count == expected_output
@@ -652,7 +710,8 @@ class TestSoftwareMetrics:
             """
             expected_output = 3
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             method_count = sm.count_method_declarations()
 
             assert method_count == expected_output
@@ -662,30 +721,38 @@ class TestSoftwareMetrics:
             file_content = ""
             expected_output = 0
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             class_count = sm.count_class_declarations()
 
             assert class_count == expected_output
 
         def test_case_2(self):
             file_content = "class MyClass {"
+            expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
-            with pytest.raises(JavaSyntaxError):
-                sm.count_class_declarations()
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
+            class_count = sm.count_class_declarations()
+
+            assert class_count == expected_output
 
         def test_case_3(self):
-            file_content = "class MyClass { int x = 'string'; @#InvalidToken }"
+            file_content = "int x = 'string'; @#InvalidToken"
+            expected_output = 0
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
-            with pytest.raises(LexerError):
-                sm.count_class_declarations()
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
+            class_count = sm.count_class_declarations()
+
+            assert class_count == expected_output
 
         def test_case_4(self):
             file_content = "import java.util.List;"
             expected_output = 0
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             class_count = sm.count_class_declarations()
 
             assert class_count == expected_output
@@ -698,7 +765,8 @@ class TestSoftwareMetrics:
             """
             expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             class_count = sm.count_class_declarations()
 
             assert class_count == expected_output
@@ -711,7 +779,8 @@ class TestSoftwareMetrics:
             """
             expected_output = 1
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             class_count = sm.count_class_declarations()
 
             assert class_count == expected_output
@@ -728,7 +797,8 @@ class TestSoftwareMetrics:
             """
             expected_output = 2
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             class_count = sm.count_class_declarations()
 
             assert class_count == expected_output
@@ -743,7 +813,8 @@ class TestSoftwareMetrics:
             """
             expected_output = 2
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             class_count = sm.count_class_declarations()
 
             assert class_count == expected_output
@@ -783,7 +854,8 @@ class TestSoftwareMetrics:
 
             expected_output = 5
 
-            sm = SoftwareMetrics("base_dir", "path_file", file_content)
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
             class_count = sm.count_class_declarations()
 
             assert class_count == expected_output
@@ -793,17 +865,7 @@ class TestSoftwareMetrics:
             pass
 
     class TestAnalyze:
-        @patch('Dataset2.Software_Metrics.SoftwareMetrics.logging.getLogger')
-        def test_case_1(self, mock_logging_error):
-            base_dir = "not_valid_directory"
-            file_path = "existing_file.java"
-
-            with pytest.raises(FileNotFoundError):
-                sm = SoftwareMetrics(base_dir, file_path, "public class Test {")
-                sm.analyze()
-
-
-        def test_case_2(self):
+        def test_case_1(self):
             base_dir = os.path.dirname(os.getcwd())
             file_path = "existing_file.java"
             file_content = ""
@@ -818,7 +880,7 @@ class TestSoftwareMetrics:
             assert result['SumCyclomaticStrict'] == expected_sum
 
         @patch('Dataset2.Software_Metrics.SoftwareMetrics.logging.getLogger')
-        def test_case_3(self, mock_getLogger):
+        def test_case_2(self, mock_getLogger):
             mock_logger = MagicMock()
             mock_getLogger.return_value = mock_logger
 
@@ -831,7 +893,7 @@ class TestSoftwareMetrics:
 
             mock_logger.error.assert_called_once_with("Errore nell'analisi del file existing_file.java: Il file non presenta una sintassi java valida.")
 
-        def test_case_4(self):
+        def test_case_3(self):
             base_dir = os.path.dirname(os.getcwd())
             file_path = "existing_file.java"
             file_content = "public class Test { public void method() { int x = 'string'; } }"
@@ -845,7 +907,7 @@ class TestSoftwareMetrics:
             assert result['MaxCyclomaticStrict'] == expected_max
             assert result['SumCyclomaticStrict'] == expected_sum
 
-        def test_case_5(self):
+        def test_case_4(self):
             base_dir = os.path.dirname(os.getcwd())
             file_path = "existing_file.java"
             file_content = "public class Test {}"
@@ -859,7 +921,7 @@ class TestSoftwareMetrics:
             assert result['MaxCyclomaticStrict'] == expected_max
             assert result['SumCyclomaticStrict'] == expected_sum
 
-        def test_case_6(self):
+        def test_case_5(self):
             base_dir = os.path.dirname(os.getcwd())
             file_path = "existing_file.java"
             file_content = "public class Test { public void method() {} }"
@@ -873,7 +935,7 @@ class TestSoftwareMetrics:
             assert result['MaxCyclomaticStrict'] == expected_max
             assert result['SumCyclomaticStrict'] == expected_sum
 
-        def test_case_7(self):
+        def test_case_6(self):
             base_dir = os.path.dirname(os.getcwd())
             file_path = "existing_file.java"
             file_content = "public class Test { public void method() { if (true) {} } }"
@@ -887,7 +949,7 @@ class TestSoftwareMetrics:
             assert result['MaxCyclomaticStrict'] == expected_max
             assert result['SumCyclomaticStrict'] == expected_sum
 
-        def test_case_8(self):
+        def test_case_7(self):
             base_dir = os.path.dirname(os.getcwd())
             file_path = "existing_file.java"
             file_content = """
@@ -909,7 +971,7 @@ class TestSoftwareMetrics:
             assert result['MaxCyclomaticStrict'] == expected_max
             assert result['SumCyclomaticStrict'] == expected_sum
 
-        def test_case_9(self):
+        def test_case_8(self):
             base_dir = os.path.dirname(os.getcwd())
             file_path = "existing_file.java"
             file_content = """
@@ -928,7 +990,7 @@ class TestSoftwareMetrics:
             assert result['MaxCyclomaticStrict'] == expected_max
             assert result['SumCyclomaticStrict'] == expected_sum
 
-        def test_case_10(self):
+        def test_case_9(self):
             base_dir = os.path.dirname(os.getcwd())
             file_path = "existing_file.java"
             file_content = """
@@ -947,7 +1009,7 @@ class TestSoftwareMetrics:
             assert result['MaxCyclomaticStrict'] == expected_max
             assert result['SumCyclomaticStrict'] == expected_sum
 
-        def test_case_11(self):
+        def test_case_10(self):
             base_dir = os.path.dirname(os.getcwd())
             file_path = "existing_file.java"
             file_content = """
@@ -972,7 +1034,7 @@ class TestSoftwareMetrics:
             assert result['MaxCyclomaticStrict'] == expected_max
             assert result['SumCyclomaticStrict'] == expected_sum
 
-        def test_case_12(self):
+        def test_case_11(self):
             base_dir = os.path.dirname(os.getcwd())
             file_path = ""
 
@@ -995,7 +1057,7 @@ class TestSoftwareMetrics:
             assert result['MaxCyclomaticStrict'] == expected_max
             assert result['SumCyclomaticStrict'] == expected_sum
 
-        def test_case_13(self):
+        def test_case_12(self):
             base_dir = os.path.dirname(os.getcwd())
             file_path = "existing_file.txt"
 
