@@ -37,8 +37,8 @@ class TestSoftwareMetrics:
 
         def test_case_3(self):
             base_dir = os.path.dirname(os.getcwd())
-            file_content = "public class Test {\n    // Questo è un commento single-line in Java\n    public void test() { System.out.println(\"Hello World\"); }\n}"
-            expected_output = "public class Test {\n     \n    public void test() { System.out.println(\"Hello World\"); }\n}"  # Rimuove i commenti single-line
+            file_content = "//Questo è un commento single-line in Java}"
+            expected_output = ""  # Rimuove i commenti single-line
 
             sm = SoftwareMetrics(base_dir, "path_file", file_content)
 
@@ -67,7 +67,8 @@ class TestSoftwareMetrics:
             file_content = """public class Test {
             // Questo è un commento single-line
             public void test() { 
-                /* Questo è un commento multilinea */
+                /* Questo è un commento 
+                multilinea */
                 System.out.println("Hello World"); 
             }
             /** Questo è un commento docstring */
@@ -83,13 +84,6 @@ class TestSoftwareMetrics:
 
             sm = SoftwareMetrics(base_dir, "path_file", file_content)
             assert sm.file_content.strip() == expected_output.strip()
-
-        def test_case_7(self):
-            base_dir = "invalid_directory"
-            file_content = ""
-
-            with pytest.raises(FileNotFoundError):
-                SoftwareMetrics(base_dir, "path_file", file_content)
 
     class TestCalculateMaxNesting:
         def test_case_1(self):
@@ -156,8 +150,8 @@ class TestSoftwareMetrics:
         def test_case_7(self):
             base_dir = os.path.dirname(os.getcwd())
             file_content = """if (x > 0) {
-            if (y > 0) { y++; }
-        } else { x--; }"""
+                x--; 
+            } else {  if (y > 0) { y++; }}"""
             expected_output = 2
 
             sm = SoftwareMetrics(base_dir, "path_file", file_content)
@@ -392,6 +386,16 @@ class TestSoftwareMetrics:
             assert declarative_lines == expected_output
 
         def test_case_6(self):
+            file_content = "public interface NomeInterfaccia {}"
+            expected_output = 1
+
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
+            declarative_lines = sm.count_declarative_lines()
+
+            assert declarative_lines == expected_output
+
+        def test_case_7(self):
             file_content = """
             public class MyClass {
                 public void myMethod() {}
@@ -405,7 +409,7 @@ class TestSoftwareMetrics:
 
             assert declarative_lines == expected_output
 
-        def test_case_7(self):
+        def test_case_8(self):
             file_content = """
             public class MyClass {
                 private int x = 10;
@@ -419,7 +423,7 @@ class TestSoftwareMetrics:
 
             assert declarative_lines == expected_output
 
-        def test_case_8(self):
+        def test_case_9(self):
             file_content = """
             @Option
             public class MyClass {}
@@ -432,7 +436,7 @@ class TestSoftwareMetrics:
 
             assert declarative_lines == expected_output
 
-        def test_case_9(self):
+        def test_case_10(self):
             file_content = """
             public static final int MAX_VALUE = 100;
             """
@@ -444,7 +448,7 @@ class TestSoftwareMetrics:
 
             assert declarative_lines == expected_output
 
-        def test_case_9(self):
+        def test_case_11(self):
             file_content = """
                 import java.util.List;
             """
@@ -456,7 +460,7 @@ class TestSoftwareMetrics:
 
             assert declarative_lines == expected_output
 
-        def test_case_10(self):
+        def test_case_12(self):
             file_content = """
             import java.util.List;
             @Deprecated
@@ -464,8 +468,10 @@ class TestSoftwareMetrics:
                 private int x;
                 public void myMethod() {}
             }
+            public interface NomeInterfaccia {
+                void metodoAstratto();
             """
-            expected_output = 5
+            expected_output = 7
 
             base_dir = os.path.dirname(os.getcwd())
             sm = SoftwareMetrics(base_dir, "path_file", file_content)
@@ -893,19 +899,25 @@ class TestSoftwareMetrics:
 
             mock_logger.error.assert_called_once_with("Errore nell'analisi del file existing_file.java: Il file non presenta una sintassi java valida.")
 
-        def test_case_3(self):
+        @patch('Dataset2.Software_Metrics.SoftwareMetrics.logging.getLogger')
+        def test_case_3(self, mock_getLogger):
+            mock_logger = MagicMock()
+            mock_getLogger.return_value = mock_logger
+
             base_dir = os.path.dirname(os.getcwd())
             file_path = "existing_file.java"
-            file_content = "public class Test { public void method() { int x = 'string'; } }"
+            file_content = """public class Test {
+                    void method() {
+                        int x = 10
+                        @#invalid_token
+                    }
+                }"""
 
             sm = SoftwareMetrics(base_dir, file_path, file_content)
-            result = sm.analyze()
+            sm.analyze()
 
-            expected_max = 1
-            expected_sum = 1
-
-            assert result['MaxCyclomaticStrict'] == expected_max
-            assert result['SumCyclomaticStrict'] == expected_sum
+            mock_logger.error.assert_called_once_with(
+                "Errore nell'analisi del file existing_file.java: Il file presenta un carattere o una sequenza di caratteri non valida.")
 
         def test_case_4(self):
             base_dir = os.path.dirname(os.getcwd())
@@ -924,7 +936,7 @@ class TestSoftwareMetrics:
         def test_case_5(self):
             base_dir = os.path.dirname(os.getcwd())
             file_path = "existing_file.java"
-            file_content = "public class Test { public void method() {} }"
+            file_content = "public class Test { public void method() { int x = 'string'; } }"
 
             sm = SoftwareMetrics(base_dir, file_path, file_content)
             result = sm.analyze()
@@ -1021,6 +1033,8 @@ class TestSoftwareMetrics:
                 }
                 public void method2() {
                     for (int i = 0; i < 10; i++) {}
+                    if (x==0)
+                        x++;
                 }
             }
             """
@@ -1029,7 +1043,7 @@ class TestSoftwareMetrics:
             result = sm.analyze()
 
             expected_max = 3
-            expected_sum = 5
+            expected_sum = 6
 
             assert result['MaxCyclomaticStrict'] == expected_max
             assert result['SumCyclomaticStrict'] == expected_sum

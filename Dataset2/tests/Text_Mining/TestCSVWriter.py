@@ -583,7 +583,7 @@ class TestCSVWriter:
         def test_case_14(self, mock_file):
             mock_file.side_effect = PermissionError("Accesso negato")
 
-            filtered_dict = {"className": 3, "methodName": 3, "variableName": 1}
+            filtered_dict = {"classname": 3, "methodname": 3, "variablename": 1}
             mining_dict = {"commit1": {"classname": 3, "methodname": 2, "variablename": 1}}
             output_csv_name = "output.csv"
 
@@ -598,7 +598,7 @@ class TestCSVWriter:
             handle = mock_file()
             handle.write.side_effect = IOError("Errore di scrittura")
 
-            filtered_dict = {"className": 3, "methodName": 3, "variableName": 1}
+            filtered_dict = {"classname": 3, "methodname": 3, "variablename": 1}
             mining_dict = {"commit1": {"classname": 3, "methodname": 2, "variablename": 1}}
             output_csv_name = "output.csv"
 
