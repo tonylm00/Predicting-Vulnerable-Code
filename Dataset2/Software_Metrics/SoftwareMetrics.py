@@ -293,8 +293,8 @@ class SoftwareMetrics:
 
         return count
 
-    def compute_essential_complexity_metrics(self, file_content):
-        max_essential_complexity = 1
+    def compute_essential_complexity_metrics(self):
+        max_essential_complexity = 0
         sum_essential_complexity = 0
         decision_points = 0
 
@@ -312,6 +312,38 @@ class SoftwareMetrics:
         def is_reducible_stat(node):
             return not isinstance(node, (
                 javalang.tree.ReturnStatement, javalang.tree.BreakStatement, javalang.tree.ContinueStatement))
+
+        def contains_not_reducible_cfs_or_return(node, search_return=True):
+            if node is None:
+                return False
+
+            if hasattr(node, 'is_reducible'):
+                if (isinstance(node, (
+                        javalang.tree.IfStatement,
+                        javalang.tree.WhileStatement,
+                        javalang.tree.SwitchStatement,
+                        javalang.tree.TryStatement))
+                    or (search_return and isinstance(node, javalang.tree.ReturnStatement))) and not node.is_reducible:
+                    return True
+
+
+            if hasattr(node, 'attrs'):
+                for attr in node.attrs:
+                    child = getattr(node, attr)
+
+
+                    if isinstance(child, javalang.ast.Node):
+                        if contains_not_reducible_cfs_or_return(child, search_return):
+                            return True
+
+
+                    elif isinstance(child, list):
+                        for item in child:
+                            if isinstance(item, javalang.ast.Node):
+                                if contains_not_reducible_cfs_or_return(item, search_return):
+                                    return True
+
+            return False
 
         def is_case_reducible(case):
             is_break_present = False
@@ -334,32 +366,18 @@ class SoftwareMetrics:
             return is_case_reducible
 
         def is_catches_reducible(catches):
-            not_reducible_statements_in_catches = []
-            catches_reducibilities = []
-            all_same = True
-
+            all_catches_not_reducible = False
             for catch in catches:
                 catch.is_reducible = True
-                not_reducible_types = set()
                 reduce_node(catch)
                 for statement in catch.block:
                     reduce_node(statement)
                     if isinstance(statement, javalang.tree.Statement):
                         if not statement.is_reducible:
-                            if not is_reducible_stat(statement):
-                                not_reducible_types.add(statement.__class__.__name__)
-                                if (len(not_reducible_types) > 1):
-                                    all_same = False
-                            else:
-                                catch.is_reducible = False
-                catches_reducibilities.append(catch.is_reducible)
-                not_reducible_statements_in_catches.append(not_reducible_types)
+                            catch.is_reducible = False
+                            all_catches_not_reducible = True
 
-            if (all_same):
-                all_same = all(
-                    st == not_reducible_statements_in_catches[0] for st in not_reducible_statements_in_catches)
-
-            if (len(not_reducible_statements_in_catches) != 0 and not all_same) or (False in catches_reducibilities):
+            if (all_catches_not_reducible):
                 for catch in catches:
                     catch.is_reducible = False
                 return False
@@ -418,13 +436,27 @@ class SoftwareMetrics:
                         if (not node.is_reducible):
                             decision_points += 1
 
-                    if isinstance(node, (
-                    javalang.tree.WhileStatement, javalang.tree.ForStatement, javalang.tree.DoStatement)):
+
+                    elif isinstance(node, (javalang.tree.WhileStatement, javalang.tree.ForStatement)):
+
                         visit_children(node)
 
-                        node.is_reducible = node.body.is_reducible
+                        if not node.body.is_reducible:
+                            is_present_cfs_or_return = contains_not_reducible_cfs_or_return(node.body)
+                            node.is_reducible = not is_present_cfs_or_return
 
                         if (not node.is_reducible):
+                            decision_points += 1
+
+                    elif isinstance(node, javalang.tree.DoStatement):
+                        visit_children(node)
+                        if not node.body.is_reducible:
+                            is_present_cfs_or_return = contains_not_reducible_cfs_or_return(node.body,
+                                                                                            search_return=False)
+                            node.is_reducible = not is_present_cfs_or_return
+                            print("IP:", is_present_cfs_or_return)  # Debug print for Do loop reducibility
+
+                        if not node.is_reducible:
                             decision_points += 1
 
                     elif isinstance(node, javalang.tree.SwitchStatement):
@@ -473,8 +505,15 @@ class SoftwareMetrics:
                             decision_points += len(node.catches)
 
 
+
                     elif isinstance(node, javalang.tree.SynchronizedStatement):
+
                         visit_children(node)
+                        if node.block is not None:
+                            for statement in node.block:
+                                if not statement.is_reducible:
+                                    node.is_reducible = False
+                                    print('sync not reducible')
 
                     elif not is_reducible_stat(node):
                         node.is_reducible = False
@@ -483,7 +522,7 @@ class SoftwareMetrics:
                     else:
                         pass
 
-        tokens = javalang.tokenizer.tokenize(file_content)
+        tokens = javalang.tokenizer.tokenize(self.file_content)
         parser = javalang.parser.Parser(tokens)
         tree = parser.parse()
         reduce_node(tree)
