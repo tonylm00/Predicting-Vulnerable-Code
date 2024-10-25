@@ -689,7 +689,8 @@ class TestMain:
                                                                                             System.out.println("Hello World"); /* Inline comment */
                                                                                             } 
                                                                                         }'''},
-                         'file_to_fail': '', 'exception_type': ''
+                         'file_to_fail': 'mining_results_sm_final.csv', 'exception_type': 'ValueError'
+
                          },
                         None
                 )
@@ -853,72 +854,6 @@ class TestMain:
                 mock_print.assert_any_call("Errore durante l'apertura del file: Permesso negato per il file Predicting-Vulnerable-Code/Dataset2/Software_Metrics/mining_results_sm_final.csv")
                 mock_print.assert_any_call("Errore durante la scrittura nel file: Permesso negato per il file Predicting-Vulnerable-Code/Dataset2/Software_Metrics/mining_results_sm_final.csv")
 
-        @pytest.mark.parametrize(
-            'mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture',
-            [
-                (
-                        {
-                            'directories': {
-                                "Predicting-Vulnerable-Code/Dataset2/Dataset_Divided": ["1.csv", "2.csv", "3.csv"],
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1": ["cvd_id1"],
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2": ["cvd_id2"],
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3": ["cvd_id3"],
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1/cvd_id1": [
-                                    "folder1"],
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id2": [
-                                    "folder2"],
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3/cvd_id3": [
-                                    "folder3"],
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1/cvd_id1/folder1": [
-                                    "Example.java"],
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id2/folder2": [
-                                    "Example.java"],
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3/cvd_id3/folder3": [
-                                    "Example.java"]
-                            },
-                            'error_path': ""
-                        },
-                        {
-                            'isdir_map': {
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1": True,
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2": True,
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3": True,
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1/cvd_id1": True,
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id2": True,
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3/cvd_id3": True,
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1/cvd_id1/folder1": True,
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id2/folder2": True,
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3/cvd_id3/folder3": True
-
-                            }
-                        },
-                        {'file_contents': {'Example.java': '''public class Test {
-                                                                                            /* This is a comment */ 
-                                                                                            public static void main(String[] args) { 
-                                                                                            // Single line comment
-                                                                                            System.out.println("Hello World"); /* Inline comment */
-                                                                                            } 
-                                                                                        }'''},
-                         'file_to_fail': 'mining_results_sm_final.csv', 'exception_type': 'ValueError'
-                         },
-                        None
-                )
-            ],
-            indirect=['mock_listdir_fixture', 'mock_isdir_fixture', 'mock_open_fixture', 'mock_path_join_fixture']
-        )
-        def test_case_16(self, mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture):
-            with (mock.patch('Dataset2.Main.SoftwareMetrics.analyze', return_value={
-                "CountLineCode": 0,
-                "CountDeclClass": 0,
-                "CountDeclFunction": 0,
-                "CountLineCodeDecl": 0,
-                "SumEssential": 0,
-                "SumCyclomaticStrict": 0,
-                "MaxCyclomaticStrict": 0,
-                "MaxNesting": 0
-            })) as mock_analyze:
-                with pytest.raises(ValueError):
-                    self.main.run_software_metrics()
 
         @pytest.mark.parametrize(
             'mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture',
@@ -973,7 +908,7 @@ class TestMain:
             ],
             indirect=['mock_listdir_fixture', 'mock_isdir_fixture', 'mock_open_fixture', 'mock_path_join_fixture']
         )
-        def test_case_17(self, mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture):
+        def test_case_16(self, mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture):
             with pytest.raises(PermissionError):
                 self.main.run_software_metrics()
             assert mock_open_fixture.call_count == 1
@@ -1031,7 +966,7 @@ class TestMain:
             ],
             indirect=['mock_listdir_fixture', 'mock_isdir_fixture', 'mock_open_fixture', 'mock_path_join_fixture']
         )
-        def test_case_18(self, mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture):
+        def test_case_17(self, mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture):
             self.main.run_software_metrics()
             assert mock_open_fixture.call_count == 1
             assert mock_open_fixture.call_args_list[0] == call(
@@ -1087,7 +1022,7 @@ class TestMain:
             ],
             indirect=['mock_listdir_fixture', 'mock_isdir_fixture', 'mock_open_fixture', 'mock_path_join_fixture']
         )
-        def test_case_19(self, mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture):
+        def test_case_18(self, mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture):
             self.main.run_software_metrics()
             assert mock_open_fixture.call_count == 1
             assert mock_open_fixture.call_args_list[0] == call(
@@ -1143,7 +1078,7 @@ class TestMain:
             ],
             indirect=['mock_listdir_fixture', 'mock_isdir_fixture', 'mock_open_fixture', 'mock_path_join_fixture']
         )
-        def test_case_20(self, mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture):
+        def test_case_19(self, mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture):
             self.main.run_software_metrics()
             assert mock_open_fixture.call_count == 1
             assert mock_open_fixture.call_args_list[0] == call(
