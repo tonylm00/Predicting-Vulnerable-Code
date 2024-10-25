@@ -867,8 +867,608 @@ class TestSoftwareMetrics:
             assert class_count == expected_output
 
     class TestComputeEssentialComplexity:
-        def test_compute_essential_complexity(self):
-            pass
+        def test_case_1(self):
+            file_content = '''
+            public class Main {
+                int §c;
+            }'''
+
+            with pytest.raises(LexerError):
+                base_dir = os.path.dirname(os.getcwd())
+                sm = SoftwareMetrics(base_dir, "path_file", file_content)
+                sm.compute_essential_complexity_metrics()
+
+        def test_case_2(self):
+            file_content = '''
+            public class Main {
+                int +;
+            }'''
+
+            base_dir = os.path.dirname(os.getcwd())
+            with pytest.raises(JavaSyntaxError):
+                sm = SoftwareMetrics(base_dir, "path_file", file_content)
+                sm.compute_essential_complexity_metrics()
+
+        def test_case_3(self):
+            file_content = '''
+            public class Main {
+            }
+            '''
+
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
+            mec, sec = sm.compute_essential_complexity_metrics()
+
+            assert mec == 0
+            assert sec == 0
+
+        def test_case_4(self):
+            file_content = '''
+            public class Main {
+                int var1, var2;
+            
+                public Main(int var1, int var2){
+                    this.var1 = var1;
+                    this.var2 = var2;
+                }
+            
+                public void setVar1(int var1){
+                    this.var1 = var1;
+                }
+            
+                public int method1(){
+                    int a = 1;
+                    int b = 0;
+            
+                    
+                    try {
+                        return a / b;  
+                    }
+                    catch (Exception e) {
+                        while (b == 0) {
+                            for (int i = 0; i < 2; i++) { 
+                                do {
+                                    synchronized (this) {
+                                        if(a<4)
+                                           break;
+                                    }
+                                } while (b < 3);
+                            }
+                        }
+        
+                        switch (a) {
+                            case -1:
+                                return a;
+                            case -2:
+                                b++;
+                                break;
+                            case -3:
+                                return b;
+                        }
+        
+                    }
+                    
+                    catch (NullPointerException e) {
+                        System.out.println("Exception");
+                    }
+                     
+                    finally {
+                        System.out.println("Operation closed");  
+                    }
+            
+                    return b;  
+                }
+            }
+            '''
+
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
+            mec, sec = sm.compute_essential_complexity_metrics()
+            assert mec == 10
+            assert sec == 12
+
+        def test_case_5(self):
+            file_content = '''
+            public class Main {
+                int var1, var2;
+
+                public void setVar1(int var1){
+                    this.var1 = var1;
+                }
+
+                public int method1(){
+                    int a = 1;
+                    int b = 0;
+
+
+                    {
+                        a = b + 1;
+                        b = a + 2*b;
+                        System.out.println(a);
+                    }
+
+                    return b;  // Fallback return in case no other return is reached
+                }
+            }
+            '''
+
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
+            mec, sec = sm.compute_essential_complexity_metrics()
+            assert mec == 1
+            assert sec == 2
+
+        def test_case_6(self):
+            file_content = '''
+            public class Main {
+                int var1, var2;
+                
+                public Main(int var1, int var2){
+                
+                  if(var1>var2)
+                    var1=var1+var2;
+                  else
+                    var2=var1+var2;
+                
+                  this.var1=var1;
+                  this.var2=var2;
+                
+                }
+            
+            }
+            '''
+
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
+            mec, sec = sm.compute_essential_complexity_metrics()
+            assert mec == 1
+            assert sec == 1
+
+        def test_case_7(self):
+            file_content = '''
+            public class Main {
+                int var1, var2;
+
+                public int method_1(){
+                    int a, b;
+
+                    if(a>b){
+                        a=a-b;
+                        setVar(a);
+                        return a;
+                    }
+                    else{
+                        b=b+1;
+                        return b;
+                    }
+
+
+                }
+
+                public void setVar1(int var){
+                    this.var1 = var;
+                }
+
+            }
+            '''
+
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
+            mec, sec = sm.compute_essential_complexity_metrics()
+            assert mec == 1
+            assert sec == 2
+
+        def test_case_8(self):
+            file_content = '''
+            public class Main {
+                int var1, var2;
+
+                public int method_1(){
+                    int a, b;
+                    
+                    if(a>b){
+                        a=a-b;
+                        setVar(a);
+                        return a;
+                    }
+                    
+                    if(a==b){
+                        return b;
+                    }
+                    else{
+                       setVar(b);
+                       return b-a;
+                    }
+                    
+                    
+                }
+                
+                public void setVar1(int var){
+                    this.var1 = var;
+                }
+
+            }
+            '''
+
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
+            mec, sec = sm.compute_essential_complexity_metrics()
+            assert mec == 3
+            assert sec == 4
+
+
+
+        def test_case_9(self):
+            file_content = '''
+            public class Main {
+                int var1, var2;
+
+                public int method_1(int a, int b){
+
+                    while(a<b){
+                       a=a*2; 
+                    }
+                    
+                    while(a>b){
+                       a=a-2;
+                       setvar2(b);
+                       break;
+                    }
+                    
+                    while(1){
+                       a=a+2;
+                       setvar2(b);
+                       break;
+                    }
+                    
+                    setVar1(a);
+                    
+                    return a;
+
+                }
+
+                public void setVar1(int var){
+                    this.var1 = var;
+                }
+                
+                public void setVar2(int var){
+                    this.var2 = var;
+                }
+
+            }
+            '''
+
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
+            mec, sec = sm.compute_essential_complexity_metrics()
+            assert mec == 1
+            assert sec == 3
+
+        def test_case_10(self):
+            file_content = '''
+            public class Main {
+                int var1, var2;
+
+                public float method_1(){
+                    float a=0;
+                    float b=1;
+
+                    for(int i=0; i<3; i++){
+                        a=a*i+2*i;
+                        b=b+1;
+                    }
+
+                    setVar1(a);
+                    
+                    for(int j=1; j<4; j++){
+                        setVar1(b);
+                        break;
+                    }
+                    
+                    for(int z=10; z>9; z--){
+                        a = a*z;
+                        break;
+                    }
+
+                    return a;
+
+                }
+
+                public void setVar1(int var){
+                    this.var1 = var;
+                }
+
+            }
+            '''
+
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
+            mec, sec = sm.compute_essential_complexity_metrics()
+            assert mec == 1
+            assert sec == 2
+
+        def test_case_11(self):
+            file_content = '''
+            public class Main {
+                int var1, var2;
+                
+                public int method_1(int a, int b){
+                
+                  do{
+                    a=a+1;
+                    break;
+                  }while(a>2);
+                
+                  do{
+                    b=b*2;
+                    break;
+                  }while(a>2);
+                
+                
+                    do{
+                      b=b+1;
+                      return b;
+                    }while(a>2);
+                
+                }
+                
+            }
+            '''
+
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
+            mec, sec = sm.compute_essential_complexity_metrics()
+            assert mec == 1
+            assert sec == 1
+
+        def test_case_12(self):
+            file_content = '''
+            public class Main {
+                int var1, var2;
+
+                public int method_1(int a, int b){
+
+                  switch(a){
+                    case 1: return a;
+                  }
+                  
+                  switch(b){
+                    case 2: return b;
+                  }
+
+                }
+            }
+            '''
+
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
+            mec, sec = sm.compute_essential_complexity_metrics()
+            assert mec == 3
+            assert sec == 3
+
+        def test_case_13(self):
+            file_content = '''
+            public class Main {
+                int var1, var2;
+                
+                public int method_1(int a, int b){
+                
+                  switch(a){
+                    case 1: a++;
+                    case 2: System.out.println(a); break;
+                    case 3: b++;
+                    case 4: return b;
+                  }
+                
+                }
+            }
+            '''
+
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
+            mec, sec = sm.compute_essential_complexity_metrics()
+            assert mec == 5
+            assert sec == 5
+
+        def test_case_14(self):
+            file_content = '''
+            public class Main {
+                int var1, var2;
+
+                public int method_1(int a, int b){
+
+                  switch(a){
+                    case 1: a++; break;
+                    case 2: System.out.println(a); break;
+                    case 3: b++; break;
+                    case 4: a++; return a; break;
+                  }
+                  
+                  return b;
+
+                }
+            }
+            '''
+
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
+            mec, sec = sm.compute_essential_complexity_metrics()
+            assert mec == 5
+            assert sec == 5
+
+        def test_case_15(self):
+            file_content = '''
+            public class Main {
+                int var1, var2;
+
+                public int method_1(int a, int b){
+
+                  switch(a){
+                    case 1: a++;
+                    case 2: System.out.println(a);
+                    case 3: b++;
+                    case 4: System.out.println(b); break;
+                  }
+                  
+                  return b;
+
+                }
+            }
+            '''
+
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
+            mec, sec = sm.compute_essential_complexity_metrics()
+            assert mec == 5
+            assert sec == 5
+
+        def test_case_16(self):
+            file_content = '''
+            public class Main {
+                int var1, var2;
+
+                public int method_1(int a, int b){
+
+                  switch(a){
+                    case 1: a++; break;
+                    case 2: System.out.println(a); break;
+                    case 3: b++; break;
+                    case 4: System.out.println(b); break;
+                  }
+
+                  return b;
+
+                }
+            }
+            '''
+
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
+            mec, sec = sm.compute_essential_complexity_metrics()
+            assert mec == 1
+            assert sec == 1
+
+        def test_case_17(self):
+            file_content = '''
+            public class Main {
+                int var1, var2;
+                
+                public int method_1(int a, int b){
+                
+                  try{
+                    File myObj = new File("filename.txt");
+                    Scanner myReader = new Scanner(myObj);
+                    String data = myReader.nextLine(); 
+                  }
+                  finally {
+                    while(a<1)
+                      if(b)
+                        break;
+                  }
+                
+                
+                }
+            }
+            '''
+
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
+            mec, sec = sm.compute_essential_complexity_metrics()
+            assert mec == 3
+            assert sec == 3
+
+        def test_case_18(self):
+            file_content = '''
+            public class Main {
+                int var1, var2;
+
+                public int method_1(int a, int b){
+
+                  try{
+                    File myObj = new File("filename.txt");
+                    Scanner myReader = new Scanner(myObj);
+                    String data = myReader.nextLine(); 
+                    return a;
+                  }
+                  catch(ArithmeticException  e){
+                     System.out.println("Exception detected");
+                  }
+                  catch(NullPointerException e){
+                     System.out.println("Exception detected");
+                  }
+                
+
+                }
+            }
+            '''
+
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
+            mec, sec = sm.compute_essential_complexity_metrics()
+            assert mec == 3
+            assert sec == 3
+
+        def test_case_19(self):
+            file_content = '''
+            public class Main {
+                int var1, var2;
+
+                public int method_1(int a, int b){
+
+                  try{
+                    File myObj = new File("filename.txt");
+                    Scanner myReader = new Scanner(myObj);
+                    String data = myReader.nextLine(); 
+                    return a;
+                  }
+                  catch(ArithmeticException  e){
+                     System.out.println("Exception detected");
+                     return 0;
+                  }
+
+                }
+            }
+            '''
+
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
+            mec, sec = sm.compute_essential_complexity_metrics()
+            assert mec == 1
+            assert sec == 1
+
+        def test_case_20(self):
+            file_content = '''
+            public class Main {
+                int var1, var2;
+
+                public int method_1(int a, int b){
+
+                  try{
+                    File myObj = new File("filename.txt");
+                    Scanner myReader = new Scanner(myObj);
+                    String data = myReader.nextLine(); 
+                    return a;
+                  }
+                  catch(ArithmeticException  e){
+                     System.out.println("Exception detected");
+                     return 0;
+                  }
+                  catch(NullPointerException e){
+                     System.out.println("Exception detected");
+                     return -1;
+                  }
+
+
+                }
+            }
+            '''
+
+            base_dir = os.path.dirname(os.getcwd())
+            sm = SoftwareMetrics(base_dir, "path_file", file_content)
+            mec, sec = sm.compute_essential_complexity_metrics()
+            assert mec == 3
+            assert sec == 3
+
 
     class TestAnalyze:
         def test_case_1(self):
