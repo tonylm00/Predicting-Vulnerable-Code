@@ -264,7 +264,6 @@ def setup_environment(request):
 
     dataset_divided_dir = os.path.join(base_dir, "Dataset_Divided")
     mining_results_dir = os.path.join(base_dir, "mining_results")
-    old_cwd = os.getcwd()
     if files:
         cyclic_iterator = itertools.cycle(files.items())
 
@@ -299,15 +298,11 @@ def setup_environment(request):
                             file_name, content = next(cyclic_iterator)
                             file_path = os.path.join(level2_dir, file_name)
                             with open(file_path, 'w', encoding='utf-8') as f:
-                                f.write(content)  # Contenuto di esempio, puoi personalizzarlo
-
-        # Cambia la directory di lavoro corrente
-        #os.chdir(mining_results_dir)
+                                f.write(content)
 
         yield mining_results_dir
 
     finally:
-        #os.chdir(old_cwd)
         if os.path.exists(mining_results_dir):
             shutil.rmtree(mining_results_dir, ignore_errors=True)
         if os.path.exists(dataset_divided_dir):
@@ -316,19 +311,17 @@ def setup_environment(request):
 
 @pytest.fixture
 def create_temp_file():
-    # Questa variabile manterrà il percorso del file creato
     file_path = None
 
     def _create_temp_file(path, content):
         nonlocal file_path
-        file_path = path  # Salva il percorso del file per il teardown
+        file_path = path
         with open(path, 'w', encoding='utf-8') as f:
             f.write(content)
         return path
 
     yield _create_temp_file
 
-    # Teardown: elimina il file creato, se esiste
     if file_path and os.path.exists(file_path):
         os.remove(file_path)
 
