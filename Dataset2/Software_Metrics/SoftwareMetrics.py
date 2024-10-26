@@ -543,8 +543,7 @@ class SoftwareMetrics:
             self.metrics["CountLineCode"] = self.count_lines_of_code()
             self.metrics["CountDeclClass"] = self.count_class_declarations()
 
-            self.metrics["MaxEssential"], self.metrics["SumEssential"] = self.compute_essential_complexity_metrics(
-                self.file_content)
+            self.metrics["MaxEssential"], self.metrics["SumEssential"] = self.compute_essential_complexity_metrics()
 
         except JavaSyntaxError:
             self.logger.error(f"Errore nell'analisi del file {self.file_path}: Il file non presenta una sintassi java valida.")
