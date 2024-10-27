@@ -197,38 +197,73 @@ class TestJavaTextMining:
     class TestMergeDict:
         def test_case_1(self):
             miner = JavaTextMining("path_test")
-            dict1 = {"word": 2, "int": 1}
-            dict2 = {"word": 1, "public": 1, "main": 1}
-            result = miner.mergeDict(dict1, dict2)
-            assert result == {"word": 3, "int": 1, "public": 1, "main": 1}
+            dict1 = [1,2,3]
+            dict2 = "non è un dizionario"
+            with pytest.raises(TypeError):
+                miner.mergeDict(dict1, dict2)
 
         def test_case_2(self):
             miner = JavaTextMining("path_test")
-            dict1 = {"word": 2, "int": 1}
-            dict2 = {}
-            result = miner.mergeDict(dict1, dict2)
-            assert result == {"word": 2, "int": 1}
+            dict1 = [1,2,3]
+            dict2 = {"word": 1, "public": 1, "main": 1}
+            with pytest.raises(TypeError):
+                miner.mergeDict(dict1, dict2)
 
         def test_case_3(self):
+            miner = JavaTextMining("path_test")
+            dict1 = "ciao"
+            dict2 = {}
+            result = miner.mergeDict(dict1, dict2)
+            assert result == [1,2,3]
+
+        def test_case_4(self):
+            miner = JavaTextMining("path_test")
+            dict1 = {}
+            dict2 = "non è un dizionario"
+            with pytest.raises(TypeError):
+                miner.mergeDict(dict1, dict2)
+
+        def test_case_5(self):
             miner = JavaTextMining("path_test")
             dict1 = {}
             dict2 = {"word": 1, "public": 1, "main": 1}
             result = miner.mergeDict(dict1, dict2)
             assert result == {"word": 1, "public": 1, "main": 1}
 
-        def test_case_4(self):
+        def test_case_6(self):
             miner = JavaTextMining("path_test")
             dict1 = {}
             dict2 = {}
             result = miner.mergeDict(dict1, dict2)
             assert result == {}
 
-        def test_case_5(self):
+        def test_case_7(self):
             miner = JavaTextMining("path_test")
             dict1 = {"word": 2, "int": 1}
             dict2 = "non sono un dizionario"
             with pytest.raises(TypeError):
                 miner.mergeDict(dict1, dict2)
+
+        def test_case_8(self):
+            miner = JavaTextMining("path_test")
+            dict1 = {"word": 2, "int": 1}
+            dict2 = {"package": 1, "public": 1, "main": 1}
+            result = miner.mergeDict(dict1, dict2)
+            assert result == {"word": 2, "int": 1, "package": 1, "public": 1, "main": 1}
+
+        def test_case_9(self):
+            miner = JavaTextMining("path_test")
+            dict1 = {"word": 2, "int": 1}
+            dict2 = {"word": 1, "public": 1, "main": 1}
+            result = miner.mergeDict(dict1, dict2)
+            assert result == {"word": 3, "int": 1, "public": 1, "main": 1}
+
+        def test_case_10(self):
+            miner = JavaTextMining("path_test")
+            dict1 = {"word": 2, "int": 1}
+            dict2 = {}
+            result = miner.mergeDict(dict1, dict2)
+            assert result == {"word": 2, "int": 1}
 
     class TestSplitDict:
         def test_case_1(self):
