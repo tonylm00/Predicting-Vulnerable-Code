@@ -1,5 +1,7 @@
 import os
 
+import numpy as np
+import pandas as pd
 import pytest
 from unittest.mock import patch, mock_open, MagicMock
 
@@ -34,21 +36,16 @@ def mock_isdir_fixture(request):
         yield
 
 
-# Fixture che simula open e tiene traccia di file aperti e contenuto scritto
 @pytest.fixture
 def mock_open_fixture(request):
-    # Ottieni il dizionario file -> contenuto fittizio passato dal test
     file_contents = request.param.get('file_contents', {}) if hasattr(request, 'param') else {}
     file_to_fail = request.param.get('file_to_fail', None)
     exception_type = request.param.get('exception_type', None)
 
-    # Crea un'istanza di mock_open generica per tracciare le chiamate
     m_open = mock_open()
 
-    # Funzione personalizzata che restituisce il contenuto corretto in base al file aperto
     def custom_open(file_name, mode='r', *args, **kwargs):
         file_basename = os.path.basename(file_name)
-        # Controlla se il file corrisponde al file che deve fallire
         print(file_basename, file_to_fail)
         if file_basename == file_to_fail:
             if 'w' in mode or 'a' in mode:  # Se aperto in modalità scrittura o append
@@ -59,16 +56,13 @@ def mock_open_fixture(request):
             if exception_type == 'AccessError':
                 raise PermissionError(f"Permesso negato per il file {file_name}")
 
-        # Se il file è aperto in lettura e presente nei contenuti fittizi, restituisci il contenuto
         if 'r' in mode and file_basename in file_contents:
             mock_file = m_open(file_name, mode, *args, **kwargs)
             mock_file.read = MagicMock(return_value=file_contents[file_basename])
             return mock_file
         else:
-            # Usa il mock_open generico per tutte le altre operazioni
             return m_open(file_name, mode, *args, **kwargs)
 
-    # Patch della funzione 'open' con la nostra funzione personalizzata
     with patch("builtins.open", custom_open):
         yield m_open
 
@@ -81,3 +75,63 @@ def mock_path_join_fixture(request):
 
     with patch('os.path.join', side_effect=mock_join):
         yield
+
+@pytest.fixture
+def mock_joblib_load(request):
+    fail_path = request.param.get('fail_path')
+    predict_error = request.param.get('predict_error', False)
+    encoder_error = request.param.get('encoder_error', False)
+    with patch('joblib.load') as mocked_load:
+        def side_effect(path):
+            if path == fail_path:
+                raise FileNotFoundError(f"File not found: {path}")
+            elif path == 'vocab.pkl':
+                return ['Feature1', 'Feature2']  # Ritorna un vocabolario fittizio
+            elif path == 'model.pkl':
+                mock_model = MagicMock()
+                if predict_error:
+                    mock_model.predict.side_effect = ValueError("Prediction Error")
+                else:
+                    mock_model.predict.return_value = [0, 1]  # Mock della predizione
+                return mock_model
+            elif path == 'encoder.pkl':
+                mock_encoder = MagicMock()
+                if encoder_error:
+                    mock_encoder.inverse_transform.side_effect = ValueError("Encoding Error")
+                else:
+                    mock_encoder.inverse_transform.return_value = np.array(['pos', 'neg'])
+                return mock_encoder
+            elif not path.endswith('.pkl'):
+                raise ValueError("File must end with .pkl")
+            else:
+                return MagicMock()  # Ritorna un mock generico per altri file validi
+        mocked_load.side_effect = side_effect
+        yield mocked_load
+
+@pytest.fixture
+def mock_read_csv(request):
+    fail_path = request.param.get('fail_path', None)
+    content = request.param.get('content', None)
+
+    with patch('pandas.read_csv') as mocked_read_csv:
+        def side_effect(path):
+            if path == fail_path:
+                raise FileNotFoundError(f"File not found: {path}")
+            if not path.endswith('.csv'):
+                raise ValueError("File must end with .csv")
+            if content != None:
+                return pd.DataFrame({content})
+            return pd.DataFrame({'Name': ['Test1','Test2'], 'Feature1': [1,2], 'Feature2': [0,1]})
+        mocked_read_csv.side_effect = side_effect
+        yield mocked_read_csv
+
+@pytest.fixture
+def mock_os():
+    with patch('os.makedirs') as mocked_makedirs, \
+         patch('os.path.dirname', return_value="mock_dir") as mocked_dirname:
+        yield mocked_makedirs, mocked_dirname
+
+@pytest.fixture
+def mock_to_csv():
+    with patch('pandas.DataFrame.to_csv') as mocked_to_csv:
+        yield mocked_to_csv

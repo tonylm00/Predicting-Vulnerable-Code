@@ -1,5 +1,7 @@
 from unittest import mock
 from unittest.mock import call, patch
+
+import pandas as pd
 import pytest
 from Dataset2.Main import Main
 
@@ -1088,7 +1090,7 @@ class TestMain:
                 'Kind,Name,CountLineCode,CountDeclClass,CountDeclFunction,CountLineCodeDecl,SumEssential,SumCyclomaticStrict,MaxEssential,MaxCyclomaticStrict,MaxNesting\r\n')
 
 
-class TestRunTextMining:
+    class TestRunTextMining:
         @pytest.fixture(autouse=True)
         def setup(self, mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture):
             self.main = Main("Predicting-Vulnerable-Code/Dataset2")
@@ -1980,3 +1982,250 @@ class TestRunTextMining:
             assert mock_open_fixture.call_args_list[1] == call(
                 "Predicting-Vulnerable-Code/Dataset2/mining_results/FilteredTextMining.txt", "w+", encoding='utf-8')
             mock_open_fixture().write.assert_any_call("{}")
+
+    class TestRunPrediction:
+        @pytest.fixture(autouse=True)
+        def setup(self):
+            self.main = Main("Predicting-Vulnerable-Code/Dataset2")
+
+        @pytest.mark.parametrize("mock_joblib_load", [{
+            'fail_path': 'vocab_wrong.pkl',
+            'predict_error': False,
+            'encoder_error': False
+        }], indirect=True)
+        def test_case_1(self, mock_joblib_load):
+            with pytest.raises(FileNotFoundError):
+                self.main.run_prediction("input.csv","model.pkl","encoder.pkl","vocab_wrong.pkl", "output.csv")
+
+        @pytest.mark.parametrize("mock_joblib_load", [{
+            'fail_path': '',
+            'predict_error': False,
+            'encoder_error': False
+        }], indirect=True)
+        def test_case_2(self, mock_joblib_load):
+            with pytest.raises(ValueError):
+                self.main.run_prediction("input.csv", "model.pkl", "encoder.pkl", "vocab_wrong.txt", "output.csv")
+
+        @pytest.mark.parametrize("mock_joblib_load", [{
+            'fail_path': 'model.pkl',
+            'predict_error': False,
+            'encoder_error': False
+        }], indirect=True)
+        def test_case_3(self, mock_joblib_load):
+            with pytest.raises(FileNotFoundError):
+                self.main.run_prediction("input.csv", "model.pkl", "encoder.pkl", "vocab.pkl", "output.csv")
+
+        @pytest.mark.parametrize("mock_joblib_load", [{
+            'fail_path': '',
+            'predict_error': False,
+            'encoder_error': False
+        }], indirect=True)
+        def test_case_4(self, mock_joblib_load):
+            with pytest.raises(ValueError):
+                self.main.run_prediction("input.csv", "model.txt", "encoder.pkl", "vocab.pkl", "output.csv")
+
+        @pytest.mark.parametrize("mock_joblib_load", [{
+            'fail_path': 'encoder.pkl',
+            'predict_error': False,
+            'encoder_error': False
+        }], indirect=True)
+        def test_case_5(self, mock_joblib_load):
+            with pytest.raises(FileNotFoundError):
+                self.main.run_prediction("input.csv", "model.pkl", "encoder.pkl", "vocab.pkl", "output.csv")
+
+        @pytest.mark.parametrize("mock_joblib_load", [{
+            'fail_path': '',
+            'predict_error': False,
+            'encoder_error': False
+        }], indirect=True)
+        def test_case_6(self, mock_joblib_load):
+            with pytest.raises(ValueError):
+                self.main.run_prediction("input.csv", "model.pkl", "encoder.txt", "vocab.pkl", "output.csv")
+
+        @pytest.mark.parametrize("mock_joblib_load, mock_read_csv", [(
+        {
+            'fail_path': '',
+            'predict_error': False,
+            'encoder_error': False
+        },
+        {
+            'fail_path': 'input.csv',
+            'content': None
+        }
+        )], indirect=True)
+        def test_case_7(self, mock_joblib_load, mock_read_csv):
+            with pytest.raises(FileNotFoundError):
+                self.main.run_prediction("input.csv", "model.pkl", "encoder.pkl", "vocab.pkl", "output.csv")
+
+        @pytest.mark.parametrize("mock_joblib_load, mock_read_csv", [(
+                {
+                    'fail_path': '',
+                    'predict_error': False,
+                    'encoder_error': False
+                },
+                {
+                    'fail_path': '',
+                    'content': None
+                }
+        )], indirect=True)
+        def test_case_8(self, mock_joblib_load, mock_read_csv):
+            with pytest.raises(ValueError):
+                self.main.run_prediction("input.txt", "model.pkl", "encoder.pkl", "vocab.pkl", "output.csv")
+
+        @pytest.mark.parametrize("mock_joblib_load, mock_read_csv", [(
+                {
+                    'fail_path': '',
+                    'predict_error': False,
+                    'encoder_error': False
+                },
+                {
+                    'fail_path': '',
+                    'content': ''
+                }
+        )], indirect=True)
+        def test_case_9(self, mock_joblib_load, mock_read_csv):
+            with pytest.raises(KeyError):
+                self.main.run_prediction("input.csv", "model.pkl", "encoder.pkl", "vocab.pkl", "output.csv")
+
+        @pytest.mark.parametrize("mock_joblib_load, mock_read_csv", [(
+                {
+                    'fail_path': '',
+                    'predict_error': False,
+                    'encoder_error': False
+                },
+                {
+                    'fail_path': '',
+                    'content': 'Colonna1: 1, Colonna2: 2, Colonna3: 3'
+                }
+        )], indirect=True)
+        def test_case_10(self, mock_joblib_load, mock_read_csv):
+            with pytest.raises(KeyError):
+                self.main.run_prediction("input.csv", "model.pkl", "encoder.pkl", "vocab.pkl", "output.csv")
+
+        @pytest.mark.parametrize("mock_joblib_load, mock_read_csv, mock_os, mock_to_csv", [(
+                {
+                    'fail_path': '',
+                    'predict_error': True,
+                    'encoder_error': False
+                },
+                {
+                    'fail_path': '',
+                    'content': None
+                },
+                None,
+                None
+        )], indirect=True)
+        def test_case_11(self, mock_joblib_load, mock_read_csv, mock_os, mock_to_csv):
+            with pytest.raises(ValueError):
+                self.main.run_prediction("input.csv", "model.pkl", "encoder.pkl", "vocab.pkl", "output.csv")
+
+        @pytest.mark.parametrize("mock_joblib_load, mock_read_csv, mock_os, mock_to_csv", [(
+                {
+                    'fail_path': '',
+                    'predict_error': False,
+                    'encoder_error': True
+                },
+                {
+                    'fail_path': '',
+                    'content': None
+                },
+                None,
+                None
+        )], indirect=True)
+        def test_case_12(self, mock_joblib_load, mock_read_csv, mock_os, mock_to_csv):
+            with pytest.raises(ValueError):
+                self.main.run_prediction("input.csv", "model.pkl", "encoder.pkl", "vocab.pkl", "output.csv")
+
+        @pytest.mark.parametrize("mock_joblib_load, mock_read_csv, mock_os, mock_to_csv", [(
+                {
+                    'fail_path': '',
+                    'predict_error': False,
+                    'encoder_error': False
+                },
+                {
+                    'fail_path': '',
+                    'content': None
+                },
+                None,
+                None
+        )], indirect=True)
+        def test_case_13(self, mock_joblib_load, mock_read_csv, mock_os, mock_to_csv):
+            self.main.run_prediction("input.csv", "model.pkl", "encoder.pkl", "vocab.pkl", "output.csv")
+            mock_to_csv.assert_called_once_with('output.csv', index=False)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
