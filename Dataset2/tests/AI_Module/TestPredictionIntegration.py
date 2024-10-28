@@ -55,23 +55,13 @@ class TestPredictionIntegration:
         model_path = os.path.join(os.path.dirname(os.path.dirname(self.BASE_DIR)), "AI_Module", "model", "random_forest_TMASA.pkl")
         label_path = os.path.join(os.path.dirname(os.path.dirname(self.BASE_DIR)), "AI_Module", "label_encoder.pkl")
         csv_input_path = os.path.join(self.BASE_DIR + "test.csv")
-        create_temp_file(csv_input_path,'Colonna1,Colonna2,Colonna3\nDato1, Dato2, Dato3')
-        with pytest.raises(KeyError):
-            self.main.run_prediction(csv_input_path, model_path, label_path, vocab_path,
-                                     "output.csv")
-
-    def test_case_7(self, create_temp_file):
-        vocab_path = os.path.join(os.path.dirname(os.path.dirname(self.BASE_DIR)), "AI_Module", "vocab", "original_vocab_TMASA.pkl")
-        model_path = os.path.join(os.path.dirname(os.path.dirname(self.BASE_DIR)), "AI_Module", "model", "random_forest_TMASA.pkl")
-        label_path = os.path.join(os.path.dirname(os.path.dirname(self.BASE_DIR)), "AI_Module", "label_encoder.pkl")
-        csv_input_path = os.path.join(self.BASE_DIR + "test.csv")
         create_temp_file(csv_input_path, 'Colonna1,Colonna2,Colonna3\n1, 2, 3')
 
         with pytest.raises(KeyError):
             self.main.run_prediction(csv_input_path, model_path, label_path, vocab_path,
                                      "output.csv")
 
-    def test_case_8(self, create_temp_file):
+    def test_case_7(self, create_temp_file):
         vocab_path = os.path.join(os.path.dirname(os.path.dirname(self.BASE_DIR)), "AI_Module", "vocab", "original_vocab_TMASA.pkl")
         model_path = os.path.join(os.path.dirname(os.path.dirname(self.BASE_DIR)), "AI_Module", "model", "random_forest_TMASA.pkl")
         label_path = os.path.join(os.path.dirname(os.path.dirname(self.BASE_DIR)), "AI_Module", "label_encoder.pkl")
@@ -86,7 +76,7 @@ class TestPredictionIntegration:
             assert content == 'Name,CLS\nfile.java,neg\n' or content == 'Name,CLS\nfile.java,pos\n'
         os.remove(output_path)
 
-    def test_case_9(self, create_temp_file):
+    def test_case_8(self, create_temp_file):
         vocab_path = os.path.join(os.path.dirname(os.path.dirname(self.BASE_DIR)), "AI_Module", "vocab", "original_vocab_TMASA.pkl")
         model_path = os.path.join(os.path.dirname(os.path.dirname(self.BASE_DIR)), "AI_Module", "model", "random_forest_TMASA.pkl")
         label_path = os.path.join(os.path.dirname(os.path.dirname(self.BASE_DIR)), "AI_Module", "label_encoder.pkl")
@@ -101,7 +91,7 @@ class TestPredictionIntegration:
             assert content == 'Name,CLS\nfile.java,neg\n' or content == 'Name,CLS\nfile.java,pos\n'
         os.remove(output_path)
 
-    def test_case_10(self, create_temp_file):
+    def test_case_9(self, create_temp_file):
         vocab_path = os.path.join(os.path.dirname(os.path.dirname(self.BASE_DIR)), "AI_Module", "vocab", "original_vocab_SM.pkl")
         model_path = os.path.join(os.path.dirname(os.path.dirname(self.BASE_DIR)), "AI_Module", "model", "random_forest_SM.pkl")
         label_path = os.path.join(os.path.dirname(os.path.dirname(self.BASE_DIR)), "AI_Module", "label_encoder.pkl")
@@ -116,7 +106,7 @@ class TestPredictionIntegration:
             assert content == 'Name,CLS\nfile.java,neg\n' or content == 'Name,CLS\nfile.java,pos\n'
         os.remove(output_path)
 
-    def test_case_11(self, create_temp_file):
+    def test_case_10(self, create_temp_file):
         vocab_path = os.path.join(os.path.dirname(os.path.dirname(self.BASE_DIR)), "AI_Module", "vocab", "original_vocab_SM.pkl")
         model_path = os.path.join(os.path.dirname(os.path.dirname(self.BASE_DIR)), "AI_Module", "model", "random_forest_SM.pkl")
         label_path = os.path.join(os.path.dirname(os.path.dirname(self.BASE_DIR)), "AI_Module", "label_encoder.pkl")
@@ -127,7 +117,7 @@ class TestPredictionIntegration:
         with pytest.raises(ValueError):
             self.main.run_prediction(csv_input_path, model_path, label_path, vocab_path, output_path)
 
-    def test_case_12(self, create_temp_file):
+    def test_case_11(self, create_temp_file):
         vocab_path = os.path.join(os.path.dirname(os.path.dirname(self.BASE_DIR)), "AI_Module", "vocab", "original_vocab_SM.pkl")
         model_path = os.path.join(os.path.dirname(os.path.dirname(self.BASE_DIR)), "AI_Module", "model", "random_forest_SMASA.pkl")
         label_path = os.path.join(os.path.dirname(os.path.dirname(self.BASE_DIR)), "AI_Module", "label_encoder.pkl")
