@@ -1,3 +1,4 @@
+import logging
 import os
 from unittest.mock import mock_open, patch, Mock, MagicMock
 import pytest
@@ -61,12 +62,13 @@ def setup_environment(request):
         yield mining_results_dir
 
     finally:
+        logging.shutdown()
         if os.path.exists(mining_results_dir):
             shutil.rmtree(mining_results_dir, ignore_errors=True)
         if os.path.exists(dataset_divided_dir):
             shutil.rmtree(dataset_divided_dir, ignore_errors=True)
         if os.path.exists(software_metrics_dir):
-            shutil.rmtree(software_metrics_dir, ignore_errors=True)
+            shutil.rmtree(software_metrics_dir, ignore_errors=False)
 
 
 @pytest.fixture

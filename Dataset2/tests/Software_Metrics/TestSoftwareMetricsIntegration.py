@@ -8,7 +8,7 @@ from Dataset2.Main import Main
 class TestSoftwareMetricsIntegration:
     BASE_DIR = os.getcwd()
     @pytest.fixture(autouse=True)
-    def setup(self, setup_environment):
+    def setup(self):
         self.main = Main(self.BASE_DIR)
 
     @patch('builtins.print')
@@ -33,7 +33,6 @@ class TestSoftwareMetricsIntegration:
         {'levels': 2, 'base_dir': BASE_DIR}
     ], indirect=True)
     def test_case_3(self, setup_environment):
-        self.main.run_text_mining()
         self.main.run_software_metrics()
         file_path = os.path.join(self.BASE_DIR, "Software_Metrics", "mining_results_sm_final.csv")
         with open(file_path, 'r') as file:
@@ -76,7 +75,6 @@ class TestSoftwareMetricsIntegration:
         {'levels': 3, 'base_dir': BASE_DIR}
     ], indirect=True)
     def test_case_6(self, setup_environment):
-        self.main.run_text_mining()
         self.main.run_software_metrics()
         file_path = os.path.join(self.BASE_DIR, "Software_Metrics", "mining_results_sm_final.csv")
         with open(file_path, 'r') as file:
