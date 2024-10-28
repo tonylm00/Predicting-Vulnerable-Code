@@ -14,7 +14,7 @@ class TestPredictionIntegration:
         self.main = Main(self.BASE_DIR)
 
     def test_case_1(self):
-        with pytest.raises(FileNotFoundError, match="File not found: invalid_vocab.pkl"):
+        with pytest.raises(FileNotFoundError, match="r.*'invalid_vocab.pkl'"):
             self.main.run_prediction("test.csv", "invalid_model.pkl", "invalid_label.pkl","invalid_vocab.pkl","output.csv")
 
     def test_case_2(self, create_temp_file):

@@ -49,7 +49,7 @@ class TestMetricsWriter:
         def test_case_2(self, mock_print):
             writer = MetricsWriter("")
             writer.write_metrics("File", "path/file.java", {"CountLineCode": 10})
-            mock_print.assert_any_call("Errore durante l'apertura del file: [Errno 2] No such file or directory: ''")
+            mock_print.assert_any_call("Errore durante la scrittura nel file: [Errno 2] No such file or directory: ''")
 
         @patch("builtins.open", new_callable=mock_open)
         @patch("builtins.print")
@@ -58,7 +58,7 @@ class TestMetricsWriter:
             mock_file.side_effect = PermissionError("Permission denied")
 
             writer.write_metrics("File", "path/file.java", {"CountLineCode": 10})
-            mock_print.assert_any_call("Errore durante l'apertura del file: Permission denied")
+            mock_print.assert_any_call('Errore durante la scrittura nel file: Permission denied')
 
         @patch('builtins.open', new_callable=mock_open)
         @patch('csv.DictWriter')

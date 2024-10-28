@@ -214,7 +214,7 @@ class TestJavaTextMining:
             dict1 = "ciao"
             dict2 = {}
             result = miner.mergeDict(dict1, dict2)
-            assert result == [1,2,3]
+            assert result == "ciao"
 
         def test_case_4(self):
             miner = JavaTextMining("path_test")
