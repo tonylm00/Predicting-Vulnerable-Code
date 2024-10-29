@@ -14,9 +14,7 @@ class DatasetDivider:
         csvfile = open(dataset_path, 'r').readlines()
         filename = 1
 
-        if os.path.exists(divide_dataset_path):
-            shutil.rmtree(divide_dataset_path)
-        os.makedirs(divide_dataset_path)
+        os.makedirs(divide_dataset_path, exist_ok=True)
 
         header = csvfile[0]
         csvfile = csvfile[1:]
