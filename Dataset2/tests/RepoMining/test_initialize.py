@@ -1,5 +1,6 @@
 import csv
 import io
+import os
 from unittest import mock
 
 import pytest
@@ -16,10 +17,10 @@ class TestInitialize:
     @patch('os.getcwd')
     @patch('os.mkdir')
     @patch('os.chdir')
-    def test_case_1(self, mock_chdir, mock_mkdir, mock_getcwd, mock_listdir, mock_open, setup_dir):
+    def test_case_1(self, mock_chdir, mock_mkdir, mock_getcwd, mock_listdir, mock_open):
 
         # Setup mocks
-        mock_getcwd.return_value = 'Dataset2/tests/RepoMining'
+        mock_getcwd.return_value = 'Dataset2/tests'
 
         mock_open.side_effect = OSError
 
@@ -31,7 +32,7 @@ class TestInitialize:
             call('..'),
             call('Dataset_Divided'),
         ]
-        mock_chdir.assert_has_calls(expected_chdir_calls, any_order=False)
+        assert mock_chdir.mock_calls == expected_chdir_calls
 
         mock_mkdir.assert_not_called()
 
@@ -40,10 +41,10 @@ class TestInitialize:
     @patch('os.mkdir')
     @patch('os.chdir')
     @pytest.mark.parametrize('mock_op_fail', ['2.csv'], indirect=True)
-    def test_case_2(self, mock_chdir, mock_mkdir, mock_getcwd, mock_listdir, mock_op_fail, setup_dir):
+    def test_case_2(self, mock_chdir, mock_mkdir, mock_getcwd, mock_listdir, mock_op_fail):
 
         # Setup mocks
-        mock_getcwd.return_value = 'Dataset2/tests/RepoMining'
+        mock_getcwd.return_value = 'Dataset2/tests'
         mock_open.side_effect = FileNotFoundError
 
         with pytest.raises(FileNotFoundError):
@@ -54,7 +55,9 @@ class TestInitialize:
             call('..'),
             call('Dataset_Divided'),
         ]
-        mock_chdir.assert_has_calls(expected_chdir_calls, any_order=False)
+
+        assert mock_chdir.mock_calls == expected_chdir_calls
+
 
         mock_mkdir.assert_not_called()
 
@@ -63,9 +66,9 @@ class TestInitialize:
     @patch('os.getcwd')
     @patch('os.mkdir')
     @pytest.mark.parametrize('mock_chdir_fail', ['mining_results'], indirect=True)
-    def test_case_3(self, mock_mkdir, mock_getcwd, mock_listdir, mock_open, mock_chdir_fail, setup_dir):
+    def test_case_3(self, mock_mkdir, mock_getcwd, mock_listdir, mock_open, mock_chdir_fail):
         # Setup mocks
-        mock_getcwd.return_value = 'Dataset2/tests/RepoMining'
+        mock_getcwd.return_value = os.path.join("Dataset2")
 
         # Expecting a FileNotFoundError when trying to chdir to 'mining_results'
         with pytest.raises(FileNotFoundError):
@@ -76,11 +79,11 @@ class TestInitialize:
         expected_chdir_calls = [
             call('..'),
             call('Dataset_Divided'),
-            call('..')
+            call('..'),
+            call('mining_results')
         ]
 
-        # Assert that os.chdir was called with the expected calls
-        mock_chdir_fail.assert_has_calls(expected_chdir_calls, any_order=False)
+        assert mock_chdir_fail.mock_calls == expected_chdir_calls
 
     #@pytest.mark.xfail
     @patch('Dataset2.RepoMining.repo_Mining.startMiningRepo')
@@ -89,7 +92,7 @@ class TestInitialize:
     @patch('os.getcwd')
     @patch('os.mkdir')
     @patch('os.chdir')
-    def test_case_4(self, mock_chdir, mock_mkdir, mock_getcwd, mock_open, mock_listdir, mock_start_mining, setup_dir):
+    def test_case_4(self, mock_chdir, mock_mkdir, mock_getcwd, mock_open, mock_listdir, mock_start_mining):
 
         invalid_csv_content = ''';repo_url;commit_id;cls
         0,https://github.com/spring-projects/spring-webflow,57f2ccb66946943fbf3b3f2165eac1c8eb6b1523,pos
@@ -100,7 +103,7 @@ class TestInitialize:
         '''
 
         # Setup mocks
-        mock_getcwd.return_value = 'Dataset2/tests/RepoMining/test_initialize.py'
+        mock_getcwd.return_value = 'Dataset2/tests'
         mock_open.read_data = invalid_csv_content
 
 
@@ -113,9 +116,11 @@ class TestInitialize:
             call('Dataset_Divided'),
             call('..'),
             call('mining_results'),
+            call('RepositoryMining' + str(self.MINI_DATASET_NAME)),
+            call(mock_getcwd.return_value)
         ]
 
-        mock_chdir.assert_has_calls(expected_chdir_calls, any_order=False)
+        assert mock_chdir.mock_calls == expected_chdir_calls
 
         mock_mkdir.assert_not_called()
 
@@ -123,7 +128,7 @@ class TestInitialize:
 
     @pytest.mark.parametrize('process_data', [False], indirect=True)
     @pytest.mark.parametrize('mock_setup_repo_exist', [True], indirect=True)
-    def test_case_5(self, mock_setup_repo_exist, process_data, setup_dir):
+    def test_case_5(self, mock_setup_repo_exist, process_data):
         mock_listdir, mock_cwd, mock_mkdir, mock_op, mock_chdir, mock_start, extracted_data = mock_setup_repo_exist
 
         # Call the function to test
@@ -137,15 +142,17 @@ class TestInitialize:
             call('Dataset_Divided'),
             call('..'),
             call('mining_results'),
+            call('RepositoryMining' + str(self.MINI_DATASET_NAME)),
+            call(mock_cwd.return_value)
         ]
-        mock_chdir.assert_has_calls(expected_chdir_calls, any_order=False)
+        assert mock_chdir.mock_calls == expected_chdir_calls
 
         # Verify that startMiningRepo was called with the correct parameters
         mock_start.assert_called_with(extracted_data, mock_cwd.return_value, 'RepositoryMining2')
 
     @pytest.mark.parametrize('process_data', [True], indirect=True)
     @pytest.mark.parametrize('mock_setup_repo_exist', [False], indirect=True)
-    def test_case_6(self, mock_setup_repo_exist, process_data, setup_dir):
+    def test_case_6(self, mock_setup_repo_exist, process_data):
         mock_listdir, mock_cwd, mock_mkdir, mock_op, mock_chdir, mock_start, extracted_data = mock_setup_repo_exist
 
         # Call the function to test
@@ -159,9 +166,14 @@ class TestInitialize:
             call('Dataset_Divided'),
             call('..'),
             call('mining_results'),
+            call('RepositoryMining' + str(self.MINI_DATASET_NAME)),
+            call(mock_cwd.return_value)
         ]
-        mock_chdir.assert_has_calls(expected_chdir_calls, any_order=False)
+        assert mock_chdir.mock_calls == expected_chdir_calls
 
         # Verify that startMiningRepo was called with the correct parameters
         mock_start.assert_called_with(extracted_data, mock_cwd.return_value, 'RepositoryMining2')
+
+
+
 

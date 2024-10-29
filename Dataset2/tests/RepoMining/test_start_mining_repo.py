@@ -1,3 +1,4 @@
+import os
 from unittest.mock import patch, mock_open, Mock, call
 from urllib.parse import urlparse
 
@@ -14,7 +15,8 @@ class TestStartMiningRepo:
     CHECK_FILE_NAME = 'CHECK.txt'
     ERR_FILE_NAME = 'ERRORS.txt'
 
-    CWD = '/test/path'
+    CWD = os.path.join('Dataset', 'tests', 'RepoMining', 'temp')
+    MINING_DIR = os.path.join('Dataset', 'tests', 'RepoMining', 'mining_results')
 
     @patch('os.mkdir')  # Mock os.chdir if needed
     @patch('os.chdir')  # Mock os.chdir if needed
@@ -435,7 +437,7 @@ class TestStartMiningRepo:
         expected_chdir_calls = [
             call(cve_id),
             call(commit_id),
-            call(self.CWD + "/" + repoName)
+            call(os.path.join(self.MINING_DIR, repoName))
         ]
         mock_chdir.assert_has_calls(expected_chdir_calls, any_order=False)
 
@@ -493,7 +495,7 @@ class TestStartMiningRepo:
         expected_chdir_calls = [
             call(cve_id),
             call(commit_id),
-            call(self.CWD + "/" + repoName)
+            call(os.path.join(self.MINING_DIR, repoName))
         ]
         mock_chdir.assert_has_calls(expected_chdir_calls, any_order=False)
 
@@ -573,7 +575,8 @@ class TestStartMiningRepo:
         data = {0: content}
 
         repoName = ':>'
-        wrong_cwd = "3>/path"
+        wrong_cwd = os.path.join("3>", "path")
+        oracle_cwd = os.path.join("3>", "mining_results")
 
         with pytest.raises(OSError) as exc_info:
             startMiningRepo(data, wrong_cwd, repoName)
@@ -585,7 +588,7 @@ class TestStartMiningRepo:
         expected_chdir_calls = [
             call(cve_id),
             call(commit_id),
-            call(wrong_cwd + "/" + repoName)
+            call(oracle_cwd + os.sep + repoName)
         ]
 
         mock_os_chdir.assert_has_calls(expected_chdir_calls, any_order=False)
