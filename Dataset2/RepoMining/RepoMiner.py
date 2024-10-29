@@ -27,9 +27,8 @@ class RepoMiner:
         # Legge il CSV
         with open(name_dataset, mode='r') as csv_file:
             # Se esiste già la cartella mining_results, la elimina e la ricrea
-            if os.path.exists(mining_results_path):
-                shutil.rmtree(mining_results_path)
-            os.makedirs(self.mining_result_path)
+
+            os.makedirs(self.mining_result_path, exist_ok=True)
 
             expected_headers = ['cve_id', 'repo_url', 'commit_id']
 
@@ -120,6 +119,7 @@ class RepoMiner:
                     os.mkdir(cve_path)
                 if not os.path.exists(commit_path):
                     os.mkdir(commit_path)
+
 
                 # Scrive il file Java se esiste il codice sorgente prima del commit
                 if mod.source_code_before is not None:
