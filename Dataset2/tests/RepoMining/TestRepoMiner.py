@@ -511,218 +511,8 @@ class TestRepoMiner:
         @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
         @patch('Dataset2.RepoMining.RepoMiner.RepoMiner.analyze_commit')
         @pytest.mark.parametrize('mock_requests_get', [(True, True, True, True)], indirect=True)
-        @pytest.mark.parametrize('mock_repo_mining', [(True, True, False, False)], indirect=True)
+        @pytest.mark.parametrize('mock_repo_mining', [(True, True, True, False)], indirect=True)
         def test_case_9(self, mock_analyze, mock_join, mock_config, mock_logger, mock_requests_get, mock_repo_mining):
-            mock_repo_mining, mock_commit = mock_repo_mining
-
-            cve_id_1 = '1'
-            url_repo_exist_1 = 'https://github.com/apache/poi'
-            commit_exist_1 = 'd72bd78c19dfb7b57395a66ae8d9269d59a87bd2'
-
-            cve_id_2 = '2'
-            url_repo_exist_2 = 'https://github.com/spring-projects/spring-webflow'
-            commit_exist_2 = '48b2ccb65946620fbf3b1e2165eac1c9eb6b1413'
-
-            content_1 = {
-                'cve_id': cve_id_1,
-                'repo_url': url_repo_exist_1,
-                'commit_id': commit_exist_1
-            }
-
-            content_2 = {
-                'cve_id': cve_id_2,
-                'repo_url': url_repo_exist_2,
-                'commit_id': commit_exist_2
-            }
-
-            cve_path_1 = self.REPO_PATH + '/' + cve_id_1
-            commit_path_1 = cve_path_1 + '/' + commit_exist_1
-
-            cve_path_2 = self.REPO_PATH + '/' + cve_id_2
-            commit_path_2 = cve_path_2 + '/' + commit_exist_2
-
-            data = {0: content_1, 1: content_2}
-
-            miner = RepoMiner(self.BASE_DIR)
-            miner.start_mining_repo(data, self.REPO_PATH)
-
-            statusOK = "OK!\n"
-            str_log_1 = f"indice: 1 link repo: {content_1['repo_url']} status: " + statusOK
-            str_log_2 = f"indice: 2 link repo: {content_2['repo_url']} status: " + statusOK
-
-            assert mock_requests_get.call_count == 4
-            mock_requests_get.assert_has_calls([
-                call(url_repo_exist_1 + ".git"),
-                call(url_repo_exist_1 + "/commit/" + commit_exist_1),
-                call(url_repo_exist_2 + ".git"),
-                call(url_repo_exist_2 + "/commit/" + commit_exist_2)
-            ])
-
-            assert mock_repo_mining.call_count == 2
-            mock_repo_mining.assert_has_calls([
-                call(url_repo_exist_1 + '.git', commit_exist_1),
-                call(url_repo_exist_2 + '.git', commit_exist_2),
-            ])
-
-            assert mock_analyze.call_count == 2
-            mock_analyze.assert_has_calls([
-                call(mock_commit, cve_path_1, commit_path_1),
-                call(mock_commit, cve_path_2, commit_path_2)
-            ])
-
-            assert mock_logger().info.call_count == 2
-            expected_logger_calls = [call(str_log_1), call(str_log_2)]
-            mock_logger().info.assert_has_calls(expected_logger_calls)
-
-            mock_logger().error.assert_not_called()
-
-        @patch('logging.getLogger')
-        @patch('logging.basicConfig')
-        @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
-        @patch('Dataset2.RepoMining.RepoMiner.RepoMiner.analyze_commit')
-        @pytest.mark.parametrize('mock_requests_get', [(True, True, True, True)], indirect=True)
-        @pytest.mark.parametrize('mock_repo_mining', [(True, True, True, False)], indirect=True)
-        def test_case_10(self, mock_analyze, mock_join, mock_config, mock_logger, mock_requests_get, mock_repo_mining):
-            mock_repo_mining, mock_commit = mock_repo_mining
-
-            cve_id_1 = '1'
-            url_repo_exist_1 = 'https://github.com/apache/poi'
-            commit_exist_1 = 'd72bd78c19dfb7b57395a66ae8d9269d59a87bd2'
-
-            cve_id_2 = '2'
-            url_repo_exist_2 = 'https://github.com/spring-projects/spring-webflow'
-            commit_exist_2 = '48b2ccb65946620fbf3b1e2165eac1c9eb6b1413'
-
-            content_1 = {
-                'cve_id': cve_id_1,
-                'repo_url': url_repo_exist_1,
-                'commit_id': commit_exist_1
-            }
-
-            content_2 = {
-                'cve_id': cve_id_2,
-                'repo_url': url_repo_exist_2,
-                'commit_id': commit_exist_2
-            }
-
-            cve_path_1 = self.REPO_PATH + '/' + cve_id_1
-            commit_path_1 = cve_path_1 + '/' + commit_exist_1
-
-            cve_path_2 = self.REPO_PATH + '/' + cve_id_2
-            commit_path_2 = cve_path_2 + '/' + commit_exist_2
-
-            data = {0: content_1, 1: content_2}
-
-            miner = RepoMiner(self.BASE_DIR)
-            miner.start_mining_repo(data, self.REPO_PATH)
-
-            statusOK = "OK!\n"
-            str_log_1 = f"indice: 1 link repo: {content_1['repo_url']} status: " + statusOK
-            str_log_2 = f"indice: 2 link repo: {content_2['repo_url']} status: " + statusOK
-
-            assert mock_requests_get.call_count == 4
-            mock_requests_get.assert_has_calls([
-                call(url_repo_exist_1 + ".git"),
-                call(url_repo_exist_1 + "/commit/" + commit_exist_1),
-                call(url_repo_exist_2 + ".git"),
-                call(url_repo_exist_2 + "/commit/" + commit_exist_2)
-            ])
-
-            assert mock_repo_mining.call_count == 2
-            mock_repo_mining.assert_has_calls([
-                call(url_repo_exist_1 + '.git', commit_exist_1),
-                call(url_repo_exist_2 + '.git', commit_exist_2),
-            ])
-
-            assert mock_analyze.call_count == 2
-            mock_analyze.assert_has_calls([
-                call(mock_commit, cve_path_1, commit_path_1),
-                call(mock_commit, cve_path_2, commit_path_2)
-            ])
-
-            assert mock_logger().info.call_count == 2
-            expected_logger_calls = [call(str_log_1), call(str_log_2)]
-            mock_logger().info.assert_has_calls(expected_logger_calls)
-
-            mock_logger().error.assert_not_called()
-
-        @patch('logging.getLogger')
-        @patch('logging.basicConfig')
-        @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
-        @patch('Dataset2.RepoMining.RepoMiner.RepoMiner.analyze_commit')
-        @pytest.mark.parametrize('mock_requests_get', [(True, True, True, True)], indirect=True)
-        @pytest.mark.parametrize('mock_repo_mining', [(True, True, True, True)], indirect=True)
-        def test_case_11(self, mock_analyze, mock_join, mock_config, mock_logger, mock_requests_get, mock_repo_mining):
-            mock_repo_mining, mock_commit = mock_repo_mining
-
-            cve_id_1 = '1'
-            url_repo_exist_1 = 'https://github.com/apache/poi'
-            commit_exist_1 = 'd72bd78c19dfb7b57395a66ae8d9269d59a87bd2'
-
-            cve_id_2 = '2'
-            url_repo_exist_2 = 'https://github.com/spring-projects/spring-webflow'
-            commit_exist_2 = '48b2ccb65946620fbf3b1e2165eac1c9eb6b1413'
-
-            content_1 = {
-                'cve_id': cve_id_1,
-                'repo_url': url_repo_exist_1,
-                'commit_id': commit_exist_1
-            }
-
-            content_2 = {
-                'cve_id': cve_id_2,
-                'repo_url': url_repo_exist_2,
-                'commit_id': commit_exist_2
-            }
-
-            cve_path_1 = self.REPO_PATH + '/' + cve_id_1
-            commit_path_1 = cve_path_1 + '/' + commit_exist_1
-
-            cve_path_2 = self.REPO_PATH + '/' + cve_id_2
-            commit_path_2 = cve_path_2 + '/' + commit_exist_2
-
-            data = {0: content_1, 1: content_2}
-
-            miner = RepoMiner(self.BASE_DIR)
-            miner.start_mining_repo(data, self.REPO_PATH)
-
-            statusOK = "OK!\n"
-            str_log_1 = f"indice: 1 link repo: {content_1['repo_url']} status: " + statusOK
-            str_log_2 = f"indice: 2 link repo: {content_2['repo_url']} status: " + statusOK
-
-            assert mock_requests_get.call_count == 4
-            mock_requests_get.assert_has_calls([
-                call(url_repo_exist_1 + ".git"),
-                call(url_repo_exist_1 + "/commit/" + commit_exist_1),
-                call(url_repo_exist_2 + ".git"),
-                call(url_repo_exist_2 + "/commit/" + commit_exist_2)
-            ])
-
-            assert mock_repo_mining.call_count == 2
-            mock_repo_mining.assert_has_calls([
-                call(url_repo_exist_1 + '.git', commit_exist_1),
-                call(url_repo_exist_2 + '.git', commit_exist_2),
-            ])
-
-            assert mock_analyze.call_count == 2
-            mock_analyze.assert_has_calls([
-                call(mock_commit, cve_path_1, commit_path_1),
-                call(mock_commit, cve_path_2, commit_path_2)
-            ])
-
-            assert mock_logger().info.call_count == 2
-            expected_logger_calls = [call(str_log_1), call(str_log_2)]
-            mock_logger().info.assert_has_calls(expected_logger_calls)
-
-            mock_logger().error.assert_not_called()
-
-        @patch('logging.getLogger')
-        @patch('logging.basicConfig')
-        @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
-        @patch('Dataset2.RepoMining.RepoMiner.RepoMiner.analyze_commit')
-        @pytest.mark.parametrize('mock_requests_get', [(True, True, True, True)], indirect=True)
-        @pytest.mark.parametrize('mock_repo_mining', [(True, True, True, False)], indirect=True)
-        def test_case_12(self, mock_analyze, mock_join, mock_config, mock_logger, mock_requests_get, mock_repo_mining):
             mock_repo_mining, mock_commit = mock_repo_mining
 
             cve_id_1 = '1'
@@ -771,7 +561,7 @@ class TestRepoMiner:
         @patch('Dataset2.RepoMining.RepoMiner.RepoMiner.analyze_commit', side_effect=custom_analyze_side_effect)
         @pytest.mark.parametrize('mock_requests_get', [(True, True, True, True)], indirect=True)
         @pytest.mark.parametrize('mock_repo_mining', [(True, True, True, False)], indirect=True)
-        def test_case_13(self, mock_analyze, mock_join, mock_config, mock_logger, mock_requests_get, mock_repo_mining):
+        def test_case_10(self, mock_analyze, mock_join, mock_config, mock_logger, mock_requests_get, mock_repo_mining):
             mock_repo_mining, mock_commit = mock_repo_mining
 
             cve_id_1 = '1'
@@ -827,7 +617,7 @@ class TestRepoMiner:
         @patch('Dataset2.RepoMining.RepoMiner.RepoMiner.analyze_commit', side_effect=custom_analyze_side_effect)
         @pytest.mark.parametrize('mock_requests_get', [(True, True, True, True)], indirect=True)
         @pytest.mark.parametrize('mock_repo_mining', [(True, True, True, False)], indirect=True)
-        def test_case_14(self, mock_analyze, mock_join, mock_config, mock_logger, mock_requests_get, mock_repo_mining):
+        def test_case_11(self, mock_analyze, mock_join, mock_config, mock_logger, mock_requests_get, mock_repo_mining):
             mock_repo_mining, mock_commit = mock_repo_mining
 
             cve_id_1 = '1'
@@ -885,7 +675,7 @@ class TestRepoMiner:
         @patch('Dataset2.RepoMining.RepoMiner.RepoMiner.analyze_commit', side_effect=custom_analyze_side_effect)
         @pytest.mark.parametrize('mock_requests_get', [(True, True, True, True)], indirect=True)
         @pytest.mark.parametrize('mock_repo_mining', [(True, True, True, False)], indirect=True)
-        def test_case_15(self, mock_analyze, mock_join, mock_config, mock_logger, mock_requests_get, mock_repo_mining):
+        def test_case_12(self, mock_analyze, mock_join, mock_config, mock_logger, mock_requests_get, mock_repo_mining):
             mock_repo_mining, mock_commit = mock_repo_mining
 
             cve_id_1 = '1'
@@ -943,7 +733,7 @@ class TestRepoMiner:
         @patch('Dataset2.RepoMining.RepoMiner.RepoMiner.analyze_commit', side_effect=custom_analyze_side_effect)
         @pytest.mark.parametrize('mock_requests_get', [(True, True, True, True)], indirect=True)
         @pytest.mark.parametrize('mock_repo_mining', [(True, True, True, False)], indirect=True)
-        def test_case_16(self, mock_analyze, mock_join, mock_config, mock_logger, mock_requests_get, mock_repo_mining):
+        def test_case_13(self, mock_analyze, mock_join, mock_config, mock_logger, mock_requests_get, mock_repo_mining):
             mock_repo_mining, mock_commit = mock_repo_mining
 
             cve_id_1 = '1'
@@ -995,13 +785,70 @@ class TestRepoMiner:
                 call(mock_commit, cve_path_1, commit_path_1)
             ])
 
+        @patch('logging.getLogger')
+        @patch('logging.basicConfig')
+        @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
+        @patch('Dataset2.RepoMining.RepoMiner.RepoMiner.analyze_commit', side_effect=custom_analyze_side_effect)
+        @patch('Dataset2.RepoMining.RepoMiner.RepositoryMining')
+        @pytest.mark.parametrize('mock_requests_get', [(True, True, True, True)], indirect=True)
+        def test_case_14(self, mock_repo_mining, mock_analyze, mock_join, mock_config, mock_logger, mock_requests_get):
+            mock_repo_mining.side_effect = GitCommandError('error')
 
+            cve_id_1 = '1'
+            url_repo_exist_1 = 'https://github.com/apache/poi'
+            commit_exist_1 = 'd72bd78c19dfb7b57395a66ae8d9269d59a87bd2'
 
+            cve_id_2 = '2'
+            url_repo_exist_2 = 'https://github.com/spring-projects/spring-webflow'
+            commit_exist_2 = '48b2ccb65946620fbf3b1e2165eac1c9eb6b1413'
 
+            content_1 = {
+                'cve_id': cve_id_1,
+                'repo_url': url_repo_exist_1,
+                'commit_id': commit_exist_1
+            }
 
+            content_2 = {
+                'cve_id': cve_id_2,
+                'repo_url': url_repo_exist_2,
+                'commit_id': commit_exist_2
+            }
 
+            cve_path_1 = self.REPO_PATH + '/' + cve_id_1
+            commit_path_1 = cve_path_1 + '/' + commit_exist_1
 
+            cve_path_2 = self.REPO_PATH + '/' + cve_id_2
+            commit_path_2 = cve_path_2 + '/' + commit_exist_2
 
+            statusGCE = "GIT COMMAND ERROR"
+            str_log_1 = f"indice: 1 link repo: {content_1['repo_url']} status: " + statusGCE + "," + commit_exist_1
+            str_log_2 = f"indice: 2 link repo: {content_2['repo_url']} status: " + statusGCE + "," + commit_exist_2
+
+            data = {0: content_1, 1: content_2}
+
+            miner = RepoMiner(self.BASE_DIR)
+
+            miner.start_mining_repo(data, self.REPO_PATH)
+
+            assert mock_requests_get.call_count == 4
+            mock_requests_get.assert_has_calls([
+                call(url_repo_exist_1 + ".git"),
+                call(url_repo_exist_1 + "/commit/" + commit_exist_1),
+                call(url_repo_exist_2 + ".git"),
+                call(url_repo_exist_2 + "/commit/" + commit_exist_2)
+            ])
+
+            assert mock_repo_mining.call_count == 2
+            mock_repo_mining.assert_has_calls([
+                call(url_repo_exist_1 + '.git', commit_exist_1),
+                call(url_repo_exist_2 + '.git', commit_exist_2)
+            ])
+
+            assert mock_logger().error.call_count == 2
+            mock_logger().error.assert_has_calls([
+                call(str_log_1),
+                call(str_log_2)
+            ])
 
 
 
