@@ -21,47 +21,28 @@ TEST_DIR = 'tests'
 @pytest.fixture
 def process_data(request):
 
-    is_data_empty = request.param
+    num_records = request.param
 
-    input_csv_data = ''''''
+    input_csv_data = "cve_id,repo_url,commit_id\n"
+    extracted_data = {}
 
-    if not is_data_empty:
+    if num_records>0:
         # CSV data as a string
-        input_csv_data = '''cve_id,repo_url,commit_id,cls
-        49,https://github.com/apache/openjpa,87a4452be08b4f97274d0ccfac585ae85841e470,pos
-        50,https://github.com/apache/camel,22c355bb4ffb500405499d189db30932ca5aac9,pos
-        51,https://github.com/apache/struts,01e6b251b4db78bfb7971033652e81d1af4cb3e,pos'''
+        input_csv_data = "cve_id,repo_url,commit_id\n"
 
-
-    # Create a DictReader object from the csv module, not from the string
-    csv_file_like = io.StringIO(input_csv_data)
-    csv_reader = csv.DictReader(csv_file_like)
-
-    extracted_data = dict()
-    for i, row in enumerate(csv_reader):
-        extracted_data[i] = row
+        for i in range(num_records):
+            input_csv_data += str(i) + ",https://github.com/apache/openjpa,87a4452be08b4f97274d0ccfac585ae85841e470\n"
+            extracted_data[i] = {'cve_id': str(i), 'repo_url':'https://github.com/apache/openjpa', 'commit_id': '87a4452be08b4f97274d0ccfac585ae85841e470'}
 
     yield input_csv_data, extracted_data
 
 @pytest.fixture
-def mock_setup_repo_exist(request, process_data):
-    repo_exist = request.param
-
-    list_dir = []
-
-    repo_name = 'RepositoryMining2'
-
-    if repo_exist:
-        list_dir = [repo_name]
+def mock_data_to_mine(process_data):
 
     input_csv_data, extracted_data = process_data
-    with patch('os.listdir', return_value=list_dir) as mock_listdir, \
-         patch('os.getcwd', return_value='Dataset2/tests') as mock_cwd, \
-         patch('os.mkdir') as mock_mkdir, \
-         patch('builtins.open', mock_open(read_data=input_csv_data)) as mock_op, \
-         patch('os.chdir') as mock_chdir, \
-         patch('Dataset2.RepoMining.repo_Mining.startMiningRepo') as mock_start:
-        yield mock_listdir, mock_cwd, mock_mkdir, mock_op, mock_chdir, mock_start, extracted_data
+    with patch('builtins.open', mock_open(read_data=input_csv_data)) as mock_op, \
+         patch('Dataset2.RepoMining.RepoMiner.RepoMiner.start_mining_repo') as mock_start:
+        yield  mock_op, mock_start, extracted_data
 
 
 @pytest.fixture
@@ -72,14 +53,24 @@ def mock_op_fail(request):
     mock = mock_open(read_data='Test data')
 
     def mock_open_side_effect(file, mode='r'):
-        if file == file_to_fail:
-            raise FileNotFoundError(f"No such file or directory: '{file}'")
+        custom_dir_side_effect(file, file_to_fail)
         # Return the mock object for other files
         return mock()
 
     # Patch 'builtins.open' with our mock side effect
     with patch('builtins.open', mock_open_side_effect) as _mock_open:
         yield mock  # Yield the file name to the test
+
+
+@pytest.fixture
+def mock_os_path_exists(request):
+    path_dict = request.param
+
+    def mock_exists(path):
+        return path_dict.get(path, False)
+
+    with patch("os.path.exists", side_effect=mock_exists) as mock_os_exists:
+        yield mock_os_exists
 
 @pytest.fixture
 def mock_chdir_fail(request):
@@ -194,43 +185,44 @@ def mock_repo_mining(request):
     # Retrieve parameters
     is_commit_defined, is_mod_present, is_java_file_present, is_scb_present = request.param
 
+    mock_commit = MagicMock()
+    mock_commit.commit_id = 'commit1'
+    mock_commit.author_date = '2024-01-01'
+    mock_commit.modifications = []
+    if is_mod_present:
+        mod_filename = ''
+        mod_source_code_before = None
+        if is_java_file_present:
+            mod_filename = 'file1.java'
+        else:
+            mod_filename = 'file1.py'
+
+        if is_scb_present:
+            mod_source_code_before = 'public class File1 {}'
+
+        # Create a mock modification instance with attributes
+        m = MagicMock()
+        m.filename = mod_filename
+        m.source_code_before = mod_source_code_before
+
+        # Append the modification to the commit's modifications list
+        mock_commit.modifications.append(m)
+
     # Determine the error or response based on parameters
     def side_effect(url, *args, **kwargs):
         if not is_commit_defined:
             raise ValueError()
         else:
-            mock_commit1 = MagicMock()
-            mock_commit1.commit_id = 'commit1'
-            mock_commit1.author_date = '2024-01-01'
-            mock_commit1.modifications = []
-            if is_mod_present:
-                mod_filename = ''
-                mod_source_code_before = None
-                if is_java_file_present:
-                    mod_filename = 'file1.java'
-                else:
-                    mod_filename = 'file1.py'
-
-                if is_scb_present:
-                    mod_source_code_before = 'public class File1 {}'
-
-                # Create a mock modification instance with attributes
-                m = MagicMock()
-                m.filename = mod_filename
-                m.source_code_before = mod_source_code_before
-
-                # Append the modification to the commit's modifications list
-                mock_commit1.modifications.append(m)
 
                 # Create a mock repository mining instance
             mock_repo_mining_instance = Mock()
-            mock_repo_mining_instance.traverse_commits.return_value = [mock_commit1]
+            mock_repo_mining_instance.traverse_commits.return_value = [mock_commit]
 
             return mock_repo_mining_instance
 
 
-    with patch('Dataset2.RepoMining.repo_Mining.RepositoryMining', side_effect=side_effect) as mock:
-        yield mock
+    with patch('Dataset2.RepoMining.RepoMiner.RepositoryMining', side_effect=side_effect) as mock:
+        yield mock, mock_commit
 
 # Define the mock function with parameters
 def mock_listdir(directory, cve_id, cve_id_exists, commit_id, commit_exists):
@@ -298,11 +290,10 @@ def is_admissible_directory_name(name):
     return True
 
 
-def custom_chdir_side_effect(directory, error_path=None):
+def custom_dir_side_effect(directory, error_path=None):
 
     if isinstance(directory, str):
         if directory == error_path:
-            print("DIR TO FAIL:" + directory)
             raise FileNotFoundError(f"No such file or directory: '{directory}'")
 
         if not is_admissible_directory_name(directory):
@@ -311,6 +302,22 @@ def custom_chdir_side_effect(directory, error_path=None):
     else:
         # Raise TypeError if the directory is not a string
         raise TypeError("Directory must be a string")
+
+def custom_analyze_side_effect(commit, cve_path, commit_path):
+    # Check if at least three arguments are provided
+    if isinstance(cve_path, str) and isinstance(commit_path, str):
+        if path_valid(cve_path) and path_valid(commit_path):
+            raise FileNotFoundError()
+    else:
+        raise TypeError()
+
+def path_valid(path):
+    valid_path_pattern = r"^[A-Za-z0-9_\-./\\]+$"
+    # Check if path matches valid path pattern
+    if not re.match(valid_path_pattern, path):
+        raise OSError()
+    return True
+
 
 
 # Define the fixture to patch os.chdir with parameters
@@ -321,7 +328,7 @@ def mock_os_chdir(request):
 
     # Update the lambda function to include error_path
     with patch('os.chdir',
-               side_effect=lambda directory: custom_chdir_side_effect(directory, error_path)) as mock_chdir:
+               side_effect=lambda directory: custom_dir_side_effect(directory, error_path)) as mock_chdir:
         yield mock_chdir
 
 

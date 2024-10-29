@@ -90,12 +90,12 @@ class RepoMiner:
                     except ValueError:
                         status = statusVE
                         toWrite += status
-                        self.logger.error(toWrite + "," + commit_id + "\n")
+                        self.logger.error(toWrite + "," + commit_id)
                         self.index+= 1
                     except GitCommandError:
                         status = statusGCE
                         toWrite += status
-                        self.logger.error(toWrite + "," + commit_id + "\n")
+                        self.logger.error(toWrite + "," + commit_id)
                         self.index+= 1
 
                 else:
