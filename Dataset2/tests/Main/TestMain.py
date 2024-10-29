@@ -563,11 +563,11 @@ class TestMain:
                                 "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3/cvd_id3": [
                                     "folder3"],
                                 "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1/cvd_id1/folder1": [
-                                    "Example.java", "Example.java_text_mining.txt"],
+                                    "Example.java"],
                                 "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id2/folder2": [
-                                    "Example.java", "Example.java_text_mining.txt"],
+                                    "Example.java"],
                                 "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3/cvd_id3/folder3": [
-                                    "Example.java", "Example.java_text_mining.txt"]
+                                    "Example.java"]
                             },
                             'error_path': ""
                         },
@@ -662,11 +662,11 @@ class TestMain:
                                 "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3/cvd_id3": [
                                     "folder3"],
                                 "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1/cvd_id1/folder1": [
-                                    "Example.java", "Example.java_text_mining.txt"],
+                                    "Example.java"],
                                 "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id2/folder2": [
-                                    "Example.java", "Example.java_text_mining.txt"],
+                                    "Example.java"],
                                 "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3/cvd_id3/folder3": [
-                                    "Example.java", "Example.java_text_mining.txt"]
+                                    "Example.java"]
                             },
                             'error_path': ""
                         },
@@ -733,11 +733,11 @@ class TestMain:
                                 "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3/cvd_id3": [
                                     "folder3"],
                                 "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1/cvd_id1/folder1": [
-                                    "Example.java", "Example.java_text_mining.txt"],
+                                    "Example.java"],
                                 "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id2/folder2": [
-                                    "Example.java", "Example.java_text_mining.txt"],
+                                    "Example.java"],
                                 "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3/cvd_id3/folder3": [
-                                    "Example.java", "Example.java_text_mining.txt"]
+                                    "Example.java"]
                             },
                             'error_path': ""
                         },
@@ -1147,7 +1147,11 @@ class TestMain:
             assert mock_open_fixture.call_count == 4
             assert mock_open_fixture.call_args_list[0] == call("Predicting-Vulnerable-Code/Dataset2/mining_results/text_mining_dict.txt","w+", encoding='utf-8')
             assert mock_open_fixture.call_args_list[1] == call("Predicting-Vulnerable-Code/Dataset2/mining_results/FilteredTextMining.txt","w+", encoding='utf-8')
-            mock_open_fixture().write.assert_any_call("{}")
+            expected_writes = ['{}', '{}', 'Name', '\n'
+            ]
+            scritture = [call.args[0] for call in
+                         mock_open_fixture().write.mock_calls]
+            assert scritture == expected_writes, f"Le scritture non corrispondono! Atteso: {expected_writes}, ma trovato: {scritture}"
 
         @pytest.mark.parametrize(
             'mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture',
@@ -1182,7 +1186,11 @@ class TestMain:
                 "Predicting-Vulnerable-Code/Dataset2/mining_results/text_mining_dict.txt", "w+", encoding='utf-8')
             assert mock_open_fixture.call_args_list[1] == call(
                 "Predicting-Vulnerable-Code/Dataset2/mining_results/FilteredTextMining.txt", "w+", encoding='utf-8')
-            mock_open_fixture().write.assert_any_call("{}")
+            expected_writes = ['{}', '{}', 'Name', '\n'
+                               ]
+            scritture = [call.args[0] for call in
+                         mock_open_fixture().write.mock_calls]
+            assert scritture == expected_writes, f"Le scritture non corrispondono! Atteso: {expected_writes}, ma trovato: {scritture}"
 
         @pytest.mark.parametrize(
             'mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture',
@@ -1220,7 +1228,11 @@ class TestMain:
                 "Predicting-Vulnerable-Code/Dataset2/mining_results/text_mining_dict.txt", "w+", encoding='utf-8')
             assert mock_open_fixture.call_args_list[1] == call(
                 "Predicting-Vulnerable-Code/Dataset2/mining_results/FilteredTextMining.txt", "w+", encoding='utf-8')
-            mock_open_fixture().write.assert_any_call("{}")
+            expected_writes = ['{}', '{}', 'Name', '\n'
+                               ]
+            scritture = [call.args[0] for call in
+                         mock_open_fixture().write.mock_calls]
+            assert scritture == expected_writes, f"Le scritture non corrispondono! Atteso: {expected_writes}, ma trovato: {scritture}"
 
         @pytest.mark.parametrize(
             'mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture',
@@ -1258,7 +1270,11 @@ class TestMain:
                 "Predicting-Vulnerable-Code/Dataset2/mining_results/text_mining_dict.txt", "w+", encoding='utf-8')
             assert mock_open_fixture.call_args_list[1] == call(
                 "Predicting-Vulnerable-Code/Dataset2/mining_results/FilteredTextMining.txt", "w+", encoding='utf-8')
-            mock_open_fixture().write.assert_any_call("{}")
+            expected_writes = ['{}', '{}', 'Name', '\n'
+                               ]
+            scritture = [call.args[0] for call in
+                         mock_open_fixture().write.mock_calls]
+            assert scritture == expected_writes, f"Le scritture non corrispondono! Atteso: {expected_writes}, ma trovato: {scritture}"
 
         @pytest.mark.parametrize(
             'mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture',
@@ -1299,7 +1315,11 @@ class TestMain:
                 "Predicting-Vulnerable-Code/Dataset2/mining_results/text_mining_dict.txt", "w+", encoding='utf-8')
             assert mock_open_fixture.call_args_list[1] == call(
                 "Predicting-Vulnerable-Code/Dataset2/mining_results/FilteredTextMining.txt", "w+", encoding='utf-8')
-            mock_open_fixture().write.assert_any_call("{}")
+            expected_writes = ['{}', '{}', 'Name', '\n'
+                               ]
+            scritture = [call.args[0] for call in
+                         mock_open_fixture().write.mock_calls]
+            assert scritture == expected_writes, f"Le scritture non corrispondono! Atteso: {expected_writes}, ma trovato: {scritture}"
 
         @pytest.mark.parametrize(
             'mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture',
@@ -1343,7 +1363,11 @@ class TestMain:
                 "Predicting-Vulnerable-Code/Dataset2/mining_results/text_mining_dict.txt", "w+", encoding='utf-8')
             assert mock_open_fixture.call_args_list[1] == call(
                 "Predicting-Vulnerable-Code/Dataset2/mining_results/FilteredTextMining.txt", "w+", encoding='utf-8')
-            mock_open_fixture().write.assert_any_call("{}")
+            expected_writes = ['{}', '{}', 'Name', '\n'
+                               ]
+            scritture = [call.args[0] for call in
+                         mock_open_fixture().write.mock_calls]
+            assert scritture == expected_writes, f"Le scritture non corrispondono! Atteso: {expected_writes}, ma trovato: {scritture}"
 
         @pytest.mark.parametrize(
             'mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture',
@@ -1387,7 +1411,11 @@ class TestMain:
                 "Predicting-Vulnerable-Code/Dataset2/mining_results/text_mining_dict.txt", "w+", encoding='utf-8')
             assert mock_open_fixture.call_args_list[1] == call(
                 "Predicting-Vulnerable-Code/Dataset2/mining_results/FilteredTextMining.txt", "w+", encoding='utf-8')
-            mock_open_fixture().write.assert_any_call("{}")
+            expected_writes = ['{}', '{}', 'Name', '\n'
+                               ]
+            scritture = [call.args[0] for call in
+                         mock_open_fixture().write.mock_calls]
+            assert scritture == expected_writes, f"Le scritture non corrispondono! Atteso: {expected_writes}, ma trovato: {scritture}"
 
         @pytest.mark.parametrize(
             'mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture',
@@ -1435,7 +1463,11 @@ class TestMain:
                 "Predicting-Vulnerable-Code/Dataset2/mining_results/text_mining_dict.txt", "w+", encoding='utf-8')
             assert mock_open_fixture.call_args_list[1] == call(
                 "Predicting-Vulnerable-Code/Dataset2/mining_results/FilteredTextMining.txt", "w+", encoding='utf-8')
-            mock_open_fixture().write.assert_any_call("{}")
+            expected_writes = ['{}', '{}', 'Name', '\n'
+                               ]
+            scritture = [call.args[0] for call in
+                         mock_open_fixture().write.mock_calls]
+            assert scritture == expected_writes, f"Le scritture non corrispondono! Atteso: {expected_writes}, ma trovato: {scritture}"
 
         @pytest.mark.parametrize(
             'mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture',
@@ -1875,60 +1907,11 @@ class TestMain:
                 "Predicting-Vulnerable-Code/Dataset2/mining_results/text_mining_dict.txt", "w+", encoding='utf-8')
             assert mock_open_fixture.call_args_list[1] == call(
                 "Predicting-Vulnerable-Code/Dataset2/mining_results/FilteredTextMining.txt", "w+", encoding='utf-8')
-            mock_open_fixture().write.assert_any_call("{}")
-
-        @pytest.mark.parametrize(
-            'mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture',
-            [
-                (
-                        {
-                            'directories': {
-                                "Predicting-Vulnerable-Code/Dataset2/Dataset_Divided": ["1.csv", "2.csv", "3.csv"],
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1": ["cvd_id1"],
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2": ["cvd_id2"],
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3": ["cvd_id3"],
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1/cvd_id1": ["folder1"],
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id2": ["folder2"],
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3/cvd_id3": ["folder3"],
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1/cvd_id1/folder1": [
-                                    "file.txt"],
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id2/folder2": [
-                                    "file.txt"],
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3/cvd_id3/folder3": [
-                                    "file.txt"]
-                            },
-                            'error_path': ""
-                        },
-                        {
-                            'isdir_map': {
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1": True,
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2": True,
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3": True,
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1/cvd_id1": True,
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id2": True,
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3/cvd_id3": True,
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1/cvd_id1/folder1": True,
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id2/folder2": True,
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3/cvd_id3/folder3": True,
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1/cvd_id1/folder1/file.txt": False,
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id2/folder2/file.txt": False,
-                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3/cvd_id3/folder3/file.txt": False
-                            }
-                        },
-                        {'file_contents': {}, 'file_to_fail': '', 'exception_type': ''},
-                        None
-                )
-            ],
-            indirect=['mock_listdir_fixture', 'mock_isdir_fixture', 'mock_open_fixture', 'mock_path_join_fixture']
-        )
-        def test_case_16(self, mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture):
-            self.main.run_text_mining()
-            assert mock_open_fixture.call_count == 4
-            assert mock_open_fixture.call_args_list[0] == call(
-                "Predicting-Vulnerable-Code/Dataset2/mining_results/text_mining_dict.txt", "w+", encoding='utf-8')
-            assert mock_open_fixture.call_args_list[1] == call(
-                "Predicting-Vulnerable-Code/Dataset2/mining_results/FilteredTextMining.txt", "w+", encoding='utf-8')
-            mock_open_fixture().write.assert_any_call("{}")
+            expected_writes = ['{}', '{}', 'Name', '\n'
+                               ]
+            scritture = [call.args[0] for call in
+                         mock_open_fixture().write.mock_calls]
+            assert scritture == expected_writes, f"Le scritture non corrispondono! Atteso: {expected_writes}, ma trovato: {scritture}"
 
         @pytest.mark.parametrize(
             'mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture',
@@ -1966,6 +1949,66 @@ class TestMain:
                                 "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1/cvd_id1/folder1/another_folder": True,
                                 "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id2/folder2/another_folder": True,
                                 "Predicting-Vulnerable-Code/Dataset2/mining_results/RepoMining3/cvd_id3/folder3/another_folder": True
+                            }
+                        },
+                        {'file_contents': {}, 'file_to_fail': '', 'exception_type': ''},
+                        None
+                )
+            ],
+            indirect=['mock_listdir_fixture', 'mock_isdir_fixture', 'mock_open_fixture', 'mock_path_join_fixture']
+        )
+        def test_case_16(self, mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture):
+            self.main.run_text_mining()
+            assert mock_open_fixture.call_count == 4
+            assert mock_open_fixture.call_args_list[0] == call(
+                "Predicting-Vulnerable-Code/Dataset2/mining_results/text_mining_dict.txt", "w+", encoding='utf-8')
+            assert mock_open_fixture.call_args_list[1] == call(
+                "Predicting-Vulnerable-Code/Dataset2/mining_results/FilteredTextMining.txt", "w+", encoding='utf-8')
+            expected_writes = ['{}', '{}', 'Name', '\n'
+                               ]
+            scritture = [call.args[0] for call in
+                         mock_open_fixture().write.mock_calls]
+            assert scritture == expected_writes, f"Le scritture non corrispondono! Atteso: {expected_writes}, ma trovato: {scritture}"
+
+        @pytest.mark.parametrize(
+            'mock_listdir_fixture, mock_isdir_fixture, mock_open_fixture, mock_path_join_fixture',
+            [
+                (
+                        {
+                            'directories': {
+                                "Predicting-Vulnerable-Code/Dataset2/Dataset_Divided": ["1.csv", "2.csv", "3.csv"],
+                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1": ["cvd_id1"],
+                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2": ["cvd_id2"],
+                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3": ["cvd_id3"],
+                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1/cvd_id1": [
+                                    "folder1"],
+                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id2": [
+                                    "folder2"],
+                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3/cvd_id3": [
+                                    "folder3"],
+                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1/cvd_id1/folder1": [
+                                    "file.txt"],
+                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id2/folder2": [
+                                    "file.txt"],
+                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3/cvd_id3/folder3": [
+                                    "file.txt"]
+                            },
+                            'error_path': ""
+                        },
+                        {
+                            'isdir_map': {
+                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1": True,
+                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2": True,
+                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3": True,
+                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1/cvd_id1": True,
+                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id2": True,
+                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3/cvd_id3": True,
+                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1/cvd_id1/folder1": True,
+                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id2/folder2": True,
+                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3/cvd_id3/folder3": True,
+                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining1/cvd_id1/folder1/file.txt": False,
+                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining2/cvd_id2/folder2/file.txt": False,
+                                "Predicting-Vulnerable-Code/Dataset2/mining_results/RepositoryMining3/cvd_id3/folder3/file.txt": False
                             }
                         },
                         {'file_contents': {}, 'file_to_fail': '', 'exception_type': ''},
