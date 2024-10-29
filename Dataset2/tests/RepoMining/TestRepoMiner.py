@@ -850,6 +850,219 @@ class TestRepoMiner:
                 call(str_log_2)
             ])
 
+    class TestAnalyzeCommit:
+        BASE_DIR = 'test/path'
+        CVE_ID_PATH = BASE_DIR + '/' + 'mining_results' + '/' + '1'
+        COMMIT_PATH = CVE_ID_PATH + '/' + 'd72bd78c19dfb7b57395a66ae8d9269d59a87bd2'
+        FILE_PATH = COMMIT_PATH + '/' + 'file1.java'
+
+        def test_case_1(self):
+            miner = RepoMiner(self.BASE_DIR)
+
+            with pytest.raises(AttributeError):
+                miner.analyze_commit(None, self.CVE_ID_PATH, self.COMMIT_PATH)
+
+        @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
+        @patch('os.mkdir', side_effect=path_valid)
+        @patch('builtins.open')
+        @patch('os.path.exists', side_effect=lambda directory: directory != 'test<<34')
+        @pytest.mark.parametrize('mock_repo_mining', [(True, True, True, False)], indirect=True)
+        def test_case_2(self, mock_exists, mock_open, mock_mkdir, mock_join, mock_repo_mining):
+            miner = RepoMiner(self.BASE_DIR)
+
+            mock, mock_commit = mock_repo_mining
+
+            with pytest.raises(OSError):
+                miner.analyze_commit(mock_commit, 'test<<34', self.COMMIT_PATH)
+
+        @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
+        @patch('os.mkdir', side_effect=lambda directory: custom_dir_side_effect(directory, 'test/not-exist-path'))
+        @patch('builtins.open')
+        @patch('os.path.exists', side_effect=lambda directory: directory != 'test/not-exist-path')
+        @pytest.mark.parametrize('mock_repo_mining', [(True, True, True, False)], indirect=True)
+        def test_case_3(self, mock_exists, mock_open, mock_mkdir, mock_join, mock_repo_mining):
+            miner = RepoMiner(self.BASE_DIR)
+
+            mock, mock_commit = mock_repo_mining
+
+            with pytest.raises(FileNotFoundError):
+                miner.analyze_commit(mock_commit, 'test/not-exist-path', self.COMMIT_PATH)
+
+        @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
+        @patch('os.mkdir', side_effect=path_valid)
+        @patch('builtins.open')
+        @patch('os.path.exists', side_effect=lambda directory: directory != 'test<<34')
+        @pytest.mark.parametrize('mock_repo_mining', [(True, True, True, False)], indirect=True)
+        def test_case_4(self, mock_exists, mock_open, mock_mkdir, mock_join, mock_repo_mining):
+            miner = RepoMiner(self.BASE_DIR)
+
+            mock, mock_commit = mock_repo_mining
+
+            with pytest.raises(OSError):
+                miner.analyze_commit(mock_commit, self.CVE_ID_PATH, 'test<<34')
+
+        @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
+        @patch('os.mkdir', side_effect=lambda directory: custom_dir_side_effect(directory, 'test/not-exist-path'))
+        @patch('builtins.open')
+        @patch('os.path.exists', side_effect=lambda directory: directory != 'test/not-exist-path')
+        @pytest.mark.parametrize('mock_repo_mining', [(True, True, True, False)], indirect=True)
+        def test_case_5(self, mock_exists, mock_open, mock_mkdir, mock_join, mock_repo_mining):
+            miner = RepoMiner(self.BASE_DIR)
+
+            mock, mock_commit = mock_repo_mining
+
+            with pytest.raises(FileNotFoundError):
+                miner.analyze_commit(mock_commit, self.CVE_ID_PATH, 'test/not-exist-path')
+
+        @patch('os.mkdir')
+        @pytest.mark.parametrize('mock_repo_mining', [(True, False, False, False)], indirect=True)
+        def test_case_6(self, mock_mkdir, mock_repo_mining):
+            mock, mock_commit = mock_repo_mining
+
+            miner = RepoMiner(self.BASE_DIR)
+            miner.analyze_commit(mock_commit, self.CVE_ID_PATH, self.COMMIT_PATH)
+
+            mock_mkdir.assert_not_called()
+
+        @patch('os.mkdir')
+        @pytest.mark.parametrize('mock_repo_mining', [(True, True, False, False)], indirect=True)
+        def test_case_7(self, mock_mkdir, mock_repo_mining):
+            mock, mock_commit = mock_repo_mining
+
+            miner = RepoMiner(self.BASE_DIR)
+            miner.analyze_commit(mock_commit, self.CVE_ID_PATH, self.COMMIT_PATH)
+
+            mock_mkdir.assert_not_called()
+
+        @patch('os.mkdir')
+        @patch('os.path.exists', return_value=True)
+        @pytest.mark.parametrize('mock_repo_mining', [(True, True, True, False)], indirect=True)
+        def test_case_8(self, mock_exists, mock_mkdir, mock_repo_mining):
+            mock, mock_commit = mock_repo_mining
+
+            miner = RepoMiner(self.BASE_DIR)
+            miner.analyze_commit(mock_commit, self.CVE_ID_PATH, self.COMMIT_PATH)
+
+            mock_mkdir.assert_not_called()
+
+        @patch('os.mkdir')
+        @patch('os.path.exists')
+        @patch('builtins.open')
+        @pytest.mark.parametrize('mock_repo_mining', [(True, True, True, False)], indirect=True)
+        def test_case_9(self, mock_open, mock_exists, mock_mkdir, mock_repo_mining):
+            mock, mock_commit = mock_repo_mining
+            mock_exists.side_effect = lambda dir: dir == self.CVE_ID_PATH
+
+            miner = RepoMiner(self.BASE_DIR)
+            miner.analyze_commit(mock_commit, self.CVE_ID_PATH, self.COMMIT_PATH)
+
+            assert mock_mkdir.call_count == 1
+            mock_mkdir.assert_called_once_with(self.COMMIT_PATH)
+
+            mock_open.assert_not_called()
+
+        @patch('os.mkdir')
+        @patch('os.path.exists')
+        @patch('builtins.open')
+        @pytest.mark.parametrize('mock_repo_mining', [(True, True, True, False)], indirect=True)
+        def test_case_10(self, mock_open, mock_exists, mock_mkdir, mock_repo_mining):
+            mock, mock_commit = mock_repo_mining
+            mock_exists.side_effect = lambda dir: dir == self.COMMIT_PATH
+
+            miner = RepoMiner(self.BASE_DIR)
+            miner.analyze_commit(mock_commit, self.CVE_ID_PATH, self.COMMIT_PATH)
+
+            assert mock_mkdir.call_count == 1
+            mock_mkdir.assert_called_once_with(self.CVE_ID_PATH)
+
+            mock_open.assert_not_called()
+
+        @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
+        @patch('os.mkdir')
+        @patch('os.path.exists', return_value=False)
+        @patch('builtins.open')
+        @pytest.mark.parametrize('mock_repo_mining', [(True, True, True, False)], indirect=True)
+        def test_case_11(self, mock_open, mock_exists, mock_mkdir, mock_join, mock_repo_mining):
+            mock, mock_commit = mock_repo_mining
+
+            miner = RepoMiner(self.BASE_DIR)
+            miner.analyze_commit(mock_commit, self.CVE_ID_PATH, self.COMMIT_PATH)
+
+            assert mock_mkdir.call_count == 2
+            mock_mkdir.assert_has_calls([
+                call(self.CVE_ID_PATH),
+                call(self.COMMIT_PATH)
+            ])
+
+            mock_open.assert_not_called()
+
+        @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
+        @patch('os.mkdir')
+        @patch('os.path.exists', return_value=True)
+        @patch('builtins.open')
+        @pytest.mark.parametrize('mock_repo_mining', [(True, True, True, True)], indirect=True)
+        def test_case_12(self, mock_open, mock_exists, mock_mkdir, mock_join, mock_repo_mining):
+            mock, mock_commit = mock_repo_mining
+
+            miner = RepoMiner(self.BASE_DIR)
+            miner.analyze_commit(mock_commit, self.CVE_ID_PATH, self.COMMIT_PATH)
+
+            mock_mkdir.assert_not_called()
+
+            mock_open.assert_called_once_with(self.FILE_PATH, 'w+', encoding='utf-8')
+
+        @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
+        @patch('os.mkdir')
+        @patch('os.path.exists', return_value=True)
+        @patch('builtins.open')
+        @pytest.mark.parametrize('mock_repo_mining', [(True, True, True, True)], indirect=True)
+        def test_case_13(self, mock_open, mock_exists, mock_mkdir, mock_join, mock_repo_mining):
+            mock, mock_commit = mock_repo_mining
+            mock_exists.side_effect = lambda dir: dir == self.CVE_ID_PATH
+
+            miner = RepoMiner(self.BASE_DIR)
+            miner.analyze_commit(mock_commit, self.CVE_ID_PATH, self.COMMIT_PATH)
+
+            mock_mkdir.assert_called_once_with(self.COMMIT_PATH)
+
+            mock_open.assert_called_once_with(self.FILE_PATH, 'w+', encoding='utf-8')
+
+        @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
+        @patch('os.mkdir')
+        @patch('os.path.exists', return_value=True)
+        @patch('builtins.open')
+        @pytest.mark.parametrize('mock_repo_mining', [(True, True, True, True)], indirect=True)
+        def test_case_14(self, mock_open, mock_exists, mock_mkdir, mock_join, mock_repo_mining):
+            mock, mock_commit = mock_repo_mining
+            mock_exists.side_effect = lambda dir: dir == self.COMMIT_PATH
+
+            miner = RepoMiner(self.BASE_DIR)
+            miner.analyze_commit(mock_commit, self.CVE_ID_PATH, self.COMMIT_PATH)
+
+            mock_mkdir.assert_called_once_with(self.CVE_ID_PATH)
+
+            mock_open.assert_called_once_with(self.FILE_PATH, 'w+', encoding='utf-8')
+
+        @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
+        @patch('os.mkdir')
+        @patch('os.path.exists', return_value=False)
+        @patch('builtins.open')
+        @pytest.mark.parametrize('mock_repo_mining', [(True, True, True, True)], indirect=True)
+        def test_case_15(self, mock_open, mock_exists, mock_mkdir, mock_join, mock_repo_mining):
+            mock, mock_commit = mock_repo_mining
+
+            miner = RepoMiner(self.BASE_DIR)
+            miner.analyze_commit(mock_commit, self.CVE_ID_PATH, self.COMMIT_PATH)
+
+            assert mock_mkdir.call_count == 2
+            mock_mkdir.assert_has_calls([
+                call(self.CVE_ID_PATH),
+                call(self.COMMIT_PATH)
+            ])
+
+            mock_open.assert_called_once_with(self.FILE_PATH, 'w+', encoding='utf-8')
+
+
 
 
 
