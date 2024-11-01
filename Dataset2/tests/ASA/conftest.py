@@ -1,212 +1,165 @@
-
-from unittest.mock import mock_open, patch, Mock, MagicMock
-
-import pandas as pd
-import pytest
+import csv
 import os
-import shutil
-import io
 
-BACK_UP_DIR = 'temp_files'
-NAME_DIR = 'ASA'
-TEST_DIR = 'tests'
-
-RES_NEG_NAME = 'RepositoryMining_ASAResults_neg.csv'
-RES_POS_NAME = 'RepositoryMining_ASAResults_pos.csv'
-
-@pytest.fixture
-def invalidate_format(request, mock_files):
-    file_name = request.param
-    data = 'severity\tupdateDate\tcomments\tline\tauthor\tproject\teffort\tmessage\tcreationDate\tstatus\torganization\tcomponent\ttextRange\tdebt\tkey\thash\nMINOR\t2020-07-03T17:57:05+0200\t\t71.0\t\tjava:S2386\tProva_Mining_Second_Part\t15min\t"Make this member ""protected""."\t2020-07-03T17:57:05+0200\tVULNERABILITY\t\tProva_Mining_Second_Part:src/RepositoryMining19/866/17ce298b98df08e413e81a61f209912ea7fe36ef/Runner.java\tdefault-organization\t{startLine=71.0, endLine=71.0, startOffset=33.0, endOffset=59.0}\t15min\tAXMVa5NrkLspzIj1dA_E\tcef48bca33fc27fd295ef071f478584d\tOPEN\nMINOR\t2020-07-03T17:57:05+0200\t\t564.0\t\tjava:S1148\tProva_Mining_Second_Part\t10min\tUse a logger to log this exception.\t2020-07-03T17:57:05+0200\tVULNERABILITY\t\tProva_Mining_Second_Part:src/RepositoryMining19/866/17ce298b98df08e413e81a61f209912ea7fe36ef/Runner.java\tdefault-organization\t{startLine=564.0, endLine=564.0, startOffset=14.0, endOffset=29.0}\t10min\tAXMVa5NrkLspzIj1dA_D\t2dc1665d31b37f9aa7408939a0365027\tOPEN\n'
-
-    df = pd.read_csv(io.StringIO(data), sep='\t')
-
-    if df.shape[1] > 10:
-        df = df.iloc[:, 10:]
-
-    invalid_content = df.to_csv(sep='\t', index=False).strip()
-
-    mock_files[file_name] = mock_open(read_data=invalid_content)
-    yield mock_files
-
-@pytest.fixture
-def invalidate_json_format(request, mock_files):
-    file_name = request.param
-    data = 'severity\tupdateDate\tcomments\tline\tauthor\tproject\teffort\tmessage\tcreationDate\tstatus' \
-           '\torganization\tcomponent\ttextRange\tdebt\tkey\thash\nMINOR\t2020-07-03T17:57:05+0200\t\t71.0' \
-           '\t\tjava:S2386\tProva_Mining_Second_Part\t15min\t"Make this member ""protected""."\t2020-07-03T17:57:05+0200' \
-           '\tVULNERABILITY' \
-           '\tProva_Mining_Second_Part:src/RepositoryMining19/866/17ce298b98df08e413e81a61f209912ea7fe36ef/Runner.java' \
-           '\tdefault-organization\t{startLine=71.0, endLine=71.0, startOffset=33.0, endOffset=59.0}\t15min' \
-           '\tAXMVa5NrkLspzIj1dA_E\tcef48bca33fc27fd295ef071f478584d\tOPEN\nMINOR\t2020-07-03T17:57:05+0200\t' \
-           '\t564.0\t\tjava:S1148\tProva_Mining_Second_Part\t10min\tUse a logger to log this exception.' \
-           '\t2020-07-03T17:57:05+0200\tVULNERABILITY\t' \
-           '\tProva_Mining_Second_Part:src/RepositoryMining19/866/17ce298b98df08e413e81a61f209912ea7fe36ef/Runner.java' \
-           '\tdefault-organization\t{startLine=564.0, endLine=564.0, startOffset=14.0, endOffset=29.0}\t10min' \
-           '\tAXMVa5NrkLspzIj1dA_D\t2dc1665d31b37f9aa7408939a0365027\tOPEN\n'
-
-    df = pd.read_csv(io.StringIO(data), sep='\t')
-
-    if df.shape[1] > 10:
-        df = df.iloc[:, 10:]
-
-    invalid_content = df.to_csv(sep='\t', index=False).strip()
-
-    mock_files[file_name] = mock_open(read_data=invalid_content)
-    yield mock_files
-
-@pytest.fixture
-def mock_files(request):
-    file_mocks = request.param
-    mocks = {file: mock_open(read_data=data) for file, data in file_mocks.items()}
-
-    def mock_open_side_effect(file, mode='r'):
-        if file in mocks:
-            mock_instance = mocks[file]
-            return mock_instance(file, mode)
-        default_mock = mock_open(read_data='Default data')
-        return default_mock()
-
-    with patch('builtins.open', mock_open_side_effect) as _mock_open:
-        yield mocks
-
-@pytest.fixture
-def mock_op_permission_err(request):
-    file_to_fail = request.param
-
-    mock = mock_open(read_data='Test data')
-
-    def mock_open_side_effect(file, mode='r'):
-        if file == file_to_fail:
-            raise PermissionError
-        return mock()
-
-    with patch('builtins.open', mock_open_side_effect) as _mock_open:
-        yield mock
-
-@pytest.fixture
-def mock_op_fail(request, mock_files):
-    # This will reuse the mock_files fixture
-    file_to_fail = request.param  # File that should raise FileNotFoundError
-
-    # Override the specific file to raise FileNotFoundError
-    failing_mock = mock_open()  # Create a mock instance
-    failing_mock.side_effect = FileNotFoundError(f"Mocked file {file_to_fail} not found.")
-
-    # Update the mock_files dictionary to use the failing mock for the specific file
-    mock_files[file_to_fail] = failing_mock
-
-    def mock_open_side_effect(file, mode='r'):
-        if file in mock_files:
-            return mock_files[file](file, mode)
-        # Fallback if not in mocks
-        default_mock = mock_open(read_data='Default data')
-        return default_mock()
-
-    with patch('builtins.open', mock_open_side_effect):
-        yield mock_files
-
-#INTEGRATION FIXTURE
-
-@pytest.fixture
-def setup_dir():
-    cwd = os.getcwd()
-    print("CWD:", cwd)
-    if NAME_DIR not in cwd:
-        test_path = os.path.join(os.getcwd(), "Dataset2", TEST_DIR, NAME_DIR)
-        print("TEST_PATH:", test_path)
-        os.chdir(test_path)
-
-    yield
-
-    os.chdir(cwd)
-    print(f"Changed directory to '{cwd}'.")
-
-@pytest.fixture
-def remove_result_file(request, setup_dir):
-
-    yield
-
-    result_file_names = request.param
-
-    for result_file_name in result_file_names:
-
-        # Construct the full file path if needed, e.g., if you have the file in a subdirectory
-        file_path = os.path.join(os.getcwd(), result_file_name)
-
-        # Check if the file exists
-        if os.path.exists(file_path):
-            # Remove the file
-            os.remove(file_path)
-            print(f"File '{result_file_name}' has been removed.")
-        else:
-            print(f"File '{result_file_name}' does not exist.")
-
-@pytest.fixture
-def prepare_content_data(request):
-    feature_neg_dict, feature_pos_dict = request.param
-
-    HEADER = '''severity\tupdateDate\tcomments\tline\tauthor\trule\tproject\teffort\tmessage\tcreationDate\ttype\ttags\tcomponent\tflows\torganization\ttextRange\tdebt\tkey\thash\tstatus'''
-
-    DATA = '''\nMINOR\t2020-07-03T17:57:05+0200\t\t71.0\t\trule_to_change\tProva_Mining_Second_Part\t15min\t"Make this member ""protected""."\t2020-07-03T17:57:05+0200\tVULNERABILITY\t\tProva_Mining_Second_Part:src/RepositoryMining19/866/component_to_change\tdefault-organization\t{startLine=71.0, endLine=71.0, startOffset=33.0, endOffset=59.0}\t15min\tAXMVa5NrkLspzIj1dA_E\tcef48bca33fc27fd295ef071f478584d\tOPEN'''
-
-    INVALID_DATA = HEADER + '''\nMINOR\t2020-07-03T17:57:05+0200\t\t71.0\t\tjava:S2386\tProva_Mining_Second_Part\t15min'''
-
-    content = []
-
-    i=0
-    for dict in [feature_neg_dict, feature_pos_dict]:
-        if 'is_invalid' in dict.keys() and dict['is_invalid']:
-            content.append(INVALID_DATA)
-        else:
-            number_of_records = dict['number_of_records']
-            content.append(HEADER)
-            if number_of_records >0:
-                content[i]+= DATA
-                if number_of_records > 1:
-                    if not dict['is_rule_repeated']:
-                        content[i] = content[i].replace('rule_to_change', 'java:S2386')
-                    content[i] += DATA
-                content[i] = content[i].replace('rule_to_change', 'java:S2385')
-                content[i] = content[i].replace('component_to_change', dict['component'])
-
-                if 'no_vuln' in dict.keys() and dict['no_vuln']:
-                    content[i] = content[i].replace('VULNERABILITY', "BUG")
-        i+=1
-
-
-    yield {RES_NEG_NAME: content[0], RES_POS_NAME:content[1]}
+import pytest
+from unittest import mock
+from Dataset2.mining_results_asa.SonarAnalyzer import SonarAnalyzer
+from Dataset2.Main import Main
 
 
 @pytest.fixture
-def manage_temp_input_files(request, prepare_content_data, setup_dir):
-    content_dict = prepare_content_data
-    file_names = request.param
+def setup(tmp_path):
+    base_dir = tmp_path / "base_dir"
+    base_dir.mkdir(parents=True, exist_ok=True)
 
-    for file_name in file_names:
-        if file_name in content_dict.keys():
-            with open(file_name, "w") as file:
-                file.write(content_dict[file_name])
+    mining_results_asa_dir = base_dir / "mining_results_asa"
+    mining_results_asa_dir.mkdir(parents=True, exist_ok=True)
 
-    yield
+    project_dir = base_dir / "mining_results" / "RepositoryMining1" / "0" / "57f2ccb66946943fbf3b3f2165eac1c8eb6b1523"
+    project_dir.mkdir(parents=True, exist_ok=True)
 
-    for file_name in file_names:
-        # Construct the full file path if needed, e.g., if you have the file in a subdirectory
-        file_path = os.path.join(os.getcwd(), file_name)
-
-        if os.path.exists(file_path):
-            # Remove the file
-            os.remove(file_path)
-            print(f"File '{file_name}' has been removed.")
-        else:
-            print(f"File '{file_name}' does not exist.")
+    yield base_dir
 
 
+@pytest.fixture
+def sonar_analyzer(setup):
+    return SonarAnalyzer(
+        sonar_host="http://localhost:9000",
+        sonar_token="valid_token",
+        sonar_path="/path/to/sonarscanner",
+        file_name="output.csv",
+        base_dir=setup
+    )
 
 
+@pytest.fixture
+def sonar_analyzer_issues(java_files):
+    return SonarAnalyzer(
+        sonar_host="http://localhost:9000",
+        sonar_token="valid_token",
+        sonar_path="/path/to/sonarscanner",
+        file_name="output.csv",
+        base_dir=java_files
+    )
 
 
+@pytest.fixture
+def no_mining_results_dir(tmp_path):
+    base_dir = tmp_path
+    base_dir.mkdir(parents=True, exist_ok=True)
+
+    yield base_dir
 
 
+@pytest.fixture
+def no_repo_mining_dir(tmp_path):
+    base_dir = tmp_path
+    base_dir.mkdir(parents=True, exist_ok=True)
+
+    project_dir = base_dir / "mining_results"
+    project_dir.mkdir(parents=True, exist_ok=True)
+
+    yield base_dir
 
 
+@pytest.fixture
+def no_cve_dir(tmp_path):
+    base_dir = tmp_path
+    base_dir.mkdir(parents=True, exist_ok=True)
+
+    project_dir = base_dir / "mining_results" / "RepositoryMining1"
+    project_dir.mkdir(parents=True, exist_ok=True)
+
+    yield base_dir
+
+
+@pytest.fixture
+def java_files(tmp_path):
+    base_dir = tmp_path / "base_dir"
+    base_dir.mkdir(parents=True, exist_ok=True)
+
+    mining_results_asa_dir = base_dir / "mining_results_asa"
+    mining_results_asa_dir.mkdir(parents=True, exist_ok=True)
+
+    project_dir = base_dir / "mining_results" / "RepositoryMining1" / "0" / "57f2ccb66946943fbf3b3f2165eac1c8eb6b1523" / "AbstractMvcView.java"
+    project_dir.mkdir(parents=True, exist_ok=True)
+
+    yield base_dir
+
+
+@pytest.fixture
+def output_file_with_issue(sonar_analyzer):
+    fieldnames = [
+        "severity", "updateDate", "line", "rule", "project", "effort", "message",
+        "creationDate", "type", "component", "textRange", "debt", "key", "hash", "status"
+    ]
+    issue = {
+        "severity": "BLOCKER",
+        "updateDate": "2024-10-09T15:40:56+0200",
+        "line": 319,
+        "rule": "java:S6437",
+        "project": "RepositoryMining1:1:9137e6cc45922b529fb776c6857647a3935471bb",
+        "effort": "1h",
+        "message": "Revoke and change this password, as it is compromised.",
+        "creationDate": "2024-10-09T15:40:56+0200",
+        "type": "VULNERABILITY",
+        "component": "RepositoryMining1:1:9137e6cc45922b529fb776c6857647a3935471bb:JndiLdapContextFactoryTest.java",
+        "textRange": "{'startLine': 319, 'endLine': 319, 'startOffset': 34, 'endOffset': 39}",
+        "debt": "1h",
+        "key": "e5b5a9e5-85f2-4ad1-9d77-a1ce37fd15e2",
+        "hash": "fe91b6223b318860e553b82b45b20812",
+        "status": "OPEN"
+    }
+
+    with open(os.path.join(sonar_analyzer.base_dir, sonar_analyzer.output_csv), mode="w", newline="\n") as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames, delimiter=";")
+        writer.writeheader()
+        writer.writerow(issue)
+
+
+@pytest.fixture
+def sonar_mock():
+    with mock.patch("builtins.open", mock.mock_open()) as mock_file:
+        yield mock_file
+
+
+@pytest.fixture
+def mock_mining_results(tmp_path):
+    base_dir = tmp_path / "base_dir"
+    base_dir.mkdir(parents=True, exist_ok=True)
+
+    mining_results_asa_dir = base_dir / "mining_results"
+    mining_results_asa_dir.mkdir(parents=True, exist_ok=True)
+    return mining_results_asa_dir
+
+
+# Integration
+@pytest.fixture
+def main_instance(setup):
+    yield Main(base_dir=setup)
+
+
+@pytest.fixture
+def mock_result_csv(setup):
+    mining_results_asa_dir = setup / "mining_results_asa"
+    print("MiningResultsASADIR: ", mining_results_asa_dir)
+
+    with open(mining_results_asa_dir / "RepositoryMining_ASAResults.csv", "w") as f:
+        f.write("severity;updateDate;line;rule;project;effort;message;creationDate;type;component;textRange;debt;key"
+                ";hash;status\nN/A;N/A;N/A;N/A;N/A;N/A;N/A;N/A;NO_ISSUES_FOUND;RepositoryMining1:0"
+                ":57f2ccb66946943fbf3b3f2165eac1c8eb6b1523:AbstractMvcView.java;N/A;N/A;N/A;N/A;N/A\nBLOCKER;2024-10"
+                "-09T15:40:56+0200;319;java:S6437;RepositoryMining1:1:9137e6cc45922b529fb776c6857647a3935471bb;1h"
+                ";Revoke and change this password, as it is "
+                "compromised.;2024-10-09T15:40:56+0200;VULNERABILITY;RepositoryMining1:1"
+                ":9137e6cc45922b529fb776c6857647a3935471bb:JndiLdapContextFactoryTest.java;{'startLine': 319, "
+                "'endLine': 319, 'startOffset': 34, 'endOffset': "
+                "39};1h;e5b5a9e5-85f2-4ad1-9d77-a1ce37fd15e2;fe91b6223b318860e553b82b45b20812;OPEN")
+
+
+@pytest.fixture
+def mock_empty_result_csv(setup):
+    mining_results_asa_dir = setup / "mining_results_asa"
+    print("MiningResultsASADIR: ", mining_results_asa_dir)
+
+    with open(mining_results_asa_dir / "RepositoryMining_ASAResults.csv", "w") as f:
+        f.write("")
