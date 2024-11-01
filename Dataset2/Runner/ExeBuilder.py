@@ -19,7 +19,7 @@ class ExeBuilder:
             sys.executable,
             "-m", "PyInstaller",
             "--onefile",
-            # "--noconsole",
+            "--noconsole",
             "--collect-data", "TKinterModernThemes",
             "--hidden-import", "scipy.special._cdflib",
             "--hidden-import", "sklearn",

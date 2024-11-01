@@ -14,7 +14,7 @@ class TestDatasetDivider:
 
     @pytest.mark.parametrize('mock_op_fail', [BASE_DIR + '/' + DATASET_NAME], indirect=True)
     @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
-    def test_case_1_new(self, mock_join, mock_op_fail):
+    def test_case_1(self, mock_join, mock_op_fail):
 
         data_divider = DatasetDivider(self.BASE_DIR, self.DATASET_NAME)
 
@@ -22,13 +22,12 @@ class TestDatasetDivider:
             data_divider.divide_dataset()
 
     @patch('os.path.exists', return_value=True)
-    @patch('shutil.rmtree')
     @patch('os.makedirs')
     @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
     @pytest.mark.parametrize('mock_files', [
         {BASE_DIR + '/' + DATASET_NAME: generate_csv_string(0), BASE_DIR + '/' + DIR_NAME + '/' + '1.csv': None}
     ], indirect=True)
-    def test_case_2_new(self, mock_join, mock_makedirs, mock_rmtree, mock_exists, mock_files):
+    def test_case_2(self, mock_join, mock_makedirs, mock_exists, mock_files):
         data_divider = DatasetDivider(self.BASE_DIR, self.DATASET_NAME)
         data_divider.divide_dataset()
 
@@ -36,9 +35,7 @@ class TestDatasetDivider:
         data_divide_dir = self.BASE_DIR + '/' + self.DIR_NAME
         file_path = data_divide_dir + '/' + '1.csv'
 
-        mock_rmtree.assert_called_with(data_divide_dir)
-
-        mock_makedirs.assert_called_with(data_divide_dir)
+        mock_makedirs.assert_called_with(data_divide_dir, exist_ok=True)
 
         mock_files[dataset_path].assert_called_with(dataset_path, 'r')
 
@@ -46,7 +43,6 @@ class TestDatasetDivider:
         mock_files[file_path]().writelines.assert_called_with([self.DATASET_HEADERS + '\n'])
 
     @patch('os.path.exists', return_value=True)
-    @patch('shutil.rmtree')
     @patch('os.makedirs')
     @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
     @pytest.mark.parametrize('mock_files', [
@@ -55,7 +51,7 @@ class TestDatasetDivider:
     @pytest.mark.parametrize('mock_op_permission_err', [
         BASE_DIR + '/' + DIR_NAME + '/' + '1.csv'
     ], indirect=True)
-    def test_case_3_new(self, mock_join, mock_makedirs, mock_rmtree, mock_exists, mock_files, mock_op_permission_err):
+    def test_case_3(self, mock_join, mock_makedirs, mock_exists, mock_files, mock_op_permission_err):
 
         data_divider = DatasetDivider(self.BASE_DIR, self.DATASET_NAME)
 
@@ -64,7 +60,6 @@ class TestDatasetDivider:
             data_divider.divide_dataset()
 
     @patch('os.path.exists', return_value=True)
-    @patch('shutil.rmtree')
     @patch('os.makedirs')
     @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
     @pytest.mark.parametrize('mock_files', [
@@ -72,7 +67,7 @@ class TestDatasetDivider:
          BASE_DIR + '/' + DIR_NAME + '/' + '1.csv': None,
          BASE_DIR + '/' + DIR_NAME + '/' + '2.csv': None}
     ], indirect=True)
-    def test_case_4_new(self, mock_join, mock_makedirs, mock_rmtree, mock_exists, mock_files):
+    def test_case_4(self, mock_join, mock_makedirs, mock_exists, mock_files):
         data_divider = DatasetDivider(self.BASE_DIR, self.DATASET_NAME)
         data_divider.divide_dataset()
 
@@ -87,9 +82,7 @@ class TestDatasetDivider:
         lines = oracle_data.strip().split('\n')  # Use '\r\n' to split lines
         lines = [line + "\n" for line in lines[1:]]
 
-        mock_rmtree.assert_called_with(data_divide_dir)
-
-        mock_makedirs.assert_called_with(data_divide_dir)
+        mock_makedirs.assert_called_with(data_divide_dir, exist_ok=True)
 
         mock_files[dataset_path].assert_called_with(dataset_path, 'r')
 
@@ -98,7 +91,6 @@ class TestDatasetDivider:
         mock_files[file_path]().writelines.assert_called_with(lines[0:lines_per_dataset])
 
     @patch('os.path.exists', return_value=True)
-    @patch('shutil.rmtree')
     @patch('os.makedirs')
     @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
     @pytest.mark.parametrize('mock_files', [
@@ -106,7 +98,7 @@ class TestDatasetDivider:
          BASE_DIR + '/' + DIR_NAME + '/' + '1.csv': None,
          BASE_DIR + '/' + DIR_NAME + '/' + '2.csv': None}
     ], indirect=True)
-    def test_case_5_new(self, mock_join, mock_makedirs, mock_rmtree, mock_exists, mock_files):
+    def test_case_5(self, mock_join, mock_makedirs, mock_exists, mock_files):
         data_divider = DatasetDivider(self.BASE_DIR, self.DATASET_NAME)
         data_divider.divide_dataset()
 
@@ -122,9 +114,7 @@ class TestDatasetDivider:
         lines = oracle_data.strip().split('\n')  # Use '\r\n' to split lines
         lines = [line + "\n" for line in lines[1:]]
 
-        mock_rmtree.assert_called_with(data_divide_dir)
-
-        mock_makedirs.assert_called_with(data_divide_dir)
+        mock_makedirs.assert_called_with(data_divide_dir, exist_ok=True)
 
         mock_files[dataset_path].assert_called_with(dataset_path, 'r')
 
@@ -137,7 +127,6 @@ class TestDatasetDivider:
         mock_files[file_path_2]().writelines.assert_called_with(lines[lines_per_dataset:])
 
     @patch('os.path.exists', return_value=False)
-    @patch('shutil.rmtree')
     @patch('os.makedirs')
     @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
     @pytest.mark.parametrize('mock_files', [
@@ -145,7 +134,7 @@ class TestDatasetDivider:
          BASE_DIR + '/' + DIR_NAME + '/' + '1.csv': None,
          BASE_DIR + '/' + DIR_NAME + '/' + '2.csv': None}
     ], indirect=True)
-    def test_case_6_new(self, mock_join, mock_makedirs, mock_rmtree, mock_exists, mock_files):
+    def test_case_6(self, mock_join, mock_makedirs, mock_exists, mock_files):
         data_divider = DatasetDivider(self.BASE_DIR, self.DATASET_NAME)
         data_divider.divide_dataset()
 
@@ -161,9 +150,7 @@ class TestDatasetDivider:
         lines = oracle_data.strip().split('\n')  # Use '\r\n' to split lines
         lines = [line + "\n" for line in lines[1:]]
 
-        mock_makedirs.assert_called_with(data_divide_dir)
-
-        mock_rmtree.assert_not_called()
+        mock_makedirs.assert_called_with(data_divide_dir, exist_ok=True)
 
         mock_files[dataset_path].assert_called_with(dataset_path, 'r')
 
@@ -177,7 +164,7 @@ class TestDatasetDivider:
 
     @pytest.mark.parametrize('mock_op_fail', [None], indirect=True)
     @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
-    def test_case_7_new(self, mock_join, mock_op_fail):
+    def test_case_7(self, mock_join, mock_op_fail):
         data_divider = DatasetDivider(3, self.DATASET_NAME)
 
         with pytest.raises(TypeError):
@@ -185,7 +172,7 @@ class TestDatasetDivider:
 
     @pytest.mark.parametrize('mock_op_fail', [None], indirect=True)
     @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
-    def test_case_8_new(self, mock_join, mock_op_fail):
+    def test_case_8(self, mock_join, mock_op_fail):
 
         data_divider = DatasetDivider("test.<</path", self.DATASET_NAME)
 
@@ -194,7 +181,7 @@ class TestDatasetDivider:
 
     @pytest.mark.parametrize('mock_op_fail', [BASE_DIR + '/' + DATASET_NAME], indirect=True)
     @patch('os.path.join', side_effect=lambda *args: '/'.join(args))
-    def test_case_9_new(self, mock_join, mock_op_fail):
+    def test_case_9(self, mock_join, mock_op_fail):
 
         data_divider = DatasetDivider(self.BASE_DIR, self.DATASET_NAME)
 
