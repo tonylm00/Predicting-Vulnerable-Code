@@ -55,15 +55,16 @@ class RepoMiner:
 
 
     def start_mining_repo(self, data, repo_path):
-        statusOK = "OK!\n"
-        statusNE = "NOT EXIST COMMIT\n"
-        statusNR = "REPO NOT AVAILABLE\n"
+        statusOK = "OK!"
+        statusNE = "NOT EXIST COMMIT"
+        statusNR = "REPO NOT AVAILABLE"
         statusVE = "VALUE ERROR! COMMIT HASH NOT EXISTS"
         statusGCE = "GIT COMMAND ERROR"
 
+        print("CIAO LOG")
 
         logging.basicConfig(filename=os.path.join(self.mining_result_path, 'repo_mining.log'), level=logging.CRITICAL,
-                            format='%(levelname)s:%(message)s')
+                            format='%(levelname)s:%(message)s', force=True)
 
         for line in data:
             link = data[line]['repo_url'] + '.git'
@@ -99,6 +100,7 @@ class RepoMiner:
                         self.index+= 1
 
                 else:
+                    print("not exist")
                     status = statusNE
                     toWrite += status
                     self.logger.error(toWrite)
@@ -125,5 +127,6 @@ class RepoMiner:
                 if mod.source_code_before is not None:
                     java_file_path = os.path.join(commit_path, mod.filename)
                     with open(java_file_path, "w+", encoding='utf-8') as javafile:
+                        print(mod.source_code_before)
                         javafile.write(mod.source_code_before)
 
