@@ -22,6 +22,8 @@ class ExeBuilder:
             # "--noconsole",
             "--collect-data", "TKinterModernThemes",
             "--hidden-import", "scipy.special._cdflib",
+            "--hidden-import", "sklearn",
+            "--hidden-import", "sklearn.ensemble._forest",
             "--hidden-import", "numpy.core.multiarray",
             f"--name={self.name_exe}",
             f"{self.script_path}",
