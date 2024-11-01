@@ -341,7 +341,8 @@ def generate_csv_string(num_rows, is_format_valid=True, is_link_valid=True, is_l
         "r_url2",
         "r_url3"
     ]
-    cls_values = ["pos", "neg"]
+
+    print('fixture here')
 
     count=0
 
@@ -354,10 +355,10 @@ def generate_csv_string(num_rows, is_format_valid=True, is_link_valid=True, is_l
     writer = csv.writer(output, lineterminator='\n')  # Use Unix-style line endings
 
     if not is_format_valid:
-        writer.writerow(['cve_id', 'commit_id', 'cls'])  # Header
-        writer.writerow(['00', '11', 'pos'])  # Header
+        writer.writerow(['cve_id', 'commit_id'])  # Header
+        writer.writerow(['00', '11'])  # Header
     else:
-        writer.writerow(['cve_id', 'repo_url', 'commit_id', 'cls'])  # Header
+        writer.writerow(['cve_id', 'repo_url', 'commit_id'])  # Header
 
         for i in range(num_rows):
             cve_id = i
@@ -370,10 +371,12 @@ def generate_csv_string(num_rows, is_format_valid=True, is_link_valid=True, is_l
                     is_link_existent=True
                 else:
                     if not is_repo_valid:
+                        print("repo not valid")
                         repo_url = 'https://github.com/spring-projects/not_valid'
                     else:
                         if not is_commit_existent:
-                            repo_url = 'https://github.com/spring-projects/spring-webflow'
+                            print("commit not exist")
+                            repo_url = 'https://github.com/pingidentity/ldapsdk'
                             commit_id = '1200fh3'
                             is_repo_valid = False
                         else:
@@ -413,9 +416,8 @@ def generate_csv_string(num_rows, is_format_valid=True, is_link_valid=True, is_l
                                         commit_id = '340c441'
                                         is_repo_valid=False
 
-            cls = cls_values[i % len(cls_values)]  # Cycle through cls values
-
-            writer.writerow([cve_id, repo_url, commit_id, cls])
+            writer.writerow([cve_id, repo_url, commit_id])
+            print(cve_id)
 
         # Get the CSV string from the StringIO object
     csv_string = output.getvalue()
@@ -455,7 +457,7 @@ def setup_dir():
     print(f"Changed directory to '{cwd}'.")
 
 @pytest.fixture
-def manage_temp_input_files(request, setup_dir):
+def manage_temp_input_files(request, create_temp_file_sys, setup_dir):
     print("CWD_MANAGE:", os.getcwd())
     content_dict = request.param
 
@@ -479,14 +481,13 @@ def manage_temp_input_files(request, setup_dir):
 
 
 @pytest.fixture
-def create_temp_file_sys(request, manage_temp_input_files):
+def create_temp_file_sys(request):
 
     dir_names = request.param
 
     cwd = os.getcwd()
 
     try:
-        dir_names.append('temp')
         for dir in dir_names:
             if os.path.exists(dir):
                 try:
@@ -511,10 +512,6 @@ def create_temp_file_sys(request, manage_temp_input_files):
             print("OS:", os.listdir())
             print("MINING_RES: ", os.listdir('mining_results'))
 
-
-
-        os.chdir(os.path.join(cwd, 'temp'))
-
         yield
 
     finally:
@@ -534,8 +531,8 @@ def create_temp_file_sys(request, manage_temp_input_files):
                 try:
                     shutil.rmtree(dir)
                     print(f"Directory '{dir}' has been deleted.")
-                except:
-                    continue
+                except Exception as e:
+                    print("failed deletion " + str(e))
             else:
                 print(f"Directory '{dir}' does not exist.")
 
