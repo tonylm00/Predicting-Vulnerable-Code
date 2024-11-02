@@ -2,7 +2,7 @@ import os
 from time import sleep
 
 import pytest
-from pywinauto import Application
+from pywinauto import Application, Desktop
 from pywinauto.controls.uia_controls import ButtonWrapper
 from pywinauto.keyboard import send_keys
 from pywinauto.timings import wait_until
@@ -30,7 +30,7 @@ class TestSystem:
 
     @pytest.fixture(autouse=True)
     def start_app(self):
-        os.chdir('..')
+        os.chdir('..\..')
         print(os.getcwd())
         os.chdir('Runner')
         app = Application().start('Perseverance.exe')
@@ -48,11 +48,11 @@ class TestSystem:
 
         return gui_elem
 
-    def test_save_as(self):
+    def test_software_metrics(self):
         # Start notepad.exe and connect to it (when a new process is spawned).
         print(os.getcwd())
         # Kill the app.
-        sleep(10)
+        sleep(6)
 
         app = Application().connect(title='Perseverance')
 
@@ -91,14 +91,23 @@ class TestSystem:
         load_csv_app = Application().connect(title='Load CSV')
 
         load_csv_window = load_csv_app.window(title="Load CSV")
-        load_csv_window.print_control_identifiers()
+        #load_csv_window.print_control_identifiers()
 
-        box_edit = load_csv_window.child_window(class_name="ComboBoxEx32")
-        box_edit.print_control_identifiers()
+        send_keys('initial_dataset.csv')
 
-        edit_field_open = box_edit.child_window(class_name="Edit")
-        edit_field_open.click_input()
-        edit_field_open.type_keys('initial_Dataset.csv')
+        sleep(2)
+
+        send_keys('^l')
+
+        sleep(2)
+
+        send_keys('C:\\Users\\Utente\\Documents\\UNISA-MAGISTRALE\\IGES\\progetti\\Perseverance\\prova_dataset')
+
+        sleep(2)
+
+        send_keys('{ENTER}')
+
+        sleep(2)
 
         apri_button = load_csv_window.child_window(title="&Apri")
         apri_button.click_input()
@@ -109,8 +118,36 @@ class TestSystem:
 
         print(dir(predict_res_button))
 
-        wait_until(240, 10, predict_res_button.is_visible, True)
+        wait_until(240, 5, predict_res_button.is_visible, True)
 
-        assert predict_res_button.is_visible
+        predict_res_button.click_input()
 
-        app.kill()
+        send_keys('results')
+
+        sleep(3)
+
+        send_keys('^l')
+
+        sleep(2)
+
+        send_keys('C:\\Users\\Utente\\PycharmProjects\\Predicting-Vulnerable-Code\\Dataset2\\tests\\System')
+
+        sleep(2)
+
+        send_keys('{ENTER}')
+
+        save_zip_app = Application().connect(title='Save ZIP file as')
+
+        save_zip_window = save_zip_app.window(title="Save ZIP file as")
+        save_zip_window.print_control_identifiers()
+
+        salva_button = save_zip_window.child_window(title="&Salva", class_name="Button")
+        salva_button.click_input()
+
+
+
+
+
+
+
+
