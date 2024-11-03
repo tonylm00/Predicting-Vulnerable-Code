@@ -133,10 +133,10 @@ class Gui:
 
         self.sonarcloud_path_label.pack(anchor='w', padx=5, pady=2)
         self.sonarcloud_path_entry.pack(anchor='w', padx=5, pady=2)
-        self.sonarcloud_path_entry.insert(0, r"C:\Program Files\SonarScanner\bin\sonar-scanner.bat")
+        #self.sonarcloud_path_entry.insert(0, r"C:\Program Files\SonarScanner\bin\sonar-scanner.bat")
         self.sonarcloud_token_label.pack(anchor='w', padx=5, pady=2)
         self.sonarcloud_token_entry.pack(anchor='w', padx=5, pady=2)
-        self.sonarcloud_token_entry.insert(0, "squ_95089cde86a31904f6f2f0191e033099beb06c27")
+        #self.sonarcloud_token_entry.insert(0, "squ_95089cde86a31904f6f2f0191e033099beb06c27")
         self.sonarcloud_host_label.pack(anchor='w', padx=5, pady=2)
         self.sonarcloud_host_entry.pack(anchor='w', padx=5, pady=2)
         self.sonarcloud_host_entry.insert(0, "http://localhost:9000")
@@ -239,7 +239,7 @@ class Gui:
             if self.commit_id_entry.get().strip() == "" or self.repo_url_entry.get().strip() == "":
                 messagebox.showerror("Error", "You must enter Commit ID and GIT Repository URL to continue")
                 return False
-            else:
+            """else:
                 # Regex to check valid  GIT Repository
                 git_regex = r"((http|git|ssh|http(s)|file|\/?)|(git@[\w\.]+))(:(\/\/)?)([\w\.@\:/\-~]+)(\.git)?(\/)?"
 
@@ -250,9 +250,9 @@ class Gui:
 
                 if not re.match(r'^[a-z0-9]+$', self.commit_id_entry.get().strip()):
                     messagebox.showerror("Error", f"{self.commit_id_entry.get().strip()} is not valid commit ID")
-                    return False
+                    return False"""
 
-        if self.asa_checkbox.get() == 1:
+        """if self.asa_checkbox.get() == 1:
             if self.sonarcloud_path_entry.get().strip() == "" or self.sonarcloud_token_entry.get().strip() == "" or \
                     self.sonarcloud_host_entry.get().strip() == "":
                 messagebox.showerror("Error", "You must enter Sonar data to continue.")
@@ -262,7 +262,7 @@ class Gui:
                 if not re.match(sonarscanner_path_regex, self.sonarcloud_path_entry.get().strip()):
                     messagebox.showerror("Error", f"{self.sonarcloud_path_entry.get().strip()}"
                                                   f" is not valid SonarScanner path")
-                    return False
+                    return False"""
 
         return True
 
@@ -396,7 +396,7 @@ class Gui:
                                  self.sonarcloud_path_entry.get())
 
                 self.run.run_prediction(
-                    os.path.join(self.base_dir, "mining_results_ASA", "csv_ASA_final.csv"),
+                    os.path.join(self.base_dir, "mining_results_asa", "csv_ASA_final.csv"),
                     os.path.join(self.base_dir, "AI_Module", "model", "random_forest_ASA.pkl"),
                     os.path.join(self.base_dir, "AI_Module", "label_encoder.pkl"),
                     os.path.join(self.base_dir, "AI_Module", "vocab", "original_vocab_ASA.pkl"),

@@ -289,23 +289,22 @@ class SonarAnalyzer:
         if the project key is not already in the CSV file.
         """
 
-        for folder in os.listdir(self.base_dir + "/mining_results"):
+        for folder in os.listdir(os.path.join(self.base_dir, "mining_results")):
             if "RepositoryMining" in folder:
-                for cve_id in os.listdir(self.base_dir + "/mining_results/" + folder):
-
+                repo_dir_path = os.path.join(self.base_dir, "mining_results", folder)
+                for cve_id in os.listdir(repo_dir_path):
                     if cve_id == "CHECK.txt" or cve_id == "ERRORS.txt" or cve_id == ".DS_Store":
                         continue
 
-                    if os.path.isdir(self.base_dir + "/mining_results/" + folder + "/" + cve_id):
-                        for commit_id in os.listdir(self.base_dir + "/mining_results/" + folder + "/" + cve_id):
-
+                    cve_dir_path = os.path.join(self.base_dir, "mining_results", folder, cve_id)
+                    if os.path.isdir(cve_dir_path):
+                        for commit_id in os.listdir(cve_dir_path):
                             if commit_id == ".DS_Store":
                                 continue
 
-                            source_dir = self.base_dir + "/mining_results/" + folder + "/" + cve_id + "/" + commit_id
-
+                            source_dir = os.path.join(self.base_dir, "mining_results", folder, cve_id, commit_id)
                             # RepositoryMiningX:Directory:commit
-                            sonar_project_key = ':'.join(source_dir.split('/')[-3:])
+                            sonar_project_key = ':'.join(source_dir.split('\\')[-3:])
 
                             self.create_sonar_properties(sonar_project_key, source_dir)
                             self.run_sonar_scanner(sonar_project_key, source_dir)
