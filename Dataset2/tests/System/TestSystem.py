@@ -380,7 +380,6 @@ class TestSystem:
 
         list_index = [
             self.UPLOAD_BUTTON,
-            self.SOFTWARE_METRICS_CHECK_BOX_1,
             self.START_BUTTON,
             self.TEXT_MINING_CHECK_BOX,
             self.PREDICTIONS_DOWNLOAD_BUTTON,
@@ -389,7 +388,6 @@ class TestSystem:
 
         elem_dict = self.get_gui_elements(window, list_index)
         upload_button = elem_dict[self.UPLOAD_BUTTON]
-        software_metrics_box = elem_dict[self.SOFTWARE_METRICS_CHECK_BOX_1]
         text_mining_box = elem_dict[self.TEXT_MINING_CHECK_BOX]
         start_button = elem_dict[self.START_BUTTON]
         analysis_download_button = elem_dict[self.ANALYSIS_DOWNLOAD_BUTTON]
@@ -432,6 +430,234 @@ class TestSystem:
         assert 'File saved successfully' in prediction_success_text
         assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
         assert len(prediction_zip.namelist())==0
+
+    @pytest.mark.parametrize('manage_environment', [(True, False, 0, True)], indirect=True)
+    def test_case_9(self, manage_environment):
+
+        app, test_path = manage_environment
+
+        # Connect to the main window, modifying with title or best_match as needed
+        window = app.window(title="Perseverance")
+
+        list_index = [
+            self.UPLOAD_BUTTON,
+            self.SOFTWARE_METRICS_CHECK_BOX_1,
+            self.START_BUTTON,
+            self.PREDICTIONS_DOWNLOAD_BUTTON,
+            self.ANALYSIS_DOWNLOAD_BUTTON
+        ]
+
+        elem_dict = self.get_gui_elements(window, list_index)
+        upload_button = elem_dict[self.UPLOAD_BUTTON]
+        software_metrics_box = elem_dict[self.SOFTWARE_METRICS_CHECK_BOX_1]
+        start_button = elem_dict[self.START_BUTTON]
+        analysis_download_button = elem_dict[self.ANALYSIS_DOWNLOAD_BUTTON]
+        predict_res_button = elem_dict[self.PREDICTIONS_DOWNLOAD_BUTTON]
+
+        upload_button.click_input()
+
+        sleep(3)
+
+        self.load_csv_routine(test_path)
+
+        sleep(2)
+
+        software_metrics_box.click_input()
+
+        sleep(2)
+
+        start_button.click_input()
+
+        wait_until(240, 5, predict_res_button.is_visible, True)
+
+        analysis_download_button.click_input()
+
+        sleep(2)
+
+        exist_analysis_success_dialog, analysis_success_text, analysis_zip = self.save_zip_routine(app,
+                                                                                                   self.TEST_ANALYSIS_NAME,
+                                                                                                   test_path)
+        predict_res_button.click_input()
+
+        sleep(2)
+
+        exist_prediction_success_dialog, prediction_success_text, prediction_zip = self.save_zip_routine(app,
+                                                                                                         self.TEST_PREDICTIONS_NAME,
+                                                                                                         test_path)
+
+        assert exist_analysis_success_dialog
+        assert 'File saved successfully' in analysis_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_ANALYSIS_NAME))
+        assert analysis_zip.namelist() == ['repo_mining.log', 'mining_results_sm_final.csv']
+
+        assert exist_prediction_success_dialog
+        assert 'File saved successfully' in prediction_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
+        assert len(prediction_zip.namelist()) == 0
+
+    @pytest.mark.parametrize('manage_environment', [(True, False, 0, True)], indirect=True)
+    def test_case_10(self, manage_environment):
+
+        app, test_path = manage_environment
+
+        # Connect to the main window, modifying with title or best_match as needed
+        window = app.window(title="Perseverance")
+
+        list_index = [
+            self.UPLOAD_BUTTON,
+            self.START_BUTTON
+        ]
+
+        elem_dict = self.get_gui_elements(window, list_index)
+        upload_button = elem_dict[self.UPLOAD_BUTTON]
+        start_button = elem_dict[self.START_BUTTON]
+
+        upload_button.click_input()
+
+        sleep(3)
+
+        self.load_csv_routine(test_path)
+
+        sleep(2)
+
+        start_button.click_input()
+
+        error_dialog = app.Dialog.Static2
+
+        assert error_dialog.exist
+        assert error_dialog.window_text() == 'You must select at least one option'
+
+    @pytest.mark.parametrize('manage_environment', [(True, False, 1, True)], indirect=True)
+    def test_case_12(self, manage_environment):
+
+        app, test_path = manage_environment
+
+        # Connect to the main window, modifying with title or best_match as needed
+        window = app.window(title="Perseverance")
+
+        list_index = [
+            self.UPLOAD_BUTTON,
+            self.SOFTWARE_METRICS_CHECK_BOX_1,
+            self.START_BUTTON,
+            self.TEXT_MINING_CHECK_BOX,
+            self.PREDICTIONS_DOWNLOAD_BUTTON,
+            self.ANALYSIS_DOWNLOAD_BUTTON
+        ]
+
+        elem_dict = self.get_gui_elements(window, list_index)
+        upload_button = elem_dict[self.UPLOAD_BUTTON]
+        software_metrics_box = elem_dict[self.SOFTWARE_METRICS_CHECK_BOX_1]
+        text_mining_box = elem_dict[self.TEXT_MINING_CHECK_BOX]
+        start_button = elem_dict[self.START_BUTTON]
+        analysis_download_button = elem_dict[self.ANALYSIS_DOWNLOAD_BUTTON]
+        predict_res_button = elem_dict[self.PREDICTIONS_DOWNLOAD_BUTTON]
+
+        upload_button.click_input()
+
+        sleep(3)
+
+        self.load_csv_routine(test_path)
+
+        sleep(2)
+
+        software_metrics_box.click_input()
+        text_mining_box.click_input()
+
+        sleep(2)
+
+        start_button.click_input()
+
+        wait_until(240, 5, predict_res_button.is_visible, True)
+
+        analysis_download_button.click_input()
+
+        sleep(2)
+
+        exist_analysis_success_dialog, analysis_success_text, analysis_zip = self.save_zip_routine(app,
+                                                                                                   self.TEST_ANALYSIS_NAME,
+                                                                                                   test_path)
+        predict_res_button.click_input()
+
+        sleep(2)
+
+        exist_prediction_success_dialog, prediction_success_text, prediction_zip = self.save_zip_routine(app,
+                                                                                                         self.TEST_PREDICTIONS_NAME,
+                                                                                                         test_path)
+
+        assert exist_analysis_success_dialog
+        assert 'File saved successfully' in analysis_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_ANALYSIS_NAME))
+        assert analysis_zip.namelist() == ['software_metrics.log', 'repo_mining.log', 'csv_mining_final.csv', 'mining_results_sm_final.csv',
+                                           'Union_TM_SM.csv']
+
+        assert exist_prediction_success_dialog
+        assert 'File saved successfully' in prediction_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
+        assert prediction_zip.namelist() == ['Predict_TM.csv', 'Predict_SM.csv', 'Predict_TMSM.csv']
+
+    @pytest.mark.parametrize('manage_environment', [(True, False, 1, True)], indirect=True)
+    def test_case_14(self, manage_environment):
+
+        app, test_path = manage_environment
+
+        # Connect to the main window, modifying with title or best_match as needed
+        window = app.window(title="Perseverance")
+
+        list_index = [
+            self.UPLOAD_BUTTON,
+            self.START_BUTTON,
+            self.TEXT_MINING_CHECK_BOX,
+            self.PREDICTIONS_DOWNLOAD_BUTTON,
+            self.ANALYSIS_DOWNLOAD_BUTTON
+        ]
+
+        elem_dict = self.get_gui_elements(window, list_index)
+        upload_button = elem_dict[self.UPLOAD_BUTTON]
+        text_mining_box = elem_dict[self.TEXT_MINING_CHECK_BOX]
+        start_button = elem_dict[self.START_BUTTON]
+        analysis_download_button = elem_dict[self.ANALYSIS_DOWNLOAD_BUTTON]
+        predict_res_button = elem_dict[self.PREDICTIONS_DOWNLOAD_BUTTON]
+
+        upload_button.click_input()
+
+        sleep(3)
+
+        self.load_csv_routine(test_path)
+
+        sleep(2)
+
+        text_mining_box.click_input()
+
+        sleep(2)
+
+        start_button.click_input()
+
+        wait_until(240, 5, predict_res_button.is_visible, True)
+
+        analysis_download_button.click_input()
+
+        sleep(2)
+
+        exist_analysis_success_dialog, analysis_success_text, analysis_zip = self.save_zip_routine(app,
+                                                                                                   self.TEST_ANALYSIS_NAME,
+                                                                                                   test_path)
+        predict_res_button.click_input()
+
+        sleep(2)
+
+        exist_prediction_success_dialog, prediction_success_text, prediction_zip = self.save_zip_routine(app,
+                                                                                                         self.TEST_PREDICTIONS_NAME,
+                                                                                                         test_path)
+
+        assert exist_analysis_success_dialog
+        assert 'File saved successfully' in analysis_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_ANALYSIS_NAME))
+        assert analysis_zip.namelist() == ['repo_mining.log', 'csv_mining_final.csv']
+
+        assert exist_prediction_success_dialog
+        assert 'File saved successfully' in prediction_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
+        assert prediction_zip.namelist() == ['Predict_TM.csv']
 
     @pytest.mark.parametrize('manage_environment', [(False, False, 5, False)], indirect=True)
     def test_case_36(self, manage_environment):
