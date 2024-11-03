@@ -1,3 +1,4 @@
+import configparser
 import os
 import zipfile
 from time import sleep
@@ -31,9 +32,12 @@ class TestSystem:
     TEST_ANALYSIS_NAME = 'analysis.zip'
     TEST_PREDICTIONS_NAME = 'predictions.zip'
 
-    SONAR_TOKEN_TXT = 'squ_7b5a84a507f41eeac7209ce8ff0b705bea5fd9ba'
-    SONAR_HOST_TXT = 'http://localhost:9000'
-    SONAR_PATH_TXT = 'D:/sonar-scanner-cli-6.2.0.4584-windows-x64/bin/sonar-scanner.bat'
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+
+    SONAR_TOKEN_TXT = config.get('SonarConfig', 'SONAR_TOKEN')
+    SONAR_HOST_TXT = config.get('SonarConfig', 'SONAR_HOST')
+    SONAR_PATH_TXT = config.get('SonarConfig', 'SONAR_PATH')
 
     @pytest.fixture
     def manage_environment(self, request):
