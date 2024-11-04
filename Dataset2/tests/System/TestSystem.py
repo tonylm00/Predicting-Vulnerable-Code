@@ -1655,7 +1655,7 @@ class TestSystem:
         assert 'File saved successfully' in analysis_success_text
         assert os.path.exists(os.path.join(test_path, self.TEST_ANALYSIS_NAME))
         expected_files = {'asa.log', 'repo_mining.log', 'software_metrics.log',
-                          'mining_results_sm_final.csv', 'csv_ASA_final.csv', 'Union_TM_ASA.csv', 'Union_SM_ASA.csv'}
+                          'mining_results_sm_final.csv', 'csv_ASA_final.csv', 'Union_SM_ASA.csv'}
         assert set(analysis_zip.namelist()) == expected_files
 
         assert exist_prediction_success_dialog
