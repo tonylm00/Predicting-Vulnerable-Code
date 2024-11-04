@@ -1768,7 +1768,7 @@ class TestSystem:
         window = app.window(title="Perseverance")
 
         list_index = [
-            self.UPLOAD_BUTTON,
+            self.CSV_SWITCH,
             self.ASA_CHECK_BOX,
             self.SOFTWARE_METRICS_CHECK_BOX_1,
             self.TEXT_MINING_CHECK_BOX,
@@ -1782,10 +1782,8 @@ class TestSystem:
 
         elem_dict = self.get_gui_elements(window, list_index)
 
-        upload_button = elem_dict[self.UPLOAD_BUTTON]
-        upload_button.click_input()
-
-        self.load_csv_routine(test_path)
+        csv_button = elem_dict[self.CSV_SWITCH]
+        csv_button.click_input()
 
         sm_box = elem_dict[self.SOFTWARE_METRICS_CHECK_BOX_1]
         sm_box.click_input()
@@ -1869,7 +1867,7 @@ class TestSystem:
         window = app.window(title="Perseverance")
 
         list_index = [
-            self.UPLOAD_BUTTON,
+            self.CSV_SWITCH,
             self.SOFTWARE_METRICS_CHECK_BOX_1,
             self.TEXT_MINING_CHECK_BOX,
             self.START_BUTTON,
@@ -1879,10 +1877,8 @@ class TestSystem:
 
         elem_dict = self.get_gui_elements(window, list_index)
 
-        upload_button = elem_dict[self.UPLOAD_BUTTON]
-        upload_button.click_input()
-
-        self.load_csv_routine(test_path)
+        csv_button = elem_dict[self.CSV_SWITCH]
+        csv_button.click_input()
 
         tm_box = elem_dict[self.TEXT_MINING_CHECK_BOX]
         tm_box.click_input()
@@ -1932,7 +1928,7 @@ class TestSystem:
         window = app.window(title="Perseverance")
 
         list_index = [
-            self.UPLOAD_BUTTON,
+            self.CSV_SWITCH,
             self.ASA_CHECK_BOX,
             self.TEXT_MINING_CHECK_BOX,
             self.SONAR_PATH,
@@ -1945,10 +1941,8 @@ class TestSystem:
 
         elem_dict = self.get_gui_elements(window, list_index)
 
-        upload_button = elem_dict[self.UPLOAD_BUTTON]
-        upload_button.click_input()
-
-        self.load_csv_routine(test_path)
+        csv_button = elem_dict[self.CSV_SWITCH]
+        csv_button.click_input()
 
         tm_box = elem_dict[self.TEXT_MINING_CHECK_BOX]
         tm_box.click_input()
@@ -2011,7 +2005,7 @@ class TestSystem:
         window = app.window(title="Perseverance")
 
         list_index = [
-            self.UPLOAD_BUTTON,
+            self.CSV_SWITCH,
             self.TEXT_MINING_CHECK_BOX,
             self.START_BUTTON,
             self.PREDICTIONS_DOWNLOAD_BUTTON,
@@ -2020,10 +2014,8 @@ class TestSystem:
 
         elem_dict = self.get_gui_elements(window, list_index)
 
-        upload_button = elem_dict[self.UPLOAD_BUTTON]
-        upload_button.click_input()
-
-        self.load_csv_routine(test_path)
+        csv_button = elem_dict[self.CSV_SWITCH]
+        csv_button.click_input()
 
         tm_box = elem_dict[self.TEXT_MINING_CHECK_BOX]
         tm_box.click_input()
@@ -2068,7 +2060,7 @@ class TestSystem:
         window = app.window(title="Perseverance")
 
         list_index = [
-            self.UPLOAD_BUTTON,
+            self.CSV_SWITCH,
             self.ASA_CHECK_BOX,
             self.SOFTWARE_METRICS_CHECK_BOX_1,
             self.SONAR_PATH,
@@ -2081,10 +2073,8 @@ class TestSystem:
 
         elem_dict = self.get_gui_elements(window, list_index)
 
-        upload_button = elem_dict[self.UPLOAD_BUTTON]
-        upload_button.click_input()
-
-        self.load_csv_routine(test_path)
+        csv_button = elem_dict[self.CSV_SWITCH]
+        csv_button.click_input()
 
         sm_box = elem_dict[self.SOFTWARE_METRICS_CHECK_BOX_1]
         sm_box.click_input()
@@ -2147,7 +2137,7 @@ class TestSystem:
         window = app.window(title="Perseverance")
 
         list_index = [
-            self.UPLOAD_BUTTON,
+            self.CSV_SWITCH,
             self.START_BUTTON,
             self.SOFTWARE_METRICS_CHECK_BOX_1,
             self.PREDICTIONS_DOWNLOAD_BUTTON,
@@ -2156,10 +2146,8 @@ class TestSystem:
 
         elem_dict = self.get_gui_elements(window, list_index)
 
-        upload_button = elem_dict[self.UPLOAD_BUTTON]
-        upload_button.click_input()
-
-        self.load_csv_routine(test_path)
+        csv_button = elem_dict[self.CSV_SWITCH]
+        csv_button.click_input()
 
         sm_box = elem_dict[self.SOFTWARE_METRICS_CHECK_BOX_1]
         sm_box.click_input()
@@ -2204,16 +2192,14 @@ class TestSystem:
         window = app.window(title="Perseverance")
 
         list_index = [
-            self.UPLOAD_BUTTON,
+            self.CSV_SWITCH,
             self.START_BUTTON,
         ]
 
         elem_dict = self.get_gui_elements(window, list_index)
 
-        upload_button = elem_dict[self.UPLOAD_BUTTON]
-        upload_button.click_input()
-
-        self.load_csv_routine(test_path)
+        csv_button = elem_dict[self.CSV_SWITCH]
+        csv_button.click_input()
 
         start_button = elem_dict[self.START_BUTTON]
         start_button.click_input()
