@@ -332,7 +332,7 @@ def mock_os_chdir(request):
         yield mock_chdir
 
 
-def generate_csv_string(num_rows, is_format_valid=True, is_link_valid=True, is_link_existent=True, is_repo_valid=True, is_commit_existent=True, is_commit_valid=True, is_mod_present=True, is_java_present=True, is_scb_absent=True, is_git_error=False):
+def generate_csv_string(num_rows, is_format_valid=True, is_link_valid=True, is_link_existent=True, is_repo_valid=True, is_commit_existent=True, is_commit_valid=True, is_mod_present=True, is_java_present=True, is_scb_absent=True, is_git_error=False, is_diversified=False):
     # Fixed data for predictable results
 
 
@@ -361,6 +361,8 @@ def generate_csv_string(num_rows, is_format_valid=True, is_link_valid=True, is_l
         writer.writerow(['cve_id', 'repo_url', 'commit_id'])  # Header
 
         for i in range(num_rows):
+            if is_diversified and (i%7==0 or i%9==0):
+                is_repo_valid = True
             cve_id = i
             if not is_link_valid:
                 repo_url = "link_not_valid"
@@ -404,9 +406,22 @@ def generate_csv_string(num_rows, is_format_valid=True, is_link_valid=True, is_l
                                                 commit_id = 'd9931c8af05d0f1f721be9fe920690fe122507ad'
                                                 is_repo_valid=False
                                             else:
-                                                repo_url = 'https://github.com/learning-zone/java-basics'
-                                                commit_id = '8ab4deb1030b4d863f8d8048b892d34f18dfaebe'
-                                                is_repo_valid=False
+                                                if is_diversified:
+                                                    if i%7==0:
+                                                        repo_url = 'https://github.com/spring-projects/spring-amqp'
+                                                        commit_id = 'aff4d0aefcdb99726fd739abf3b9bb96df97b0f'
+                                                    elif i%9==0:
+                                                        repo_url = 'https://github.com/apache/struts'
+                                                        commit_id = '01e6b251b4db78bfb7971033652e81d1af4cb3e'
+                                                    else:
+                                                        repo_url = 'https://github.com/learning-zone/java-basics'
+                                                        commit_id = '8ab4deb1030b4d863f8d8048b892d34f18dfaebe'
+                                                    is_repo_valid = False
+
+                                                else:
+                                                    repo_url = 'https://github.com/learning-zone/java-basics'
+                                                    commit_id = '8ab4deb1030b4d863f8d8048b892d34f18dfaebe'
+                                                    is_repo_valid=False
                                         else:
                                             repo_url = 'https://github.com/winterbe/java8-tutorial'
                                             commit_id = '81a0fa3aa1d6ec2409e0226d3a6c2f5c2d19a41d'
