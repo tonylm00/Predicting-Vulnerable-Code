@@ -610,6 +610,90 @@ class TestSystem:
         assert len(prediction_zip.namelist()) == 0
 
     @pytest.mark.parametrize('manage_environment', [(True, False, 0, True)], indirect=True)
+    def test_case_8(self, manage_environment):
+
+        app, test_path = manage_environment
+
+        # Connect to the main window, modifying with title or best_match as needed
+        window = app.window(title="Perseverance")
+
+        list_index = [
+            self.UPLOAD_BUTTON,
+            self.SOFTWARE_METRICS_CHECK_BOX_1,
+            self.ASA_CHECK_BOX,
+            self.START_BUTTON,
+            self.PREDICTIONS_DOWNLOAD_BUTTON,
+            self.ANALYSIS_DOWNLOAD_BUTTON,
+            self.SONAR_PATH,
+            self.SONAR_HOST,
+            self.SONAR_TOKEN_1
+        ]
+
+        elem_dict = self.get_gui_elements(window, list_index)
+        upload_button = elem_dict[self.UPLOAD_BUTTON]
+        asa_box = elem_dict[self.ASA_CHECK_BOX]
+        software_metrics_box = elem_dict[self.SOFTWARE_METRICS_CHECK_BOX_1]
+        start_button = elem_dict[self.START_BUTTON]
+        sonar_path = elem_dict[self.SONAR_PATH]
+        sonar_host = elem_dict[self.SONAR_HOST]
+        sonar_token = elem_dict[self.SONAR_TOKEN_1]
+        analysis_download_button = elem_dict[self.ANALYSIS_DOWNLOAD_BUTTON]
+        predict_res_button = elem_dict[self.PREDICTIONS_DOWNLOAD_BUTTON]
+
+        upload_button.click_input()
+
+        sleep(4)
+
+        self.load_csv_routine(test_path)
+
+        sleep(2)
+
+        software_metrics_box.click_input()
+        sleep(1)
+        asa_box.click_input()
+        sleep(1)
+
+        sonar_path.click_input(double=True)
+        sonar_path.type_keys(self.SONAR_PATH_TXT)
+
+        sonar_token.click_input(double=True)
+        sonar_token.type_keys(self.SONAR_TOKEN_TXT)
+
+        sonar_host.click_input(double=True)
+        send_keys("^a")
+        sonar_host.type_keys(self.SONAR_HOST_TXT)
+
+        start_button.click_input()
+
+        wait_until(240, 5, predict_res_button.is_visible, True)
+
+        analysis_download_button.click_input()
+
+        sleep(2)
+
+        exist_analysis_success_dialog, analysis_success_text, analysis_zip = self.save_zip_routine(app,
+                                                                                                   self.TEST_ANALYSIS_NAME,
+                                                                                                   test_path)
+        predict_res_button.click_input()
+
+        sleep(2)
+
+        exist_prediction_success_dialog, prediction_success_text, prediction_zip = self.save_zip_routine(app,
+                                                                                                         self.TEST_PREDICTIONS_NAME,
+                                                                                                         test_path)
+
+        assert exist_analysis_success_dialog
+        assert 'File saved successfully' in analysis_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_ANALYSIS_NAME))
+        assert analysis_zip.namelist() == ['asa.log', 'repo_mining.log', 'mining_results_sm_final.csv',
+                                           'csv_ASA_final.csv', 'Union_SM_ASA.csv']
+
+        assert exist_prediction_success_dialog
+        assert 'File saved successfully' in prediction_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
+        assert prediction_zip.namelist() == []
+
+    @pytest.mark.parametrize('manage_environment', [(True, False, 0, True)], indirect=True)
     def test_case_9(self, manage_environment):
 
         app, test_path = manage_environment
@@ -706,6 +790,96 @@ class TestSystem:
         assert error_dialog.window_text() == 'You must select at least one option'
 
     @pytest.mark.parametrize('manage_environment', [(True, False, 1, True)], indirect=True)
+    def test_case_11(self, manage_environment):
+
+        app, test_path = manage_environment
+
+        # Connect to the main window, modifying with title or best_match as needed
+        window = app.window(title="Perseverance")
+
+        list_index = [
+            self.UPLOAD_BUTTON,
+            self.TEXT_MINING_CHECK_BOX,
+            self.SOFTWARE_METRICS_CHECK_BOX_1,
+            self.ASA_CHECK_BOX,
+            self.START_BUTTON,
+            self.PREDICTIONS_DOWNLOAD_BUTTON,
+            self.ANALYSIS_DOWNLOAD_BUTTON,
+            self.SONAR_PATH,
+            self.SONAR_HOST,
+            self.SONAR_TOKEN_1
+        ]
+
+        elem_dict = self.get_gui_elements(window, list_index)
+        upload_button = elem_dict[self.UPLOAD_BUTTON]
+        asa_box = elem_dict[self.ASA_CHECK_BOX]
+        text_mining_box = elem_dict[self.TEXT_MINING_CHECK_BOX]
+        software_metrics_box = elem_dict[self.SOFTWARE_METRICS_CHECK_BOX_1]
+        start_button = elem_dict[self.START_BUTTON]
+        sonar_path = elem_dict[self.SONAR_PATH]
+        sonar_host = elem_dict[self.SONAR_HOST]
+        sonar_token = elem_dict[self.SONAR_TOKEN_1]
+        analysis_download_button = elem_dict[self.ANALYSIS_DOWNLOAD_BUTTON]
+        predict_res_button = elem_dict[self.PREDICTIONS_DOWNLOAD_BUTTON]
+
+        upload_button.click_input()
+
+        sleep(4)
+
+        self.load_csv_routine(test_path)
+
+        sleep(2)
+
+        text_mining_box.click_input()
+        sleep(1)
+        software_metrics_box.click_input()
+        sleep(1)
+        asa_box.click_input()
+        sleep(1)
+
+        sonar_path.click_input(double=True)
+        sonar_path.type_keys(self.SONAR_PATH_TXT)
+
+        sonar_token.click_input(double=True)
+        sonar_token.type_keys(self.SONAR_TOKEN_TXT)
+
+        sonar_host.click_input(double=True)
+        send_keys("^a")
+        sonar_host.type_keys(self.SONAR_HOST_TXT)
+
+        start_button.click_input()
+
+        wait_until(300, 5, predict_res_button.is_visible, True)
+
+        analysis_download_button.click_input()
+
+        sleep(2)
+
+        exist_analysis_success_dialog, analysis_success_text, analysis_zip = self.save_zip_routine(app,
+                                                                                                   self.TEST_ANALYSIS_NAME,
+                                                                                                   test_path)
+        predict_res_button.click_input()
+
+        sleep(2)
+
+        exist_prediction_success_dialog, prediction_success_text, prediction_zip = self.save_zip_routine(app,
+                                                                                                         self.TEST_PREDICTIONS_NAME,
+                                                                                                         test_path)
+
+        assert exist_analysis_success_dialog
+        assert 'File saved successfully' in analysis_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_ANALYSIS_NAME))
+        assert analysis_zip.namelist() == ['software_metrics.log', 'asa.log', 'repo_mining.log', 'csv_mining_final.csv',
+                                           'mining_results_sm_final.csv', 'csv_ASA_final.csv', '3Combination.csv',
+                                           'Union_TM_SM.csv', 'Union_TM_ASA.csv', 'Union_SM_ASA.csv']
+
+        assert exist_prediction_success_dialog
+        assert 'File saved successfully' in prediction_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
+        assert prediction_zip.namelist() == ['Predict_TM.csv', 'Predict_SM.csv', 'Predict_ASA.csv', 'Predict_3Combination.csv',
+                                             'Predict_TMSM.csv', 'Predict_TMASA.csv', 'Predict_SMASA.csv']
+
+    @pytest.mark.parametrize('manage_environment', [(True, False, 1, True)], indirect=True)
     def test_case_12(self, manage_environment):
 
         app, test_path = manage_environment
@@ -775,6 +949,90 @@ class TestSystem:
         assert prediction_zip.namelist() == ['Predict_TM.csv', 'Predict_SM.csv', 'Predict_TMSM.csv']
 
     @pytest.mark.parametrize('manage_environment', [(True, False, 1, True)], indirect=True)
+    def test_case_13(self, manage_environment):
+
+        app, test_path = manage_environment
+
+        # Connect to the main window, modifying with title or best_match as needed
+        window = app.window(title="Perseverance")
+
+        list_index = [
+            self.UPLOAD_BUTTON,
+            self.TEXT_MINING_CHECK_BOX,
+            self.ASA_CHECK_BOX,
+            self.START_BUTTON,
+            self.PREDICTIONS_DOWNLOAD_BUTTON,
+            self.ANALYSIS_DOWNLOAD_BUTTON,
+            self.SONAR_PATH,
+            self.SONAR_HOST,
+            self.SONAR_TOKEN_1
+        ]
+
+        elem_dict = self.get_gui_elements(window, list_index)
+        upload_button = elem_dict[self.UPLOAD_BUTTON]
+        asa_box = elem_dict[self.ASA_CHECK_BOX]
+        text_mining_box = elem_dict[self.TEXT_MINING_CHECK_BOX]
+        start_button = elem_dict[self.START_BUTTON]
+        sonar_path = elem_dict[self.SONAR_PATH]
+        sonar_host = elem_dict[self.SONAR_HOST]
+        sonar_token = elem_dict[self.SONAR_TOKEN_1]
+        analysis_download_button = elem_dict[self.ANALYSIS_DOWNLOAD_BUTTON]
+        predict_res_button = elem_dict[self.PREDICTIONS_DOWNLOAD_BUTTON]
+
+        upload_button.click_input()
+
+        sleep(4)
+
+        self.load_csv_routine(test_path)
+
+        sleep(2)
+
+        text_mining_box.click_input()
+        sleep(1)
+        asa_box.click_input()
+        sleep(1)
+
+        sonar_path.click_input(double=True)
+        sonar_path.type_keys(self.SONAR_PATH_TXT)
+
+        sonar_token.click_input(double=True)
+        sonar_token.type_keys(self.SONAR_TOKEN_TXT)
+
+        sonar_host.click_input(double=True)
+        send_keys("^a")
+        sonar_host.type_keys(self.SONAR_HOST_TXT)
+
+        start_button.click_input()
+
+        wait_until(300, 5, predict_res_button.is_visible, True)
+
+        analysis_download_button.click_input()
+
+        sleep(2)
+
+        exist_analysis_success_dialog, analysis_success_text, analysis_zip = self.save_zip_routine(app,
+                                                                                                   self.TEST_ANALYSIS_NAME,
+                                                                                                   test_path)
+        predict_res_button.click_input()
+
+        sleep(2)
+
+        exist_prediction_success_dialog, prediction_success_text, prediction_zip = self.save_zip_routine(app,
+                                                                                                         self.TEST_PREDICTIONS_NAME,
+                                                                                                         test_path)
+
+        assert exist_analysis_success_dialog
+        assert 'File saved successfully' in analysis_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_ANALYSIS_NAME))
+        assert analysis_zip.namelist() == ['asa.log', 'repo_mining.log', 'csv_mining_final.csv',
+                                           'csv_ASA_final.csv', 'Union_TM_ASA.csv']
+
+        assert exist_prediction_success_dialog
+        assert 'File saved successfully' in prediction_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
+        assert prediction_zip.namelist() == ['Predict_TM.csv', 'Predict_ASA.csv', 'Predict_TMASA.csv']
+
+    @pytest.mark.parametrize('manage_environment', [(True, False, 1, True)], indirect=True)
     def test_case_14(self, manage_environment):
 
         app, test_path = manage_environment
@@ -837,6 +1095,90 @@ class TestSystem:
         assert 'File saved successfully' in prediction_success_text
         assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
         assert prediction_zip.namelist() == ['Predict_TM.csv']
+
+    @pytest.mark.parametrize('manage_environment', [(True, False, 1, True)], indirect=True)
+    def test_case_15(self, manage_environment):
+
+        app, test_path = manage_environment
+
+        # Connect to the main window, modifying with title or best_match as needed
+        window = app.window(title="Perseverance")
+
+        list_index = [
+            self.UPLOAD_BUTTON,
+            self.SOFTWARE_METRICS_CHECK_BOX_1,
+            self.ASA_CHECK_BOX,
+            self.START_BUTTON,
+            self.PREDICTIONS_DOWNLOAD_BUTTON,
+            self.ANALYSIS_DOWNLOAD_BUTTON,
+            self.SONAR_PATH,
+            self.SONAR_HOST,
+            self.SONAR_TOKEN_1
+        ]
+
+        elem_dict = self.get_gui_elements(window, list_index)
+        upload_button = elem_dict[self.UPLOAD_BUTTON]
+        asa_box = elem_dict[self.ASA_CHECK_BOX]
+        software_metrics_box = elem_dict[self.SOFTWARE_METRICS_CHECK_BOX_1]
+        start_button = elem_dict[self.START_BUTTON]
+        sonar_path = elem_dict[self.SONAR_PATH]
+        sonar_host = elem_dict[self.SONAR_HOST]
+        sonar_token = elem_dict[self.SONAR_TOKEN_1]
+        analysis_download_button = elem_dict[self.ANALYSIS_DOWNLOAD_BUTTON]
+        predict_res_button = elem_dict[self.PREDICTIONS_DOWNLOAD_BUTTON]
+
+        upload_button.click_input()
+
+        sleep(4)
+
+        self.load_csv_routine(test_path)
+
+        sleep(2)
+
+        software_metrics_box.click_input()
+        sleep(1)
+        asa_box.click_input()
+        sleep(1)
+
+        sonar_path.click_input(double=True)
+        sonar_path.type_keys(self.SONAR_PATH_TXT)
+
+        sonar_token.click_input(double=True)
+        sonar_token.type_keys(self.SONAR_TOKEN_TXT)
+
+        sonar_host.click_input(double=True)
+        send_keys("^a")
+        sonar_host.type_keys(self.SONAR_HOST_TXT)
+
+        start_button.click_input()
+
+        wait_until(300, 5, predict_res_button.is_visible, True)
+
+        analysis_download_button.click_input()
+
+        sleep(2)
+
+        exist_analysis_success_dialog, analysis_success_text, analysis_zip = self.save_zip_routine(app,
+                                                                                                   self.TEST_ANALYSIS_NAME,
+                                                                                                   test_path)
+        predict_res_button.click_input()
+
+        sleep(2)
+
+        exist_prediction_success_dialog, prediction_success_text, prediction_zip = self.save_zip_routine(app,
+                                                                                                         self.TEST_PREDICTIONS_NAME,
+                                                                                                         test_path)
+
+        assert exist_analysis_success_dialog
+        assert 'File saved successfully' in analysis_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_ANALYSIS_NAME))
+        assert analysis_zip.namelist() == ['software_metrics.log', 'asa.log', 'repo_mining.log',
+                                           'mining_results_sm_final.csv', 'csv_ASA_final.csv', 'Union_SM_ASA.csv']
+
+        assert exist_prediction_success_dialog
+        assert 'File saved successfully' in prediction_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
+        assert prediction_zip.namelist() == ['Predict_TM.csv', 'Predict_ASA.csv', 'Predict_SMASA.csv']
 
     @pytest.mark.parametrize('manage_environment', [(True, False, 1, True)], indirect=True)
     def test_case_16(self, manage_environment):
@@ -936,6 +1278,97 @@ class TestSystem:
         assert error_dialog.window_text() == 'You must select at least one option'
 
     @pytest.mark.parametrize('manage_environment', [(True, False, 60, True)], indirect=True)
+    def test_case_18(self, manage_environment):
+
+        app, test_path = manage_environment
+
+        # Connect to the main window, modifying with title or best_match as needed
+        window = app.window(title="Perseverance")
+
+        list_index = [
+            self.UPLOAD_BUTTON,
+            self.TEXT_MINING_CHECK_BOX,
+            self.SOFTWARE_METRICS_CHECK_BOX_1,
+            self.ASA_CHECK_BOX,
+            self.START_BUTTON,
+            self.PREDICTIONS_DOWNLOAD_BUTTON,
+            self.ANALYSIS_DOWNLOAD_BUTTON,
+            self.SONAR_PATH,
+            self.SONAR_HOST,
+            self.SONAR_TOKEN_1
+        ]
+
+        elem_dict = self.get_gui_elements(window, list_index)
+        upload_button = elem_dict[self.UPLOAD_BUTTON]
+        asa_box = elem_dict[self.ASA_CHECK_BOX]
+        text_mining_box = elem_dict[self.TEXT_MINING_CHECK_BOX]
+        software_metrics_box = elem_dict[self.SOFTWARE_METRICS_CHECK_BOX_1]
+        start_button = elem_dict[self.START_BUTTON]
+        sonar_path = elem_dict[self.SONAR_PATH]
+        sonar_host = elem_dict[self.SONAR_HOST]
+        sonar_token = elem_dict[self.SONAR_TOKEN_1]
+        analysis_download_button = elem_dict[self.ANALYSIS_DOWNLOAD_BUTTON]
+        predict_res_button = elem_dict[self.PREDICTIONS_DOWNLOAD_BUTTON]
+
+        upload_button.click_input()
+
+        sleep(4)
+
+        self.load_csv_routine(test_path)
+
+        sleep(2)
+
+        text_mining_box.click_input()
+        sleep(1)
+        software_metrics_box.click_input()
+        sleep(1)
+        asa_box.click_input()
+        sleep(1)
+
+        sonar_path.click_input(double=True)
+        sonar_path.type_keys(self.SONAR_PATH_TXT)
+
+        sonar_token.click_input(double=True)
+        sonar_token.type_keys(self.SONAR_TOKEN_TXT)
+
+        sonar_host.click_input(double=True)
+        send_keys("^a")
+        sonar_host.type_keys(self.SONAR_HOST_TXT)
+
+        start_button.click_input()
+
+        wait_until(360, 5, predict_res_button.is_visible, True)
+
+        analysis_download_button.click_input()
+
+        sleep(2)
+
+        exist_analysis_success_dialog, analysis_success_text, analysis_zip = self.save_zip_routine(app,
+                                                                                                   self.TEST_ANALYSIS_NAME,
+                                                                                                   test_path)
+        predict_res_button.click_input()
+
+        sleep(2)
+
+        exist_prediction_success_dialog, prediction_success_text, prediction_zip = self.save_zip_routine(app,
+                                                                                                         self.TEST_PREDICTIONS_NAME,
+                                                                                                         test_path)
+
+        assert exist_analysis_success_dialog
+        assert 'File saved successfully' in analysis_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_ANALYSIS_NAME))
+        assert analysis_zip.namelist() == ['software_metrics.log', 'asa.log', 'repo_mining.log', 'csv_mining_final.csv',
+                                           'mining_results_sm_final.csv', 'csv_ASA_final.csv', '3Combination.csv',
+                                           'Union_TM_SM.csv', 'Union_TM_ASA.csv', 'Union_SM_ASA.csv']
+
+        assert exist_prediction_success_dialog
+        assert 'File saved successfully' in prediction_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
+        assert prediction_zip.namelist() == ['Predict_TM.csv', 'Predict_SM.csv', 'Predict_ASA.csv',
+                                             'Predict_3Combination.csv',
+                                             'Predict_TMSM.csv', 'Predict_TMASA.csv', 'Predict_SMASA.csv']
+
+    @pytest.mark.parametrize('manage_environment', [(True, False, 60, True)], indirect=True)
     def test_case_19(self, manage_environment):
 
         app, test_path = manage_environment
@@ -1005,6 +1438,90 @@ class TestSystem:
         assert prediction_zip.namelist() == ['Predict_TM.csv', 'Predict_SM.csv', 'Predict_TMSM.csv']
 
     @pytest.mark.parametrize('manage_environment', [(True, False, 60, True)], indirect=True)
+    def test_case_20(self, manage_environment):
+
+        app, test_path = manage_environment
+
+        # Connect to the main window, modifying with title or best_match as needed
+        window = app.window(title="Perseverance")
+
+        list_index = [
+            self.UPLOAD_BUTTON,
+            self.TEXT_MINING_CHECK_BOX,
+            self.ASA_CHECK_BOX,
+            self.START_BUTTON,
+            self.PREDICTIONS_DOWNLOAD_BUTTON,
+            self.ANALYSIS_DOWNLOAD_BUTTON,
+            self.SONAR_PATH,
+            self.SONAR_HOST,
+            self.SONAR_TOKEN_1
+        ]
+
+        elem_dict = self.get_gui_elements(window, list_index)
+        upload_button = elem_dict[self.UPLOAD_BUTTON]
+        asa_box = elem_dict[self.ASA_CHECK_BOX]
+        text_mining_box = elem_dict[self.TEXT_MINING_CHECK_BOX]
+        start_button = elem_dict[self.START_BUTTON]
+        sonar_path = elem_dict[self.SONAR_PATH]
+        sonar_host = elem_dict[self.SONAR_HOST]
+        sonar_token = elem_dict[self.SONAR_TOKEN_1]
+        analysis_download_button = elem_dict[self.ANALYSIS_DOWNLOAD_BUTTON]
+        predict_res_button = elem_dict[self.PREDICTIONS_DOWNLOAD_BUTTON]
+
+        upload_button.click_input()
+
+        sleep(4)
+
+        self.load_csv_routine(test_path)
+
+        sleep(2)
+
+        text_mining_box.click_input()
+        sleep(1)
+        asa_box.click_input()
+        sleep(1)
+
+        sonar_path.click_input(double=True)
+        sonar_path.type_keys(self.SONAR_PATH_TXT)
+
+        sonar_token.click_input(double=True)
+        sonar_token.type_keys(self.SONAR_TOKEN_TXT)
+
+        sonar_host.click_input(double=True)
+        send_keys("^a")
+        sonar_host.type_keys(self.SONAR_HOST_TXT)
+
+        start_button.click_input()
+
+        wait_until(300, 5, predict_res_button.is_visible, True)
+
+        analysis_download_button.click_input()
+
+        sleep(2)
+
+        exist_analysis_success_dialog, analysis_success_text, analysis_zip = self.save_zip_routine(app,
+                                                                                                   self.TEST_ANALYSIS_NAME,
+                                                                                                   test_path)
+        predict_res_button.click_input()
+
+        sleep(2)
+
+        exist_prediction_success_dialog, prediction_success_text, prediction_zip = self.save_zip_routine(app,
+                                                                                                         self.TEST_PREDICTIONS_NAME,
+                                                                                                         test_path)
+
+        assert exist_analysis_success_dialog
+        assert 'File saved successfully' in analysis_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_ANALYSIS_NAME))
+        assert analysis_zip.namelist() == ['asa.log', 'repo_mining.log', 'csv_mining_final.csv',
+                                           'csv_ASA_final.csv', 'Union_TM_ASA.csv']
+
+        assert exist_prediction_success_dialog
+        assert 'File saved successfully' in prediction_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
+        assert prediction_zip.namelist() == ['Predict_TM.csv', 'Predict_ASA.csv', 'Predict_TMASA.csv']
+
+    @pytest.mark.parametrize('manage_environment', [(True, False, 60, True)], indirect=True)
     def test_case_21(self, manage_environment):
 
         app, test_path = manage_environment
@@ -1067,6 +1584,85 @@ class TestSystem:
         assert 'File saved successfully' in prediction_success_text
         assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
         assert prediction_zip.namelist() == ['Predict_TM.csv']
+
+    @pytest.mark.parametrize('manage_environment', [(True, False, 5, True)], indirect=True)
+    def test_case_22(self, manage_environment):
+
+        app, test_path = manage_environment
+        window = app.window(title="Perseverance")
+
+        list_index = [
+            self.UPLOAD_BUTTON,
+            self.ASA_CHECK_BOX,
+            self.SOFTWARE_METRICS_CHECK_BOX_1,
+            self.SONAR_PATH,
+            self.SONAR_HOST,
+            self.SONAR_TOKEN_1,
+            self.START_BUTTON,
+            self.PREDICTIONS_DOWNLOAD_BUTTON,
+            self.ANALYSIS_DOWNLOAD_BUTTON,
+        ]
+
+        elem_dict = self.get_gui_elements(window, list_index)
+
+        upload_button = elem_dict[self.UPLOAD_BUTTON]
+        upload_button.click_input()
+
+        self.load_csv_routine(test_path)
+
+        sm_box = elem_dict[self.SOFTWARE_METRICS_CHECK_BOX_1]
+        sm_box.click_input()
+
+        asa_box = elem_dict[self.ASA_CHECK_BOX]
+        asa_box.click_input()
+
+        sonar_path = elem_dict[self.SONAR_PATH]
+        sonar_host = elem_dict[self.SONAR_HOST]
+        sonar_token = elem_dict[self.SONAR_TOKEN_1]
+
+        sonar_path.click_input(double=True)
+        send_keys(self.SONAR_PATH_TXT, with_spaces=True)
+
+        sonar_token.click_input(double=True)
+        send_keys(self.SONAR_TOKEN_TXT)
+
+        sonar_host.click_input(double=True)
+        send_keys(self.SONAR_HOST_TXT)
+
+        start_button = elem_dict[self.START_BUTTON]
+        start_button.click_input()
+
+        predict_res_button = elem_dict[self.PREDICTIONS_DOWNLOAD_BUTTON]
+        wait_until(240, 5, predict_res_button.is_visible, True)
+
+        analysis_download_button = elem_dict[self.ANALYSIS_DOWNLOAD_BUTTON]
+        analysis_download_button.click_input()
+
+        sleep(2)
+
+        exist_analysis_success_dialog, analysis_success_text, analysis_zip = self.save_zip_routine(app,
+                                                                                                   self.TEST_ANALYSIS_NAME,
+                                                                                                   test_path)
+        predict_res_button.click_input()
+
+        sleep(2)
+
+        exist_prediction_success_dialog, prediction_success_text, prediction_zip = self.save_zip_routine(app,
+                                                                                                         self.TEST_PREDICTIONS_NAME,
+                                                                                                         test_path)
+
+        assert exist_analysis_success_dialog
+        assert 'File saved successfully' in analysis_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_ANALYSIS_NAME))
+        expected_files = {'asa.log', 'repo_mining.log', 'software_metrics.log',
+                          'mining_results_sm_final.csv', 'csv_ASA_final.csv', 'Union_TM_ASA.csv', 'Union_SM_ASA.csv'}
+        assert set(analysis_zip.namelist()) == expected_files
+
+        assert exist_prediction_success_dialog
+        assert 'File saved successfully' in prediction_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
+        expected_files = {'Predict_SM.csv', 'Predict_ASA.csv', 'Predict_SMASA.csv'}
+        assert set(prediction_zip.namelist()) == expected_files
 
     @pytest.mark.parametrize('manage_environment', [(True, False, 60, True)], indirect=True)
     def test_case_23(self, manage_environment):
@@ -1164,352 +1760,6 @@ class TestSystem:
 
         assert error_dialog.exist
         assert error_dialog.window_text() == 'You must select at least one option'
-
-    @pytest.mark.parametrize('manage_environment', [(False, False, 5, False)], indirect=True)
-    def test_case_36(self, manage_environment):
-
-        app, test_path = manage_environment
-
-        # Connect to the main window, modifying with title or best_match as needed
-        window = app.window(title="Perseverance")
-
-        list_index = [
-            self.CSV_SWITCH,
-            self.TEXT_MINING_CHECK_BOX,
-            self.ASA_CHECK_BOX,
-            self.START_BUTTON,
-            self.PREDICTIONS_DOWNLOAD_BUTTON,
-            self.ANALYSIS_DOWNLOAD_BUTTON,
-            self.SONAR_PATH,
-            self.SONAR_HOST,
-            self.SONAR_TOKEN_1
-        ]
-
-        elem_dict = self.get_gui_elements(window, list_index)
-        csv_button = elem_dict[self.CSV_SWITCH]
-        asa_box = elem_dict[self.ASA_CHECK_BOX]
-        text_mining_box = elem_dict[self.TEXT_MINING_CHECK_BOX]
-        start_button = elem_dict[self.START_BUTTON]
-        sonar_path = elem_dict[self.SONAR_PATH]
-        sonar_host = elem_dict[self.SONAR_HOST]
-        sonar_token = elem_dict[self.SONAR_TOKEN_1]
-        analysis_download_button = elem_dict[self.ANALYSIS_DOWNLOAD_BUTTON]
-        predict_res_button = elem_dict[self.PREDICTIONS_DOWNLOAD_BUTTON]
-
-        csv_button.click_input()
-
-        sleep(2)
-
-        asa_box.click_input()
-        sleep(1)
-        text_mining_box.click_input()
-        sleep(1)
-
-        sonar_path.click_input(double=True)
-        send_keys("^a")
-        sonar_path.type_keys("C:\\errorpath\sonar-scanner.bat")
-
-        sonar_token.click_input(double=True)
-        sleep(1)
-        sonar_token.type_keys(self.SONAR_TOKEN_TXT)
-
-        sonar_host.click_input(double=True)
-        sonar_host.type_keys(self.SONAR_HOST_TXT)
-
-        start_button.click_input()
-
-        wait_until(240, 5, predict_res_button.is_visible, True)
-
-        error_dialog = app.Dialog.Static2
-
-        assert error_dialog.exist
-        assert error_dialog.window_text() == 'Error in static analysis, check the logs!'
-
-        app.Dialog.OK.click_input()
-
-        sleep(2)
-
-        analysis_download_button.click_input()
-
-        sleep(2)
-
-        exist_analysis_success_dialog, analysis_success_text, analysis_zip = self.save_zip_routine(app,
-                                                                                                   self.TEST_ANALYSIS_NAME,
-                                                                                                   test_path)
-        predict_res_button.click_input()
-
-        sleep(2)
-
-        exist_prediction_success_dialog, prediction_success_text, prediction_zip = self.save_zip_routine(app,
-                                                                                                         self.TEST_PREDICTIONS_NAME,
-                                                                                                         test_path)
-
-        assert exist_analysis_success_dialog
-        assert 'File saved successfully' in analysis_success_text
-        assert os.path.exists(os.path.join(test_path, self.TEST_ANALYSIS_NAME))
-        assert analysis_zip.namelist() == ['asa.log', 'repo_mining.log', 'csv_mining_final.csv']
-
-        assert exist_prediction_success_dialog
-        assert 'File saved successfully' in prediction_success_text
-        assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
-        assert prediction_zip.namelist() == ['Predict_TM.csv']
-
-    @pytest.mark.parametrize('manage_environment', [(False, False, 5, False)], indirect=True)
-    def test_case_37(self, manage_environment):
-
-        app, test_path = manage_environment
-
-        # Connect to the main window, modifying with title or best_match as needed
-        window = app.window(title="Perseverance")
-
-        list_index = [
-            self.CSV_SWITCH,
-            self.TEXT_MINING_CHECK_BOX,
-            self.ASA_CHECK_BOX,
-            self.START_BUTTON,
-            self.PREDICTIONS_DOWNLOAD_BUTTON,
-            self.ANALYSIS_DOWNLOAD_BUTTON,
-            self.SONAR_PATH,
-            self.SONAR_HOST,
-            self.SONAR_TOKEN_1
-        ]
-
-        elem_dict = self.get_gui_elements(window, list_index)
-        csv_button = elem_dict[self.CSV_SWITCH]
-        asa_box = elem_dict[self.ASA_CHECK_BOX]
-        text_mining_box = elem_dict[self.TEXT_MINING_CHECK_BOX]
-        start_button = elem_dict[self.START_BUTTON]
-        sonar_path = elem_dict[self.SONAR_PATH]
-        sonar_host = elem_dict[self.SONAR_HOST]
-        sonar_token = elem_dict[self.SONAR_TOKEN_1]
-        analysis_download_button = elem_dict[self.ANALYSIS_DOWNLOAD_BUTTON]
-        predict_res_button = elem_dict[self.PREDICTIONS_DOWNLOAD_BUTTON]
-
-        csv_button.click_input()
-
-        sleep(2)
-
-        asa_box.click_input()
-        sleep(1)
-        text_mining_box.click_input()
-        sleep(1)
-
-        sonar_path.click_input(double=True)
-        send_keys("^a")
-        sonar_path.type_keys(self.SONAR_PATH_TXT)
-
-        sonar_token.click_input(double=True)
-        sleep(1)
-        sonar_token.type_keys("error_token")
-
-        sonar_host.click_input(double=True)
-        sonar_host.type_keys(self.SONAR_HOST_TXT)
-
-        start_button.click_input()
-
-        wait_until(240, 5, predict_res_button.is_visible, True)
-
-        error_dialog = app.Dialog.Static2
-
-        assert error_dialog.exist
-        assert error_dialog.window_text() == 'Error in static analysis, check the logs!'
-
-        app.Dialog.OK.click_input()
-
-        sleep(2)
-
-        analysis_download_button.click_input()
-
-        sleep(2)
-
-        exist_analysis_success_dialog, analysis_success_text, analysis_zip = self.save_zip_routine(app,
-                                                                                                   self.TEST_ANALYSIS_NAME,
-                                                                                                   test_path)
-        predict_res_button.click_input()
-
-        sleep(2)
-
-        exist_prediction_success_dialog, prediction_success_text, prediction_zip = self.save_zip_routine(app,
-                                                                                                         self.TEST_PREDICTIONS_NAME,
-                                                                                                         test_path)
-
-        assert exist_analysis_success_dialog
-        assert 'File saved successfully' in analysis_success_text
-        assert os.path.exists(os.path.join(test_path, self.TEST_ANALYSIS_NAME))
-        assert analysis_zip.namelist() == ['asa.log', 'repo_mining.log', 'csv_mining_final.csv']
-
-        assert exist_prediction_success_dialog
-        assert 'File saved successfully' in prediction_success_text
-        assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
-        assert prediction_zip.namelist() == ['Predict_TM.csv']
-
-    @pytest.mark.parametrize('manage_environment', [(False, False, 5, False)], indirect=True)
-    def test_case_38(self, manage_environment):
-
-        app, test_path = manage_environment
-
-        # Connect to the main window, modifying with title or best_match as needed
-        window = app.window(title="Perseverance")
-
-        list_index = [
-            self.CSV_SWITCH,
-            self.TEXT_MINING_CHECK_BOX,
-            self.ASA_CHECK_BOX,
-            self.START_BUTTON,
-            self.PREDICTIONS_DOWNLOAD_BUTTON,
-            self.ANALYSIS_DOWNLOAD_BUTTON,
-            self.SONAR_PATH,
-            self.SONAR_HOST,
-            self.SONAR_TOKEN_1
-        ]
-
-        elem_dict = self.get_gui_elements(window, list_index)
-        csv_button = elem_dict[self.CSV_SWITCH]
-        asa_box = elem_dict[self.ASA_CHECK_BOX]
-        text_mining_box = elem_dict[self.TEXT_MINING_CHECK_BOX]
-        start_button = elem_dict[self.START_BUTTON]
-        sonar_path = elem_dict[self.SONAR_PATH]
-        sonar_host = elem_dict[self.SONAR_HOST]
-        sonar_token = elem_dict[self.SONAR_TOKEN_1]
-        analysis_download_button = elem_dict[self.ANALYSIS_DOWNLOAD_BUTTON]
-        predict_res_button = elem_dict[self.PREDICTIONS_DOWNLOAD_BUTTON]
-
-        csv_button.click_input()
-
-        sleep(2)
-
-        asa_box.click_input()
-        sleep(1)
-        text_mining_box.click_input()
-        sleep(1)
-
-        sonar_path.click_input(double=True)
-        send_keys("^a")
-        sonar_path.type_keys(self.SONAR_PATH_TXT)
-
-        sonar_token.click_input(double=True)
-        sleep(1)
-        sonar_token.type_keys(self.SONAR_TOKEN_TXT)
-
-        sonar_host.click_input(double=True)
-        sonar_host.type_keys("http://errorhost:9001")
-
-        start_button.click_input()
-
-        wait_until(240, 5, predict_res_button.is_visible, True)
-
-        error_dialog = app.Dialog.Static2
-
-        assert error_dialog.exist
-        assert error_dialog.window_text() == 'Error in static analysis, check the logs!'
-
-        app.Dialog.OK.click_input()
-
-        sleep(2)
-
-        analysis_download_button.click_input()
-
-        sleep(2)
-
-        exist_analysis_success_dialog, analysis_success_text, analysis_zip = self.save_zip_routine(app,
-                                                                                                   self.TEST_ANALYSIS_NAME,
-                                                                                                   test_path)
-        predict_res_button.click_input()
-
-        sleep(2)
-
-        exist_prediction_success_dialog, prediction_success_text, prediction_zip = self.save_zip_routine(app,
-                                                                                                         self.TEST_PREDICTIONS_NAME,
-                                                                                                         test_path)
-
-        assert exist_analysis_success_dialog
-        assert 'File saved successfully' in analysis_success_text
-        assert os.path.exists(os.path.join(test_path, self.TEST_ANALYSIS_NAME))
-        assert analysis_zip.namelist() == ['asa.log', 'repo_mining.log', 'csv_mining_final.csv']
-
-        assert exist_prediction_success_dialog
-        assert 'File saved successfully' in prediction_success_text
-        assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
-        assert prediction_zip.namelist() == ['Predict_TM.csv']
-
-    @pytest.mark.parametrize('manage_environment', [(True, False, 5, True)], indirect=True)
-    def test_case_22(self, manage_environment):
-
-        app, test_path = manage_environment
-        window = app.window(title="Perseverance")
-
-        list_index = [
-            self.UPLOAD_BUTTON,
-            self.ASA_CHECK_BOX,
-            self.SOFTWARE_METRICS_CHECK_BOX_1,
-            self.SONAR_PATH,
-            self.SONAR_HOST,
-            self.SONAR_TOKEN_1,
-            self.START_BUTTON,
-            self.PREDICTIONS_DOWNLOAD_BUTTON,
-            self.ANALYSIS_DOWNLOAD_BUTTON,
-        ]
-
-        elem_dict = self.get_gui_elements(window, list_index)
-
-        upload_button = elem_dict[self.UPLOAD_BUTTON]
-        upload_button.click_input()
-
-        self.load_csv_routine(test_path)
-
-        sm_box = elem_dict[self.SOFTWARE_METRICS_CHECK_BOX_1]
-        sm_box.click_input()
-
-        asa_box = elem_dict[self.ASA_CHECK_BOX]
-        asa_box.click_input()
-
-        sonar_path = elem_dict[self.SONAR_PATH]
-        sonar_host = elem_dict[self.SONAR_HOST]
-        sonar_token = elem_dict[self.SONAR_TOKEN_1]
-
-        sonar_path.click_input(double=True)
-        send_keys(self.SONAR_PATH_TXT, with_spaces=True)
-
-        sonar_token.click_input(double=True)
-        send_keys(self.SONAR_TOKEN_TXT)
-
-        sonar_host.click_input(double=True)
-        send_keys(self.SONAR_HOST_TXT)
-
-        start_button = elem_dict[self.START_BUTTON]
-        start_button.click_input()
-
-        predict_res_button = elem_dict[self.PREDICTIONS_DOWNLOAD_BUTTON]
-        wait_until(240, 5, predict_res_button.is_visible, True)
-
-        analysis_download_button = elem_dict[self.ANALYSIS_DOWNLOAD_BUTTON]
-        analysis_download_button.click_input()
-
-        sleep(2)
-
-        exist_analysis_success_dialog, analysis_success_text, analysis_zip = self.save_zip_routine(app,
-                                                                                                   self.TEST_ANALYSIS_NAME,
-                                                                                                   test_path)
-        predict_res_button.click_input()
-
-        sleep(2)
-
-        exist_prediction_success_dialog, prediction_success_text, prediction_zip = self.save_zip_routine(app,
-                                                                                                         self.TEST_PREDICTIONS_NAME,
-                                                                                                         test_path)
-
-        assert exist_analysis_success_dialog
-        assert 'File saved successfully' in analysis_success_text
-        assert os.path.exists(os.path.join(test_path, self.TEST_ANALYSIS_NAME))
-        expected_files = {'asa.log', 'repo_mining.log', 'software_metrics.log',
-                          'mining_results_sm_final.csv', 'csv_ASA_final.csv', 'Union_TM_ASA.csv', 'Union_SM_ASA.csv'}
-        assert set(analysis_zip.namelist()) == expected_files
-
-        assert exist_prediction_success_dialog
-        assert 'File saved successfully' in prediction_success_text
-        assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
-        expected_files = {'Predict_SM.csv', 'Predict_ASA.csv', 'Predict_SMASA.csv'}
-        assert set(prediction_zip.namelist()) == expected_files
 
     @pytest.mark.parametrize('manage_environment', [(True, False, 1, True)], indirect=True)
     def test_case_29(self, manage_environment):
@@ -1972,3 +2222,270 @@ class TestSystem:
         error_dialog = app.Dialog.Static2
         assert error_dialog.exist
         assert error_dialog.window_text() == 'You must select at least one option'
+
+    @pytest.mark.parametrize('manage_environment', [(False, False, 5, False)], indirect=True)
+    def test_case_36(self, manage_environment):
+
+        app, test_path = manage_environment
+
+        # Connect to the main window, modifying with title or best_match as needed
+        window = app.window(title="Perseverance")
+
+        list_index = [
+            self.CSV_SWITCH,
+            self.TEXT_MINING_CHECK_BOX,
+            self.ASA_CHECK_BOX,
+            self.START_BUTTON,
+            self.PREDICTIONS_DOWNLOAD_BUTTON,
+            self.ANALYSIS_DOWNLOAD_BUTTON,
+            self.SONAR_PATH,
+            self.SONAR_HOST,
+            self.SONAR_TOKEN_1
+        ]
+
+        elem_dict = self.get_gui_elements(window, list_index)
+        csv_button = elem_dict[self.CSV_SWITCH]
+        asa_box = elem_dict[self.ASA_CHECK_BOX]
+        text_mining_box = elem_dict[self.TEXT_MINING_CHECK_BOX]
+        start_button = elem_dict[self.START_BUTTON]
+        sonar_path = elem_dict[self.SONAR_PATH]
+        sonar_host = elem_dict[self.SONAR_HOST]
+        sonar_token = elem_dict[self.SONAR_TOKEN_1]
+        analysis_download_button = elem_dict[self.ANALYSIS_DOWNLOAD_BUTTON]
+        predict_res_button = elem_dict[self.PREDICTIONS_DOWNLOAD_BUTTON]
+
+        csv_button.click_input()
+
+        sleep(2)
+
+        asa_box.click_input()
+        sleep(1)
+        text_mining_box.click_input()
+        sleep(1)
+
+        sonar_path.click_input(double=True)
+        send_keys("^a")
+        sonar_path.type_keys("C:\\errorpath\sonar-scanner.bat")
+
+        sonar_token.click_input(double=True)
+        sleep(1)
+        sonar_token.type_keys(self.SONAR_TOKEN_TXT)
+
+        sonar_host.click_input(double=True)
+        sonar_host.type_keys(self.SONAR_HOST_TXT)
+
+        start_button.click_input()
+
+        wait_until(240, 5, predict_res_button.is_visible, True)
+
+        error_dialog = app.Dialog.Static2
+
+        assert error_dialog.exist
+        assert error_dialog.window_text() == 'Error in static analysis, check the logs!'
+
+        app.Dialog.OK.click_input()
+
+        sleep(2)
+
+        analysis_download_button.click_input()
+
+        sleep(2)
+
+        exist_analysis_success_dialog, analysis_success_text, analysis_zip = self.save_zip_routine(app,
+                                                                                                   self.TEST_ANALYSIS_NAME,
+                                                                                                   test_path)
+        predict_res_button.click_input()
+
+        sleep(2)
+
+        exist_prediction_success_dialog, prediction_success_text, prediction_zip = self.save_zip_routine(app,
+                                                                                                         self.TEST_PREDICTIONS_NAME,
+                                                                                                         test_path)
+
+        assert exist_analysis_success_dialog
+        assert 'File saved successfully' in analysis_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_ANALYSIS_NAME))
+        assert analysis_zip.namelist() == ['asa.log', 'repo_mining.log', 'csv_mining_final.csv']
+
+        assert exist_prediction_success_dialog
+        assert 'File saved successfully' in prediction_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
+        assert prediction_zip.namelist() == ['Predict_TM.csv']
+
+    @pytest.mark.parametrize('manage_environment', [(False, False, 5, False)], indirect=True)
+    def test_case_37(self, manage_environment):
+
+        app, test_path = manage_environment
+
+        # Connect to the main window, modifying with title or best_match as needed
+        window = app.window(title="Perseverance")
+
+        list_index = [
+            self.CSV_SWITCH,
+            self.TEXT_MINING_CHECK_BOX,
+            self.ASA_CHECK_BOX,
+            self.START_BUTTON,
+            self.PREDICTIONS_DOWNLOAD_BUTTON,
+            self.ANALYSIS_DOWNLOAD_BUTTON,
+            self.SONAR_PATH,
+            self.SONAR_HOST,
+            self.SONAR_TOKEN_1
+        ]
+
+        elem_dict = self.get_gui_elements(window, list_index)
+        csv_button = elem_dict[self.CSV_SWITCH]
+        asa_box = elem_dict[self.ASA_CHECK_BOX]
+        text_mining_box = elem_dict[self.TEXT_MINING_CHECK_BOX]
+        start_button = elem_dict[self.START_BUTTON]
+        sonar_path = elem_dict[self.SONAR_PATH]
+        sonar_host = elem_dict[self.SONAR_HOST]
+        sonar_token = elem_dict[self.SONAR_TOKEN_1]
+        analysis_download_button = elem_dict[self.ANALYSIS_DOWNLOAD_BUTTON]
+        predict_res_button = elem_dict[self.PREDICTIONS_DOWNLOAD_BUTTON]
+
+        csv_button.click_input()
+
+        sleep(2)
+
+        asa_box.click_input()
+        sleep(1)
+        text_mining_box.click_input()
+        sleep(1)
+
+        sonar_path.click_input(double=True)
+        send_keys("^a")
+        sonar_path.type_keys(self.SONAR_PATH_TXT)
+
+        sonar_token.click_input(double=True)
+        sleep(1)
+        sonar_token.type_keys("error_token")
+
+        sonar_host.click_input(double=True)
+        sonar_host.type_keys(self.SONAR_HOST_TXT)
+
+        start_button.click_input()
+
+        wait_until(240, 5, predict_res_button.is_visible, True)
+
+        error_dialog = app.Dialog.Static2
+
+        assert error_dialog.exist
+        assert error_dialog.window_text() == 'Error in static analysis, check the logs!'
+
+        app.Dialog.OK.click_input()
+
+        sleep(2)
+
+        analysis_download_button.click_input()
+
+        sleep(2)
+
+        exist_analysis_success_dialog, analysis_success_text, analysis_zip = self.save_zip_routine(app,
+                                                                                                   self.TEST_ANALYSIS_NAME,
+                                                                                                   test_path)
+        predict_res_button.click_input()
+
+        sleep(2)
+
+        exist_prediction_success_dialog, prediction_success_text, prediction_zip = self.save_zip_routine(app,
+                                                                                                         self.TEST_PREDICTIONS_NAME,
+                                                                                                         test_path)
+
+        assert exist_analysis_success_dialog
+        assert 'File saved successfully' in analysis_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_ANALYSIS_NAME))
+        assert analysis_zip.namelist() == ['asa.log', 'repo_mining.log', 'csv_mining_final.csv']
+
+        assert exist_prediction_success_dialog
+        assert 'File saved successfully' in prediction_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
+        assert prediction_zip.namelist() == ['Predict_TM.csv']
+
+    @pytest.mark.parametrize('manage_environment', [(False, False, 5, False)], indirect=True)
+    def test_case_38(self, manage_environment):
+
+        app, test_path = manage_environment
+
+        # Connect to the main window, modifying with title or best_match as needed
+        window = app.window(title="Perseverance")
+
+        list_index = [
+            self.CSV_SWITCH,
+            self.TEXT_MINING_CHECK_BOX,
+            self.ASA_CHECK_BOX,
+            self.START_BUTTON,
+            self.PREDICTIONS_DOWNLOAD_BUTTON,
+            self.ANALYSIS_DOWNLOAD_BUTTON,
+            self.SONAR_PATH,
+            self.SONAR_HOST,
+            self.SONAR_TOKEN_1
+        ]
+
+        elem_dict = self.get_gui_elements(window, list_index)
+        csv_button = elem_dict[self.CSV_SWITCH]
+        asa_box = elem_dict[self.ASA_CHECK_BOX]
+        text_mining_box = elem_dict[self.TEXT_MINING_CHECK_BOX]
+        start_button = elem_dict[self.START_BUTTON]
+        sonar_path = elem_dict[self.SONAR_PATH]
+        sonar_host = elem_dict[self.SONAR_HOST]
+        sonar_token = elem_dict[self.SONAR_TOKEN_1]
+        analysis_download_button = elem_dict[self.ANALYSIS_DOWNLOAD_BUTTON]
+        predict_res_button = elem_dict[self.PREDICTIONS_DOWNLOAD_BUTTON]
+
+        csv_button.click_input()
+
+        sleep(2)
+
+        asa_box.click_input()
+        sleep(1)
+        text_mining_box.click_input()
+        sleep(1)
+
+        sonar_path.click_input(double=True)
+        send_keys("^a")
+        sonar_path.type_keys(self.SONAR_PATH_TXT)
+
+        sonar_token.click_input(double=True)
+        sleep(1)
+        sonar_token.type_keys(self.SONAR_TOKEN_TXT)
+
+        sonar_host.click_input(double=True)
+        sonar_host.type_keys("http://errorhost:9001")
+
+        start_button.click_input()
+
+        wait_until(240, 5, predict_res_button.is_visible, True)
+
+        error_dialog = app.Dialog.Static2
+
+        assert error_dialog.exist
+        assert error_dialog.window_text() == 'Error in static analysis, check the logs!'
+
+        app.Dialog.OK.click_input()
+
+        sleep(2)
+
+        analysis_download_button.click_input()
+
+        sleep(2)
+
+        exist_analysis_success_dialog, analysis_success_text, analysis_zip = self.save_zip_routine(app,
+                                                                                                   self.TEST_ANALYSIS_NAME,
+                                                                                                   test_path)
+        predict_res_button.click_input()
+
+        sleep(2)
+
+        exist_prediction_success_dialog, prediction_success_text, prediction_zip = self.save_zip_routine(app,
+                                                                                                         self.TEST_PREDICTIONS_NAME,
+                                                                                                         test_path)
+
+        assert exist_analysis_success_dialog
+        assert 'File saved successfully' in analysis_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_ANALYSIS_NAME))
+        assert analysis_zip.namelist() == ['asa.log', 'repo_mining.log', 'csv_mining_final.csv']
+
+        assert exist_prediction_success_dialog
+        assert 'File saved successfully' in prediction_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
+        assert prediction_zip.namelist() == ['Predict_TM.csv']
