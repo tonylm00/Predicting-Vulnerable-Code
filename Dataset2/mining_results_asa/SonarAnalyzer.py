@@ -99,7 +99,6 @@ class SonarAnalyzer:
             f"-Dsonar.sources={sources_dir}",  # Absolute path to the source directory
             f"-Dsonar.host.url={self.sonar_host}",  # SonarQube server URL
             f"-Dsonar.token={self.sonar_token}",  # Authentication token
-            f"-Dsonar.issueTypes=VULNERABILITY",
             f"-Dsonar.exclusions=**/*.txt, **/*.md, **/*.csv",  # Exclude non-source files
             f"-Dsonar.java.binaries={sources_dir}"
         ]
@@ -212,7 +211,7 @@ class SonarAnalyzer:
                 self.logger.error(f"SonarQube error: Timeout reached for project analysis {project_key}.")
                 return []
 
-        url = f"{self.sonar_host}/api/issues/search?components={project_key}"
+        url = f"{self.sonar_host}/api/issues/search?types=VULNERABILITY&components={project_key}"
         headers = {"Authorization": f"Bearer {self.sonar_token}"}
         response = requests.get(url, headers=headers)
 
