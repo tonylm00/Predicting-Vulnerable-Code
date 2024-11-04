@@ -1761,6 +1761,64 @@ class TestSystem:
         assert error_dialog.exist
         assert error_dialog.window_text() == 'You must select at least one option'
 
+    @pytest.mark.parametrize('manage_environment', [(False, False, 1, False)], indirect=True)
+    def test_case_25(self, manage_environment):
+
+        app, test_path = manage_environment
+        window = app.window(title="Perseverance")
+
+        list_index = [
+            self.CSV_SWITCH,
+            self.REPO_TXT,
+            self.COMMIT_TXT_1,
+            self.START_BUTTON,
+        ]
+
+        elem_dict = self.get_gui_elements(window, list_index)
+        csv_button = elem_dict[self.CSV_SWITCH]
+        csv_button.click_input()
+
+        commit_field = elem_dict[self.COMMIT_TXT_1]
+        commit_field.click_input(double=True)
+        send_keys("{DELETE}")
+
+        start_button = elem_dict[self.START_BUTTON]
+        start_button.click_input()
+
+        error_dialog = app.Dialog.Static2
+
+        assert error_dialog.exist
+        assert error_dialog.window_text() == "You must enter Commit ID and GIT Repository URL to continue"
+
+    @pytest.mark.parametrize('manage_environment', [(False, False, 1, False)], indirect=True)
+    def test_case_27(self, manage_environment):
+
+        app, test_path = manage_environment
+        window = app.window(title="Perseverance")
+
+        list_index = [
+            self.CSV_SWITCH,
+            self.REPO_TXT,
+            self.COMMIT_TXT_1,
+            self.START_BUTTON,
+        ]
+
+        elem_dict = self.get_gui_elements(window, list_index)
+        csv_button = elem_dict[self.CSV_SWITCH]
+        csv_button.click_input()
+
+        repo_field = elem_dict[self.REPO_TXT]
+        repo_field.click_input(double=True)
+        send_keys("{DELETE}")
+
+        start_button = elem_dict[self.START_BUTTON]
+        start_button.click_input()
+
+        error_dialog = app.Dialog.Static2
+
+        assert error_dialog.exist
+        assert error_dialog.window_text() == "You must enter Commit ID and GIT Repository URL to continue"
+
     @pytest.mark.parametrize('manage_environment', [(True, False, 1, True)], indirect=True)
     def test_case_29(self, manage_environment):
 
