@@ -3,8 +3,12 @@ import shutil
 import csv
 import requests
 from git import GitCommandError
+from requests.exceptions import MissingSchema
+from requests.exceptions import ConnectionError
 from pydriller import RepositoryMining
 import logging
+
+
 
 
 class RepoMiner:
@@ -60,6 +64,8 @@ class RepoMiner:
         statusNR = "REPO NOT AVAILABLE"
         statusVE = "VALUE ERROR! COMMIT HASH NOT EXISTS"
         statusGCE = "GIT COMMAND ERROR"
+        statusMS = 'INVALID URL'
+        statusCE = 'CONNECTION ERROR'
 
         print("CIAO LOG")
 
@@ -74,42 +80,55 @@ class RepoMiner:
             status = ""
             toWrite = f"indice: {self.index + 1} link repo: {link1} status: "
 
-            response = requests.get(link)
-            if response.ok:
-                response1 = requests.get(f"{link1}/commit/{commit_id}")
-                if response1.ok:
-                    try:
-                        for commit in RepositoryMining(link, commit_id).traverse_commits():
-                            cve_path = os.path.join(repo_path, cve_id)
-                            commit_path = os.path.join(cve_path, commit_id)
-                            self.analyze_commit(commit, cve_path, commit_path)
+            try:
+                response = requests.get(link)
+                if response.ok:
+                    response1 = requests.get(f"{link1}/commit/{commit_id}")
+                    if response1.ok:
+                        try:
+                            for commit in RepositoryMining(link, commit_id).traverse_commits():
+                                cve_path = os.path.join(repo_path, cve_id)
+                                commit_path = os.path.join(cve_path, commit_id)
+                                self.analyze_commit(commit, cve_path, commit_path)
 
-                        status = statusOK
-                        toWrite += status
-                        self.logger.info(toWrite)
-                        self.index+= 1
-                    except ValueError:
-                        status = statusVE
-                        toWrite += status
-                        self.logger.error(toWrite + "," + commit_id)
-                        self.index+= 1
-                    except GitCommandError:
-                        status = statusGCE
-                        toWrite += status
-                        self.logger.error(toWrite + "," + commit_id)
-                        self.index+= 1
+                            status = statusOK
+                            toWrite += status
+                            self.logger.info(toWrite)
+                            self.index+= 1
+                        except ValueError:
+                            status = statusVE
+                            toWrite += status
+                            self.logger.error(toWrite + "," + commit_id)
+                            self.index+= 1
+                        except GitCommandError:
+                            status = statusGCE
+                            toWrite += status
+                            self.logger.error(toWrite + "," + commit_id)
+                            self.index+= 1
 
+                    else:
+                        status = statusNE
+                        toWrite += status
+                        self.logger.error(toWrite)
+                        self.index+= 1
                 else:
-                    print("not exist")
-                    status = statusNE
+                    status = statusNR
                     toWrite += status
                     self.logger.error(toWrite)
                     self.index+= 1
-            else:
-                status = statusNR
+            except MissingSchema:
+                status = statusMS
                 toWrite += status
                 self.logger.error(toWrite)
-                self.index+= 1
+                self.index += 1
+
+            except ConnectionError:
+                status = statusCE
+                toWrite += status
+                self.logger.error(toWrite)
+                self.index += 1
+
+
 
     def analyze_commit(self, commit, cve_path, commit_path):
         for mod in commit.modifications:
