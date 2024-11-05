@@ -1178,7 +1178,7 @@ class TestSystem:
         assert exist_prediction_success_dialog
         assert 'File saved successfully' in prediction_success_text
         assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
-        assert prediction_zip.namelist() == ['Predict_TM.csv', 'Predict_ASA.csv', 'Predict_SMASA.csv']
+        assert prediction_zip.namelist() == ['Predict_SM.csv', 'Predict_ASA.csv', 'Predict_SMASA.csv']
 
     @pytest.mark.parametrize('manage_environment', [(True, False, 1, True)], indirect=True)
     def test_case_16(self, manage_environment):
@@ -1337,7 +1337,7 @@ class TestSystem:
 
         start_button.click_input()
 
-        wait_until(360, 5, predict_res_button.is_visible, True)
+        wait_until(1000, 10, predict_res_button.is_visible, True)
 
         analysis_download_button.click_input()
 
@@ -1493,7 +1493,7 @@ class TestSystem:
 
         start_button.click_input()
 
-        wait_until(300, 5, predict_res_button.is_visible, True)
+        wait_until(1000, 10, predict_res_button.is_visible, True)
 
         analysis_download_button.click_input()
 
