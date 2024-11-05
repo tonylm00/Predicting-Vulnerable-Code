@@ -3,6 +3,10 @@ from unittest.mock import call, patch
 
 import pandas as pd
 import pytest
+from requests.exceptions import MissingSchema
+from requests.exceptions import ConnectionError
+
+
 from Dataset2.Main import Main
 
 class TestMain:
@@ -2195,6 +2199,80 @@ class TestMain:
         def test_case_13(self, mock_joblib_load, mock_read_csv, mock_os, mock_to_csv):
             self.main.run_prediction("input.csv", "model.pkl", "encoder.pkl", "vocab.pkl", "output.csv")
             mock_to_csv.assert_called_once_with('output.csv', index=False)
+
+    class TestRepoMining:
+
+        DATASET_NAME = 'test_dataset.csv'
+
+        @pytest.fixture(autouse=True)
+        def setup(self):
+            self.main = Main("Predicting-Vulnerable-Code/Dataset2")
+
+        @patch('Dataset2.RepoMining.DatasetDivider.DatasetDivider.divide_dataset', side_effect=FileNotFoundError)
+        def test_case_1(self, mock_divide_dataset):
+            with pytest.raises(FileNotFoundError):
+                self.main.run_repo_mining(self.DATASET_NAME)
+
+        @patch('Dataset2.RepoMining.DatasetDivider.DatasetDivider.divide_dataset')
+        @patch('Dataset2.RepoMining.RepoMiner.RepoMiner.initialize_repo_mining')
+        @patch('os.listdir', return_value=['1.csv'])
+        def test_case_2(self, mock_listdir, mock_initialize, mock_divide_dataset):
+            mock_initialize.side_effect = ValueError('Not valid dataset headers')
+
+            with pytest.raises(ValueError) as exc_info:
+                self.main.run_repo_mining(self.DATASET_NAME)
+
+            mock_divide_dataset.called_once_with(self.DATASET_NAME)
+
+            mock_initialize.assert_called_once_with(1)
+
+            assert "Not valid dataset headers" in str(exc_info.value)
+
+        @patch('Dataset2.RepoMining.DatasetDivider.DatasetDivider.divide_dataset')
+        @patch('Dataset2.RepoMining.RepoMiner.RepoMiner.initialize_repo_mining')
+        @patch('os.listdir', return_value=[])
+        def test_case_3(self, mock_listdir, mock_initialize, mock_divide_dataset):
+
+            self.main.run_repo_mining(self.DATASET_NAME)
+
+            mock_divide_dataset.called_once_with(self.DATASET_NAME)
+
+            mock_initialize.assert_not_called()
+
+        @patch('Dataset2.RepoMining.DatasetDivider.DatasetDivider.divide_dataset')
+        @patch('Dataset2.RepoMining.RepoMiner.RepoMiner.initialize_repo_mining')
+        @patch('os.listdir', return_value = ['1.csv'])
+        def test_case_4(self, mock_listdir, mock_initialize, mock_divide_dataset):
+
+            self.main.run_repo_mining(self.DATASET_NAME)
+
+            mock_divide_dataset.called_once_with(self.DATASET_NAME)
+
+            mock_initialize.assert_called_once_with(1)
+
+
+        @patch('Dataset2.RepoMining.DatasetDivider.DatasetDivider.divide_dataset')
+        @patch('Dataset2.RepoMining.RepoMiner.RepoMiner.initialize_repo_mining')
+        @patch('os.listdir')
+        def test_case_5(self, mock_listdir, mock_initialize, mock_divide_dataset):
+            csv_list = []
+            for i in range(1,4):
+                csv_list.append(str(i) + '.csv')
+
+            mock_listdir.return_value = csv_list
+
+            self.main.run_repo_mining(self.DATASET_NAME)
+
+            mock_divide_dataset.called_once_with(self.DATASET_NAME)
+
+            mock_initialize.call_count == 3
+
+
+
+
+
+
+
 
 
 
