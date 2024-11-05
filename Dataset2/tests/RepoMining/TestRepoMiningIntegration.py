@@ -120,10 +120,17 @@ class TestRepoMiningIntegration:
     ], indirect=True)
     def test_case_5(self, manage_temp_input_files):
 
-        with pytest.raises(MissingSchema) as exc_info:
-            self.main.run_repo_mining(self.DATASET_NAME)
+        requests_cache.clear()
+        self.main.run_repo_mining(self.DATASET_NAME)
 
-        assert 'Invalid URL' in str(exc_info.value) and "link_not_valid" + '.git' in str(exc_info.value)
+        with open(self.log_path, 'r') as check_file:
+            lines = check_file.readlines()
+
+        assert len(lines) == self.DATASET_SIZE_TO_50
+
+        assert 'ERROR:indice: 1 link repo: link_not_valid status: INVALID URL\n' == lines[0]
+
+        logging.shutdown()
 
     @pytest.mark.parametrize('manage_temp_input_files', [
         {DATASET_NAME: generate_csv_string(DATASET_SIZE_TO_50, True, True, False)},
@@ -132,8 +139,17 @@ class TestRepoMiningIntegration:
         ['Dataset_Divided', 'mining_results']
     ], indirect=True)
     def test_case_6(self, manage_temp_input_files):
-        with pytest.raises(ConnectionError) as exc_info:
-            self.main.run_repo_mining(self.DATASET_NAME)
+        requests_cache.clear()
+        self.main.run_repo_mining(self.DATASET_NAME)
+
+        with open(self.log_path, 'r') as check_file:
+            lines = check_file.readlines()
+
+        assert len(lines) == self.DATASET_SIZE_TO_50
+
+        assert 'ERROR:indice: 1 link repo: https://github status: CONNECTION ERROR\n' == lines[0]
+
+        logging.shutdown()
 
     @pytest.mark.parametrize('manage_temp_input_files', [
         {DATASET_NAME: generate_csv_string(DATASET_SIZE_OVER_50, True, True, True, False)},

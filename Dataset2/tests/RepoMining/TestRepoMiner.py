@@ -265,10 +265,19 @@ class TestRepoMiner:
 
             miner = RepoMiner(self.BASE_DIR)
 
-            with pytest.raises(MissingSchema) as exc_info:
-                miner.start_mining_repo(data, self.REPO_PATH)
+            statusMS = 'INVALID URL'
+            str_log_1 = f"indice: 1 link repo: {content_1['repo_url']} status: {statusMS}"
+            str_log_2 = f"indice: 2 link repo: {content_2['repo_url']} status: {statusMS}"
 
-            assert 'Invalid URL' in str(exc_info.value) and invalid_url + '.git' in str(exc_info.value)
+            miner.start_mining_repo(data, self.REPO_PATH)
+
+            assert mock_requests_get.call_count == 2
+            expected_request_calls = [call(invalid_url + ".git"), call(invalid_url + ".git")]
+            mock_requests_get.assert_has_calls(expected_request_calls, any_order=False)
+
+            assert mock_logger().error.call_count == 2
+            expected_logger_calls = [call(str_log_1), call(str_log_2)]
+            mock_logger().error.assert_has_calls(expected_logger_calls)
 
         @patch('logging.getLogger')
         @patch('logging.basicConfig')
@@ -292,14 +301,19 @@ class TestRepoMiner:
 
             miner = RepoMiner(self.BASE_DIR)
 
-            with pytest.raises(ConnectionError) as exc_info:
-                miner.start_mining_repo(data, self.REPO_PATH)
+            statusCE = 'Connection Error'
+            str_log_1 = f"indice: 1 link repo: {content_1['repo_url']} status: {statusCE}"
+            str_log_2 = f"indice: 2 link repo: {content_2['repo_url']} status: {statusCE}"
 
-            parsed_url = urlparse(url_link_not_exist)
-            host_with_port = parsed_url.netloc
-            host = host_with_port.split(':')[0]
+            miner.start_mining_repo(data, self.REPO_PATH)
 
-            assert 'ConnectionError' in str(exc_info) and host in str(exc_info.value)
+            assert mock_requests_get.call_count == 2
+            expected_request_calls = [call(url_link_not_exist + ".git"), call(url_link_not_exist + ".git")]
+            mock_requests_get.assert_has_calls(expected_request_calls, any_order=False)
+
+            assert mock_logger().error.call_count == 2
+            expected_logger_calls = [call(str_log_1), call(str_log_2)]
+            mock_logger().error.assert_has_calls(expected_logger_calls)
 
         @patch('logging.getLogger')
         @patch('logging.basicConfig')
