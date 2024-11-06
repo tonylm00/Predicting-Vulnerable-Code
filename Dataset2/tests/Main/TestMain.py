@@ -1,3 +1,5 @@
+import csv
+import os
 from unittest import mock
 from unittest.mock import call, patch
 
@@ -2200,6 +2202,74 @@ class TestMain:
             self.main.run_prediction("input.csv", "model.pkl", "encoder.pkl", "vocab.pkl", "output.csv")
             mock_to_csv.assert_called_once_with('output.csv', index=False)
 
+    class TestRunAsa:
+        @mock.patch("Dataset2.mining_results_asa.SonarAnalyzer.SonarAnalyzer.process_repositories",
+                    side_effect=Exception("Host unreachable"))
+        def test_case_1(self, mock_process_repositories, main_instance):
+            with pytest.raises(Exception):
+                main_instance.run_ASA("host", "token", "sonar-scanner.bat")
+
+            mock_process_repositories.assert_called_once()
+
+        @mock.patch("Dataset2.mining_results_asa.SonarAnalyzer.SonarAnalyzer.process_repositories",
+                    side_effect=Exception("Host unreachable"))
+        def test_case_2(self, mock_process_repositories, main_instance):
+            with pytest.raises(Exception):
+                main_instance.run_ASA("host", "token", "sonar-scanner.bat")
+
+            mock_process_repositories.assert_called_once()
+
+        @mock.patch("Dataset2.mining_results_asa.SonarAnalyzer.SonarAnalyzer.process_repositories",
+                    side_effect=Exception("Host unreachable"))
+        def test_case_3(self, mock_process_repositories, main_instance):
+            with pytest.raises(Exception):
+                main_instance.run_ASA("host", "token", "sonar-scanner.bat")
+
+            mock_process_repositories.assert_called_once()
+
+        @mock.patch("Dataset2.mining_results_asa.SonarAnalyzer.SonarAnalyzer.process_repositories",
+                    side_effect=Exception("Host unreachable"))
+        def test_case_4(self, mock_process_repositories, main_instance):
+            with pytest.raises(Exception):
+                main_instance.run_ASA("host", "token", "sonar-scanner.bat")
+
+            mock_process_repositories.assert_called_once()
+
+        @mock.patch("Dataset2.mining_results_asa.SonarAnalyzer.SonarAnalyzer.process_repositories")
+        def test_case_5(self, mock_process_repositories, main_instance, mock_empty_result_csv):
+            main_instance.run_ASA("host", "token", "sonar-scanner.bat")
+
+            final_csv_path = main_instance.base_dir / "mining_results_asa" / "csv_ASA_final.csv"
+            assert os.path.exists(final_csv_path)
+
+            with open(final_csv_path, mode="r") as file:
+                reader = csv.reader(file, delimiter=",")
+                rows = sum(1 for _ in reader)
+                assert rows == 1
+
+        @mock.patch("Dataset2.mining_results_asa.SonarAnalyzer.SonarAnalyzer.process_repositories")
+        def test_case_6(self, mock_process_repositories, main_instance, mock_result_csv):
+            main_instance.run_ASA("host", "token", "sonar-scanner.bat")
+
+            final_csv_path = main_instance.base_dir / "mining_results_asa" / "csv_ASA_final.csv"
+            assert os.path.exists(final_csv_path)
+
+            with open(final_csv_path, mode="r") as file:
+                reader = csv.reader(file, delimiter=",")
+                rows = sum(1 for _ in reader)
+                assert rows > 1
+
+        @mock.patch("Dataset2.mining_results_asa.SonarAnalyzer.SonarAnalyzer.process_repositories")
+        def test_case_7(self, mock_process_repositories, main_instance):
+            main_instance.run_ASA("host", "token", "sonar-scanner.bat")
+
+            final_csv_path = main_instance.base_dir / "mining_results_asa" / "csv_ASA_final.csv"
+            assert os.path.exists(final_csv_path)
+
+            with open(final_csv_path, mode="r") as file:
+                reader = csv.reader(file, delimiter=",")
+                rows = sum(1 for _ in reader)
+                assert rows == 1
     class TestRepoMining:
 
         DATASET_NAME = 'test_dataset.csv'
@@ -2266,87 +2336,3 @@ class TestMain:
             mock_divide_dataset.called_once_with(self.DATASET_NAME)
 
             mock_initialize.call_count == 3
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

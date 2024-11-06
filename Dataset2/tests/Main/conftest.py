@@ -5,6 +5,8 @@ import pandas as pd
 import pytest
 from unittest.mock import patch, mock_open, MagicMock
 
+from Dataset2.Main import Main
+
 
 @pytest.fixture
 def mock_listdir_fixture(request):
@@ -76,6 +78,7 @@ def mock_path_join_fixture(request):
     with patch('os.path.join', side_effect=mock_join):
         yield
 
+
 @pytest.fixture
 def mock_joblib_load(request):
     fail_path = request.param.get('fail_path')
@@ -105,8 +108,10 @@ def mock_joblib_load(request):
                 raise ValueError("File must end with .pkl")
             else:
                 return MagicMock()  # Ritorna un mock generico per altri file validi
+
         mocked_load.side_effect = side_effect
         yield mocked_load
+
 
 @pytest.fixture
 def mock_read_csv(request):
@@ -121,17 +126,63 @@ def mock_read_csv(request):
                 raise ValueError("File must end with .csv")
             if content != None:
                 return pd.DataFrame({content})
-            return pd.DataFrame({'Name': ['Test1','Test2'], 'Feature1': [1,2], 'Feature2': [0,1]})
+            return pd.DataFrame({'Name': ['Test1', 'Test2'], 'Feature1': [1, 2], 'Feature2': [0, 1]})
+
         mocked_read_csv.side_effect = side_effect
         yield mocked_read_csv
+
 
 @pytest.fixture
 def mock_os():
     with patch('os.makedirs') as mocked_makedirs, \
-         patch('os.path.dirname', return_value="mock_dir") as mocked_dirname:
+            patch('os.path.dirname', return_value="mock_dir") as mocked_dirname:
         yield mocked_makedirs, mocked_dirname
+
 
 @pytest.fixture
 def mock_to_csv():
     with patch('pandas.DataFrame.to_csv') as mocked_to_csv:
         yield mocked_to_csv
+
+
+@pytest.fixture
+def setup(tmp_path):
+    base_dir = tmp_path / "base_dir"
+    base_dir.mkdir(parents=True, exist_ok=True)
+
+    mining_results_asa_dir = base_dir / "mining_results_asa"
+    mining_results_asa_dir.mkdir(parents=True, exist_ok=True)
+
+    project_dir = base_dir / "mining_results" / "RepositoryMining1" / "0" / "57f2ccb66946943fbf3b3f2165eac1c8eb6b1523"
+    project_dir.mkdir(parents=True, exist_ok=True)
+
+    yield base_dir
+
+
+@pytest.fixture
+def main_instance(setup):
+    yield Main(base_dir=setup)
+
+
+@pytest.fixture
+def mock_result_csv(setup):
+    mining_results_asa_dir = setup / "mining_results_asa"
+
+    with open(mining_results_asa_dir / "RepositoryMining_ASAResults.csv", "w") as f:
+        f.write("severity;updateDate;line;rule;project;effort;message;creationDate;type;component;textRange;debt;key"
+                ";hash;status\nN/A;N/A;N/A;N/A;N/A;N/A;N/A;N/A;NO_ISSUES_FOUND;RepositoryMining1:0"
+                ":57f2ccb66946943fbf3b3f2165eac1c8eb6b1523:AbstractMvcView.java;N/A;N/A;N/A;N/A;N/A\nBLOCKER;2024-10"
+                "-09T15:40:56+0200;319;java:S6437;RepositoryMining1:1:9137e6cc45922b529fb776c6857647a3935471bb;1h"
+                ";Revoke and change this password, as it is "
+                "compromised.;2024-10-09T15:40:56+0200;VULNERABILITY;RepositoryMining1:1"
+                ":9137e6cc45922b529fb776c6857647a3935471bb:JndiLdapContextFactoryTest.java;{'startLine': 319, "
+                "'endLine': 319, 'startOffset': 34, 'endOffset': "
+                "39};1h;e5b5a9e5-85f2-4ad1-9d77-a1ce37fd15e2;fe91b6223b318860e553b82b45b20812;OPEN")
+
+
+@pytest.fixture
+def mock_empty_result_csv(setup):
+    mining_results_asa_dir = setup / "mining_results_asa"
+
+    with open(mining_results_asa_dir / "RepositoryMining_ASAResults.csv", "w") as f:
+        f.write("")
