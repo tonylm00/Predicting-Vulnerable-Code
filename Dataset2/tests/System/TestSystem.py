@@ -384,8 +384,8 @@ class TestSystem:
         assert 'File saved successfully' in analysis_success_text
         assert os.path.exists(os.path.join(test_path, self.TEST_ANALYSIS_NAME))
         assert analysis_zip.namelist() == ['asa.log', 'repo_mining.log', 'csv_mining_final.csv',
-                                            'mining_results_sm_final.csv', 'csv_ASA_final.csv', '3Combination.csv',
-                                            'Union_TM_SM.csv', 'Union_TM_ASA.csv', 'Union_SM_ASA.csv']
+                                           'mining_results_sm_final.csv', 'csv_ASA_final.csv', '3Combination.csv',
+                                           'Union_TM_SM.csv', 'Union_TM_ASA.csv', 'Union_SM_ASA.csv']
 
         assert exist_prediction_success_dialog
         assert 'File saved successfully' in prediction_success_text
@@ -876,7 +876,8 @@ class TestSystem:
         assert exist_prediction_success_dialog
         assert 'File saved successfully' in prediction_success_text
         assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
-        assert prediction_zip.namelist() == ['Predict_TM.csv', 'Predict_SM.csv', 'Predict_ASA.csv', 'Predict_3Combination.csv',
+        assert prediction_zip.namelist() == ['Predict_TM.csv', 'Predict_SM.csv', 'Predict_ASA.csv',
+                                             'Predict_3Combination.csv',
                                              'Predict_TMSM.csv', 'Predict_TMASA.csv', 'Predict_SMASA.csv']
 
     @pytest.mark.parametrize('manage_environment', [(True, False, 1, True)], indirect=True)
@@ -1237,7 +1238,7 @@ class TestSystem:
         assert exist_analysis_success_dialog
         assert 'File saved successfully' in analysis_success_text
         assert os.path.exists(os.path.join(test_path, self.TEST_ANALYSIS_NAME))
-        assert analysis_zip.namelist() == ['software_metrics.log','repo_mining.log',
+        assert analysis_zip.namelist() == ['software_metrics.log', 'repo_mining.log',
                                            'mining_results_sm_final.csv']
 
         assert exist_prediction_success_dialog
@@ -1790,6 +1791,68 @@ class TestSystem:
         assert error_dialog.exist
         assert error_dialog.window_text() == "You must enter Commit ID and GIT Repository URL to continue"
 
+    @pytest.mark.parametrize('manage_environment', [(False, False, 5, False)], indirect=True)
+    def test_case_26(self, manage_environment):
+
+        app, test_path = manage_environment
+        window = app.window(title="Perseverance")
+
+        list_index = [
+            self.CSV_SWITCH,
+            self.COMMIT_TXT_1,
+            self.START_BUTTON,
+            self.TEXT_MINING_CHECK_BOX,
+            self.PREDICTIONS_DOWNLOAD_BUTTON,
+            self.ANALYSIS_DOWNLOAD_BUTTON
+        ]
+
+        elem_dict = self.get_gui_elements(window, list_index)
+        csv_button = elem_dict[self.CSV_SWITCH]
+        csv_button.click_input()
+
+        commit_field = elem_dict[self.COMMIT_TXT_1]
+        commit_field.click_input(double=True)
+        send_keys("invalid_commit_id")
+
+        tm_box = elem_dict[self.TEXT_MINING_CHECK_BOX]
+        tm_box.click_input()
+
+        start_button = elem_dict[self.START_BUTTON]
+        start_button.click_input()
+
+        predict_res_button = elem_dict[self.PREDICTIONS_DOWNLOAD_BUTTON]
+        wait_until(240, 5, predict_res_button.is_visible, True)
+
+        analysis_download_button = elem_dict[self.ANALYSIS_DOWNLOAD_BUTTON]
+        analysis_download_button.click_input()
+
+        sleep(2)
+
+        exist_analysis_success_dialog, analysis_success_text, analysis_zip = self.save_zip_routine(app,
+                                                                                                   self.TEST_ANALYSIS_NAME,
+                                                                                                   test_path)
+        predict_res_button.click_input()
+
+        sleep(2)
+
+        exist_prediction_success_dialog, prediction_success_text, prediction_zip = self.save_zip_routine(app,
+                                                                                                         self.TEST_PREDICTIONS_NAME,
+                                                                                                         test_path)
+
+        assert exist_analysis_success_dialog
+        assert 'File saved successfully' in analysis_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_ANALYSIS_NAME))
+        expected_files = {
+            'csv_mining_final.csv',
+            'repo_mining.log'
+        }
+        assert set(analysis_zip.namelist()) == expected_files
+
+        assert exist_prediction_success_dialog
+        assert 'File saved successfully' in prediction_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
+        assert prediction_zip.namelist() == []
+
     @pytest.mark.parametrize('manage_environment', [(False, False, 1, False)], indirect=True)
     def test_case_27(self, manage_environment):
 
@@ -1818,6 +1881,68 @@ class TestSystem:
 
         assert error_dialog.exist
         assert error_dialog.window_text() == "You must enter Commit ID and GIT Repository URL to continue"
+
+    @pytest.mark.parametrize('manage_environment', [(False, False, 1, False)], indirect=True)
+    def test_case_28(self, manage_environment):
+
+        app, test_path = manage_environment
+        window = app.window(title="Perseverance")
+
+        list_index = [
+            self.CSV_SWITCH,
+            self.REPO_TXT,
+            self.START_BUTTON,
+            self.TEXT_MINING_CHECK_BOX,
+            self.PREDICTIONS_DOWNLOAD_BUTTON,
+            self.ANALYSIS_DOWNLOAD_BUTTON
+        ]
+
+        elem_dict = self.get_gui_elements(window, list_index)
+        csv_button = elem_dict[self.CSV_SWITCH]
+        csv_button.click_input()
+
+        repo_field = elem_dict[self.REPO_TXT]
+        repo_field.click_input(double=True)
+        send_keys("invalid_repo_url")
+
+        tm_box = elem_dict[self.TEXT_MINING_CHECK_BOX]
+        tm_box.click_input()
+
+        start_button = elem_dict[self.START_BUTTON]
+        start_button.click_input()
+
+        predict_res_button = elem_dict[self.PREDICTIONS_DOWNLOAD_BUTTON]
+        wait_until(240, 5, predict_res_button.is_visible, True)
+
+        analysis_download_button = elem_dict[self.ANALYSIS_DOWNLOAD_BUTTON]
+        analysis_download_button.click_input()
+
+        sleep(2)
+
+        exist_analysis_success_dialog, analysis_success_text, analysis_zip = self.save_zip_routine(app,
+                                                                                                   self.TEST_ANALYSIS_NAME,
+                                                                                                   test_path)
+        predict_res_button.click_input()
+
+        sleep(2)
+
+        exist_prediction_success_dialog, prediction_success_text, prediction_zip = self.save_zip_routine(app,
+                                                                                                         self.TEST_PREDICTIONS_NAME,
+                                                                                                         test_path)
+
+        assert exist_analysis_success_dialog
+        assert 'File saved successfully' in analysis_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_ANALYSIS_NAME))
+        expected_files = {
+            'csv_mining_final.csv',
+            'repo_mining.log'
+        }
+        assert set(analysis_zip.namelist()) == expected_files
+
+        assert exist_prediction_success_dialog
+        assert 'File saved successfully' in prediction_success_text
+        assert os.path.exists(os.path.join(test_path, self.TEST_PREDICTIONS_NAME))
+        assert prediction_zip.namelist() == []
 
     @pytest.mark.parametrize('manage_environment', [(True, False, 1, True)], indirect=True)
     def test_case_29(self, manage_environment):
