@@ -31,6 +31,9 @@ def sonar_analyzer(setup):
         base_dir=setup
     )
 
+@pytest.fixture
+def main_instance_no_base_dir():
+    yield Main(base_dir="")
 
 @pytest.fixture
 def sonar_analyzer_issues(java_files):
@@ -142,7 +145,6 @@ def main_instance(setup):
 @pytest.fixture
 def mock_result_csv(setup):
     mining_results_asa_dir = setup / "mining_results_asa"
-    print("MiningResultsASADIR: ", mining_results_asa_dir)
 
     with open(mining_results_asa_dir / "RepositoryMining_ASAResults.csv", "w") as f:
         f.write("severity;updateDate;line;rule;project;effort;message;creationDate;type;component;textRange;debt;key"
@@ -159,7 +161,6 @@ def mock_result_csv(setup):
 @pytest.fixture
 def mock_empty_result_csv(setup):
     mining_results_asa_dir = setup / "mining_results_asa"
-    print("MiningResultsASADIR: ", mining_results_asa_dir)
 
     with open(mining_results_asa_dir / "RepositoryMining_ASAResults.csv", "w") as f:
         f.write("")
