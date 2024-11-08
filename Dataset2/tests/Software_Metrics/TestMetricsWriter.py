@@ -38,6 +38,23 @@ class TestMetricsWriter:
             mock_dictwriter.assert_called_once_with(mock_file(), fieldnames=['Kind', 'Name', 'CountLineCode', 'CountDeclClass', 'CountDeclFunction', 'CountLineCodeDecl', 'SumEssential', 'SumCyclomaticStrict', 'MaxEssential', 'MaxCyclomaticStrict', 'MaxNesting'])
             mock_writer.writeheader.assert_called_once()
 
+        @patch("builtins.open", new_callable=mock_open)
+        @patch("csv.DictWriter")
+        def test_case_5(self, mock_dictwriter, mock_file):
+            mock_writer = MagicMock()
+            mock_dictwriter.return_value = mock_writer
+
+            writer = MetricsWriter("test.txt")
+            writer.write_header()
+
+            mock_file.assert_called_once_with('test.txt', mode='w', newline='', encoding='utf-8')
+            mock_dictwriter.assert_called_once_with(mock_file(),
+                                                    fieldnames=['Kind', 'Name', 'CountLineCode', 'CountDeclClass',
+                                                                'CountDeclFunction', 'CountLineCodeDecl',
+                                                                'SumEssential', 'SumCyclomaticStrict', 'MaxEssential',
+                                                                'MaxCyclomaticStrict', 'MaxNesting'])
+            mock_writer.writeheader.assert_called_once()
+
 
     class TestWriteMetrics:
         def test_case_1(self):
