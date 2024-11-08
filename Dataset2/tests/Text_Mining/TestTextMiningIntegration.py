@@ -347,17 +347,12 @@ class TestTextMiningIntegration:
         {'levels': 4, 'base_dir': BASE_DIR, 'files': {'file.java': ''}}
     ], indirect=True)
     def test_case_12(self, setup_environment, create_temp_file):
+
+        self.main.run_text_mining()
+
         file_path_dict = os.path.join(self.BASE_DIR, "mining_results", "text_mining_dict.txt")
         file_path_filt = os.path.join(self.BASE_DIR, "mining_results", "FilteredTextMining.txt")
         file_path_csv = os.path.join(self.BASE_DIR, "mining_results", "csv_mining_final.csv")
-
-        create_temp_file(file_path_dict,
-                         "{'CIAO': 1, 'Facendo': 1, 'test': 1, 'sui': 1, 'file': 1, 'dispari': 1, 'ciao': 1, 'stiamo': 1, 'facendo': 1, 'una': 1}")
-        create_temp_file(file_path_filt,
-                         "{'CIAO': 1, 'Facendo': 1, 'test': 1, 'sui': 1, 'file': 1, 'dispari': 1, 'ciao': 1, 'stiamo': 1, 'facendo': 1, 'una': 1}")
-        create_temp_file(file_path_csv, "NameClass ,CIAO ,Facendo ,test \n")
-
-        self.main.run_text_mining()
 
         repo_dir = os.path.join(self.BASE_DIR, "mining_results", "RepositoryMining1/1/", "commit1")
         assert os.listdir(repo_dir) == ["file.java", "file.java_text_mining.txt"]
