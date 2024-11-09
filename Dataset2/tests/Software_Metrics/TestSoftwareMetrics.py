@@ -470,6 +470,7 @@ class TestSoftwareMetrics:
             }
             public interface NomeInterfaccia {
                 void metodoAstratto();
+            }
             """
             expected_output = 7
 
