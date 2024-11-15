@@ -342,7 +342,6 @@ def generate_csv_string(num_rows, is_format_valid=True, is_link_valid=True, is_l
         "r_url3"
     ]
 
-    print('fixture here')
 
     count=0
 
@@ -373,11 +372,9 @@ def generate_csv_string(num_rows, is_format_valid=True, is_link_valid=True, is_l
                     is_link_existent=True
                 else:
                     if not is_repo_valid:
-                        print("repo not valid")
                         repo_url = 'https://github.com/spring-projects/not_valid'
                     else:
                         if not is_commit_existent:
-                            print("commit not exist")
                             repo_url = 'https://github.com/pingidentity/ldapsdk'
                             commit_id = '1200fh3'
                             is_repo_valid = False
@@ -432,7 +429,6 @@ def generate_csv_string(num_rows, is_format_valid=True, is_link_valid=True, is_l
                                         is_repo_valid=False
 
             writer.writerow([cve_id, repo_url, commit_id])
-            print(cve_id)
 
         # Get the CSV string from the StringIO object
     csv_string = output.getvalue()
@@ -460,20 +456,16 @@ def mock_dataset_files(request):
 @pytest.fixture
 def setup_dir():
     cwd = os.getcwd()
-    print("CWD:", cwd)
     if NAME_DIR not in cwd:
         test_path = os.path.join(os.getcwd(), "Dataset2", TEST_DIR, NAME_DIR)
-        print("TEST_PATH:", test_path)
         os.chdir(test_path)
 
     yield
 
     os.chdir(cwd)
-    print(f"Changed directory to '{cwd}'.")
 
 @pytest.fixture
 def manage_temp_input_files(request, create_temp_file_sys, setup_dir):
-    print("CWD_MANAGE:", os.getcwd())
     content_dict = request.param
 
     for file_name, content in content_dict.items():
@@ -485,7 +477,6 @@ def manage_temp_input_files(request, create_temp_file_sys, setup_dir):
     for file_name in content_dict.keys():
         # Construct the full file path if needed, e.g., if you have the file in a subdirectory
         file_path = os.path.join(os.getcwd(), file_name)
-        print("CWD:", os.getcwd())
 
         if os.path.exists(file_path):
             # Remove the file
@@ -513,35 +504,20 @@ def create_temp_file_sys(request):
             else:
                 os.makedirs(dir, exist_ok=True)
 
-        if 'mining_results' in dir_names and 'RepositoryMining1' in dir_names:
-            repo_dir = os.path.join("mining_results", 'RepositoryMining1')
-            check_file = os.path.join(repo_dir, "CHECK.txt")
-            error_file = os.path.join(repo_dir, "ERRORS.txt")
-            if not os.path.exists(repo_dir):
-                os.mkdir(repo_dir)
-            with open(check_file, "w") as file:
-                file.write('')
-            with open(error_file, "w") as file:
-                file.write('')
-
-            print("OS:", os.listdir())
-            print("MINING_RES: ", os.listdir('mining_results'))
 
         yield
 
     finally:
 
-        print("CWD-BEFORE-CREATE-CHDIR:", os.getcwd())
-
         os.chdir(cwd)
-
-        print("CWD-AFTER-CREATE-CHDIR:", os.getcwd())
 
         if 'Dataset_Divided' not in dir_names:
             dir_names.append('Dataset_Divided')
 
+        if 'mining_results' not in dir_names:
+            dir_names.append('mining_results')
+
         for dir in dir_names:
-            print("DIR:", dir)
             if os.path.exists(dir):
                 try:
                     shutil.rmtree(dir)
