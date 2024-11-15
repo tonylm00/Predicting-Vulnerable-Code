@@ -186,9 +186,7 @@ class Gui:
             self.sm_checkbox_button.config(state=tk.NORMAL)
             self.asa_checkbox_button.config(state=tk.NORMAL)
         else:
-            print("SEGNALE DI FUNGO")
             self.tm_checkbox_button.config(state=tk.DISABLED)
-            print(self.tm_checkbox_button['state'])
             self.sm_checkbox_button.config(state=tk.DISABLED)
             self.asa_checkbox_button.config(state=tk.DISABLED)
 

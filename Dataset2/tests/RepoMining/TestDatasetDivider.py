@@ -6,7 +6,7 @@ from Dataset2.RepoMining.DatasetDivider import DatasetDivider
 
 class TestDatasetDivider:
     DATASET_NAME = 'initial_Dataset.csv'
-    DATASET_HEADERS = 'cve_id,repo_url,commit_id,cls'
+    DATASET_HEADERS = 'cve_id,repo_url,commit_id'
 
     DIR_NAME = 'Dataset_Divided'
 

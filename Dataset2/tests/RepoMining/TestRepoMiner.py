@@ -301,7 +301,7 @@ class TestRepoMiner:
 
             miner = RepoMiner(self.BASE_DIR)
 
-            statusCE = 'Connection Error'
+            statusCE = 'CONNECTION ERROR'
             str_log_1 = f"indice: 1 link repo: {content_1['repo_url']} status: {statusCE}"
             str_log_2 = f"indice: 2 link repo: {content_2['repo_url']} status: {statusCE}"
 
